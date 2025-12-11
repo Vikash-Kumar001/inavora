@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useTranslation } from 'react-i18next'; // Added useTranslation import
+import { useTranslation } from 'react-i18next';
+import { translateError } from '../../utils/errorTranslator'; // Added useTranslation import
 import { Check, ArrowLeft } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import toast from 'react-hot-toast';
@@ -175,7 +176,7 @@ const PricingPage = () => {
 
         } catch (error) {
             console.error(error);
-            toast.error(error.message || t('pricing.something_went_wrong'));
+            toast.error(translateError(error, t, 'pricing.something_went_wrong'));
         } finally {
             setLoadingPlanId(null);
         }

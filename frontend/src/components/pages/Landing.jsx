@@ -186,11 +186,11 @@ export default function Landing() {
     try {
       // Logout is now instant - no need to wait
       logout();
-      toast.success('Logged out successfully!');
+      toast.success(t('toasts.landing.logout_success'));
       navigate('/', { replace: true });
     } catch (error) {
       console.error('Logout error:', error);
-      toast.error('Failed to logout. Please try again.');
+      toast.error(t('toasts.landing.logout_error'));
     }
   };
 
@@ -980,7 +980,7 @@ export default function Landing() {
               <motion.button
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
-                onClick={() => toast.success("Demo booking coming soon!")}
+                onClick={() => toast.success(t('toasts.landing.demo_booking_coming_soon'))}
                 className="w-full sm:w-auto px-10 py-5 rounded-full bg-white text-slate-900 font-bold text-xl hover:bg-gray-100 transition-all"
               >
                 {t('landing.book_demo')}

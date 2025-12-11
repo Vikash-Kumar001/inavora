@@ -6,6 +6,7 @@ import { useAuth } from '../context/AuthContext';
 // eslint-disable-next-line no-unused-vars
 import { motion } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
+import { translateError } from '../utils/errorTranslator';
 import api from '../config/api';
 
 const Login = () => {
@@ -58,7 +59,7 @@ const Login = () => {
             }
           } catch (institutionLoginError) {
             // Institution admin login failed - show error and don't try normal login
-            const errorMsg = institutionLoginError.response?.data?.error || t('login.invalid_credential_details');
+            const errorMsg = translateError(institutionLoginError, t, 'login.invalid_credential_details');
             setError(errorMsg);
             toast.error(errorMsg);
             setLoading(false);
@@ -95,10 +96,8 @@ const Login = () => {
         errorMessage = t('login.network_error');
       } else if (error.code === 'auth/too-many-requests') {
         errorMessage = t('login.too_many_requests');
-      } else if (error.response?.data?.error) {
-        errorMessage = error.response.data.error;
-      } else if (error.message) {
-        errorMessage = error.message;
+      } else {
+        errorMessage = translateError(error, t, 'login.login_failed');
       }
 
       setError(errorMessage);
@@ -129,8 +128,8 @@ const Login = () => {
         errorMessage = t('login.popup_blocked');
       }
       // Check for server errors (from backend)
-      else if (error.message && !error.message.includes('Firebase')) {
-        errorMessage = error.message;
+      else {
+        errorMessage = translateError(error, t, 'login.google_signin_failed');
       }
 
       setError(errorMessage);

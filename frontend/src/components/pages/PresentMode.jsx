@@ -28,6 +28,7 @@ import {
   isOpenEndedSlide,
 } from '../interactions/openEnded/utils';
 import { useAuth } from '../../context/AuthContext';
+import { useTranslation } from 'react-i18next';
 import TwoByTwoGridPresenterView from '../interactions/twoByTwoGrid/PresenterView';
 import PinOnImagePresenterView from '../interactions/pinOnImage/PresenterView';
 import SlideCanvas from '../presentation/SlideCanvas';
@@ -36,6 +37,7 @@ const PresentMode = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const location = useLocation();
+  const { t } = useTranslation();
   const { currentUser } = useAuth();
   const [socket, setSocket] = useState(null);
   const [presentation, setPresentation] = useState(null);
@@ -172,7 +174,7 @@ const PresentMode = () => {
         setIsLoading(false);
       } catch (error) {
         console.error('Failed to load presentation:', error);
-        toast.error('Failed to load presentation');
+        toast.error(t('toasts.presentation.failed_to_load'));
         navigate('/dashboard');
       }
     };
@@ -197,7 +199,7 @@ const PresentMode = () => {
     const handlePresentationStarted = (data) => {
       if (!hasStarted) {
         setHasStarted(true);
-        toast.success('Presentation is now live!');
+        toast.success(t('toasts.present_mode.presentation_live'));
       }
       if (data?.presentation?.currentSlideIndex !== undefined) {
         setCurrentSlideIndex(data.presentation.currentSlideIndex);
@@ -341,7 +343,7 @@ const PresentMode = () => {
 
     const handleParticipantJoined = (data) => {
       setParticipantCount(data.participantCount);
-      toast.success('New participant joined!');
+      toast.success(t('toasts.present_mode.new_participant_joined'));
     };
 
     const handleParticipantLeft = (data) => {
@@ -527,7 +529,7 @@ const PresentMode = () => {
       presentationId: id,
       slideId,
     });
-    toast.success('Responses cleared');
+    toast.success(t('toasts.present_mode.responses_cleared'));
   };
 
   const handleStartQuiz = () => {
@@ -568,7 +570,7 @@ const PresentMode = () => {
       participantName: participantToKick,
     });
     
-    toast.success(`Kicked ${participantToKick}`);
+    toast.success(t('toasts.present_mode.participant_kicked', { participant: participantToKick }));
     
     // Close the modal and reset state
     setShowKickConfirmation(false);
@@ -641,7 +643,7 @@ const PresentMode = () => {
   const handleConfirmEndPresentation = () => {
     if (!socket) return;
     socket.emit('end-presentation', { presentationId: id });
-    toast.success('Presentation ended');
+    toast.success(t('toasts.present_mode.presentation_ended'));
     setShowEndModal(false);
     navigate(`/presentation/${id}`);
   };

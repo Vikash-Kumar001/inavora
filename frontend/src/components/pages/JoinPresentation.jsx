@@ -237,7 +237,7 @@ const JoinPresentation = () => {
         if (data.slideType === 'ranking' && Array.isArray(data.submittedAnswer)) {
           setParticipantRanking(data.submittedAnswer);
         }
-        toast.success('Response submitted!');
+        toast.success(t('toasts.join_presentation.response_submitted'));
       }
     });
 
@@ -262,7 +262,7 @@ const JoinPresentation = () => {
     });
 
     socket.on('qna-question-submitted', () => {
-      toast.success('Question submitted!');
+      toast.success(t('toasts.join_presentation.question_submitted'));
     });
 
     socket.on('guess-updated', (data) => {
@@ -275,12 +275,12 @@ const JoinPresentation = () => {
     socket.on('guess-reset', (data) => {
       if (data.slideId === currentSlide?.id) {
         setHasSubmitted(false);
-        toast('The presenter has reset guesses. You can submit again!');
+        toast(t('toasts.join_presentation.guess_reset'));
       }
     });
 
     socket.on('guess-submitted', () => {
-      toast.success('Guess submitted!');
+      toast.success(t('toasts.join_presentation.guess_submitted'));
       setHasSubmitted(true);
     });
 
@@ -362,7 +362,7 @@ const JoinPresentation = () => {
     if (!currentSlide) return;
     if (currentSlide.type === 'multiple_choice') {
       if (!selectedAnswer) {
-        toast.error('Please select an answer');
+        toast.error(t('toasts.join_presentation.select_answer'));
         return;
       }
       socket.emit('submit-response', {
@@ -373,10 +373,10 @@ const JoinPresentation = () => {
         answer: selectedAnswer
       });
       setHasSubmitted(true);
-      toast.success('Response submitted!');
+      toast.success(t('toasts.join_presentation.response_submitted'));
     } else if (currentSlide.type === 'scales') {
       if (answerPayload === null || answerPayload === undefined) {
-        toast.error('Please select a value');
+        toast.error(t('toasts.join_presentation.select_value'));
         return;
       }
       socket.emit('submit-response', {
@@ -387,7 +387,7 @@ const JoinPresentation = () => {
         answer: answerPayload
       });
       setHasSubmitted(true);
-      toast.success('Response submitted!');
+      toast.success(t('toasts.join_presentation.response_submitted'));
     } else if (currentSlide.type === 'word_cloud') {
       const tokens = String(textAnswer || '')
         .toLowerCase()
@@ -395,7 +395,7 @@ const JoinPresentation = () => {
         .map(t => t.trim())
         .filter(Boolean);
       if (tokens.length === 0) {
-        toast.error('Please enter at least one word');
+        toast.error(t('toasts.join_presentation.enter_at_least_one_word'));
         return;
       }
       // Allow multiple words based on maxWordsPerParticipant setting
@@ -411,7 +411,7 @@ const JoinPresentation = () => {
     } else if (currentSlide.type === 'open_ended') {
       const trimmed = (openEndedAnswer || '').trim();
       if (!trimmed) {
-        toast.error('Please enter a response');
+        toast.error(t('toasts.join_presentation.enter_response'));
         return;
       }
       socket.emit('submit-response', {
@@ -424,7 +424,7 @@ const JoinPresentation = () => {
       setHasSubmitted(true);
     } else if (currentSlide.type === 'ranking') {
       if (!Array.isArray(answerPayload) || answerPayload.length === 0) {
-        toast.error('Please rank at least one item');
+        toast.error(t('toasts.join_presentation.rank_at_least_one'));
         return;
       }
       socket.emit('submit-response', {
@@ -436,10 +436,10 @@ const JoinPresentation = () => {
       });
       setHasSubmitted(true);
       setParticipantRanking(answerPayload);
-      toast.success('Ranking submitted!');
+      toast.success(t('toasts.join_presentation.ranking_submitted'));
     } else if (currentSlide.type === 'hundred_points') {
       if (!Array.isArray(answerPayload) || answerPayload.length === 0) {
-        toast.error('Please allocate at least some points');
+        toast.error(t('toasts.join_presentation.allocate_points'));
         return;
       }
       socket.emit('submit-response', {
@@ -450,10 +450,10 @@ const JoinPresentation = () => {
         answer: answerPayload
       });
       setHasSubmitted(true);
-      toast.success('Points allocated!');
+      toast.success(t('toasts.join_presentation.points_allocated'));
     } else if (currentSlide.type === '2x2_grid') {
       if (!Array.isArray(answerPayload) || answerPayload.length === 0) {
-        toast.error('Please position all items on the grid');
+        toast.error(t('toasts.join_presentation.position_all_items'));
         return;
       }
       socket.emit('submit-response', {
@@ -464,10 +464,10 @@ const JoinPresentation = () => {
         answer: answerPayload
       });
       setHasSubmitted(true);
-      toast.success('Positions submitted!');
+      toast.success(t('toasts.join_presentation.positions_submitted'));
     } else if (currentSlide.type === 'pin_on_image') {
       if (!answerPayload || typeof answerPayload !== 'object') {
-        toast.error('Please place a pin on the image');
+        toast.error(t('toasts.join_presentation.place_pin'));
         return;
       }
       console.log('Submitting pin response:', answerPayload);
@@ -479,7 +479,7 @@ const JoinPresentation = () => {
         answer: answerPayload
       });
       setHasSubmitted(true);
-      toast.success('Pin submitted!');
+      toast.success(t('toasts.join_presentation.pin_submitted'));
     }
   };
 

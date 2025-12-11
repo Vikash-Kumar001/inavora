@@ -5,6 +5,7 @@ import { Mail, ArrowLeft, Send, Loader2 } from 'lucide-react';
 // eslint-disable-next-line no-unused-vars
 import { motion } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
+import { translateError } from '../utils/errorTranslator';
 import api from '../config/api';
 
 const ForgotPassword = () => {
@@ -46,7 +47,7 @@ const ForgotPassword = () => {
       }
     } catch (error) {
       console.error('Password reset request error:', error);
-      const errorMessage = error.response?.data?.error || t('forgot_password.request_failed');
+      const errorMessage = translateError(error, t, 'forgot_password.request_failed');
       setError(errorMessage);
       toast.error(errorMessage);
     } finally {

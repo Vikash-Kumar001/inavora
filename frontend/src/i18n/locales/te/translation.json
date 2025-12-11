@@ -161,7 +161,9 @@
     "click_to_open": "తెరవడానికి క్లిక్ చేయండి",
     "pagination_page": "పేజీ",
     "pagination_of": "యొక్క",
-    "delete_permanently": "ఈ చర్యను తిరిగి రద్దు చేయలేరు మరియు అన్ని స్లైడ్‌లు మరియు స్పందనలను శాశ్వతంగా తొలగిస్తుంది."
+    "delete_permanently": "ఈ చర్యను తిరిగి రద్దు చేయలేరు మరియు అన్ని స్లైడ్‌లు మరియు స్పందనలను శాశ్వతంగా తొలగిస్తుంది.",
+    "presentation_deleted": "ప్రదర్శన విజయవంతంగా తొలగించబడింది",
+    "delete_presentation_error": "ప్రదర్శనను తొలగించడంలో విఫలమైంది"
   },
   "login": {
     "back_to_home": "హోమ్‌కు తిరిగి వెళ్ళండి",
@@ -830,5 +832,88 @@
     "import_powerpoint": "పవర్ పాయింట్ ఇంపోర్ట్ చేయండి",
     "import_from_google_slides": "గూగుల్ స్లైడ్‌ల నుండి ఇంపోర్ట్ చేయండి",
     "upload_presentation": "ప్రదర్శనను అప్‌లోడ్ చేయండి"
+  },
+  "toasts": {
+    "presentation": {
+      "failed_to_load": "Failed to load presentation",
+      "created": "Presentation created",
+      "failed_to_create": "Failed to create presentation",
+      "saved": "Presentation saved",
+      "failed_to_save": "Failed to save presentation",
+      "draft_restored": "Draft restored",
+      "draft_discarded": "Draft discarded",
+      "ready_to_share": "ప్రదర్శన సిద్ధంగా ఉంది! షేర్ కోడ్: {{code}}",
+      "new_slide_added": "కొత్త స్లైడ్ జోడించబడింది",
+      "cannot_delete_last_slide": "Cannot delete the last slide",
+      "leaderboard_cannot_delete": "Auto-generated leaderboard slides cannot be deleted directly",
+      "slide_deleted": "Slide deleted",
+      "empty_discarded": "Empty presentation discarded",
+      "add_slide_before_presenting": "Please add at least one slide before presenting",
+      "only_one_instruction_slide": "Only one instruction slide is allowed per presentation",
+      "slide_missing_type": "Slide {{number}}: Missing slide type",
+      "slide_missing_question": "Slide {{number}}: Please add a question",
+      "quiz_min_options": "Quiz Slide {{number}}: At least 2 options are required",
+      "quiz_empty_option": "Quiz Slide {{number}}: Option {{optionNumber}} cannot be empty",
+      "quiz_select_correct": "Quiz Slide {{number}}: Please select the correct answer",
+      "mcq_min_options": "Multiple Choice Slide {{number}}: At least 2 options are required",
+      "mcq_empty_option": "Multiple Choice Slide {{number}}: Option {{optionNumber}} cannot be empty",
+      "scales_min_max_required": "Scales Slide {{number}}: Min and max values are required",
+      "scales_min_less_than_max": "Scales Slide {{number}}: Min value must be less than max value",
+      "scales_statement_required": "Scales Slide {{number}}: At least one statement is required",
+      "scales_empty_statement": "Scales Slide {{number}}: Statement {{statementNumber}} cannot be empty",
+      "ranking_min_items": "Ranking Slide {{number}}: At least 2 items are required",
+      "ranking_empty_item": "Ranking Slide {{number}}: Item {{itemNumber}} cannot be empty",
+      "hundred_points_min_items": "100 Points Slide {{number}}: At least 2 items are required",
+      "hundred_points_empty_item": "100 Points Slide {{number}}: Item {{itemNumber}} cannot be empty",
+      "grid_min_items": "2x2 Grid Slide {{number}}: At least 1 item is required",
+      "grid_empty_item": "2x2 Grid Slide {{number}}: Item {{itemNumber}} cannot be empty",
+      "pin_image_url_required": "Pin on Image Slide {{number}}: Image URL is required",
+      "text_content_required": "Text Slide {{number}}: Content is required",
+      "image_url_required": "Image Slide {{number}}: Image URL is required",
+      "video_url_required": "Video Slide {{number}}: Video URL is required"
+    },
+    "present_mode": {
+      "presentation_live": "Presentation is now live!",
+      "new_participant_joined": "New participant joined!",
+      "responses_cleared": "Responses cleared",
+      "participant_kicked": "Kicked {{participant}}",
+      "presentation_ended": "Presentation ended"
+    },
+    "join_presentation": {
+      "response_submitted": "Response submitted!",
+      "question_submitted": "Question submitted!",
+      "guess_submitted": "Guess submitted!",
+      "select_answer": "Please select an answer",
+      "select_value": "Please select a value",
+      "enter_at_least_one_word": "Please enter at least one word",
+      "enter_response": "Please enter a response",
+      "rank_at_least_one": "Please rank at least one item",
+      "ranking_submitted": "Ranking submitted!",
+      "allocate_points": "Please allocate at least some points",
+      "points_allocated": "Points allocated!",
+      "position_all_items": "Please position all items on the grid",
+      "positions_submitted": "Positions submitted!",
+      "place_pin": "Please place a pin on the image",
+      "pin_submitted": "Pin submitted!",
+      "guess_reset": "The presenter has reset guesses. You can submit again!"
+    },
+    "landing": {
+      "logout_success": "Logged out successfully!",
+      "logout_error": "Failed to logout. Please try again.",
+      "demo_booking_coming_soon": "Demo booking coming soon!"
+    },
+    "careers": {
+      "resume_size_error": "Resume file size must be less than 5MB",
+      "resume_format_error": "Please upload a PDF or Word document",
+      "resume_required": "Please upload your resume"
+    },
+    "image_gallery": {
+      "failed_to_load": "Failed to load images",
+      "deleted_success": "Image deleted successfully",
+      "delete_failed": "Failed to delete image"
+    },
+    "super_admin": {
+      "new_application": "New application from {{candidateName}} for {{position}}"
+    }
   }
 }

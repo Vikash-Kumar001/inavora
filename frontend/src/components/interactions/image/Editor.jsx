@@ -4,6 +4,7 @@ import SlideTypeHeader from '../common/SlideTypeHeader';
 import api from '../../../config/api';
 import toast from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
+import { translateError } from '../../../utils/errorTranslator';
 
 const ImageEditor = ({ slide, onUpdate }) => {
   const { t } = useTranslation();
@@ -64,7 +65,7 @@ const ImageEditor = ({ slide, onUpdate }) => {
       }
     } catch (error) {
       console.error('Upload error:', error);
-      toast.error(error.response?.data?.error || t('slide_editors.image.upload_failed'));
+      toast.error(translateError(error, t, 'slide_editors.image.upload_failed'));
     } finally {
       setIsUploading(false);
     }

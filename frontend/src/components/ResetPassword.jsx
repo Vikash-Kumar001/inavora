@@ -4,6 +4,7 @@ import toast from 'react-hot-toast';
 import { Lock, Eye, EyeOff, CheckCircle, ArrowLeft, Loader2 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
+import { translateError } from '../utils/errorTranslator';
 import api from '../config/api';
 
 const ResetPassword = () => {
@@ -46,7 +47,7 @@ const ResetPassword = () => {
       } catch (error) {
         console.error('OTP verification error:', error);
         setOtpValid(false);
-        const errorMessage = error.response?.data?.error || t('reset_password.invalid_or_expired_otp');
+        const errorMessage = translateError(error, t, 'reset_password.invalid_or_expired_otp');
         setError(errorMessage);
         toast.error(errorMessage);
       } finally {
@@ -136,7 +137,7 @@ const ResetPassword = () => {
       }
     } catch (error) {
       console.error('Password reset error:', error);
-      const errorMessage = error.response?.data?.error || t('reset_password.reset_failed');
+      const errorMessage = translateError(error, t, 'reset_password.reset_failed');
       setError(errorMessage);
       toast.error(errorMessage);
     } finally {

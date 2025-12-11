@@ -5,6 +5,7 @@ import { ArrowLeft, Rocket, Users, Zap, Heart, Code, Briefcase, MapPin, Clock, C
 import { useTranslation } from 'react-i18next';
 import { useState, useEffect } from 'react';
 import toast from 'react-hot-toast';
+import { translateError } from '../../utils/errorTranslator';
 import api from '../../config/api';
 import { io } from 'socket.io-client';
 
@@ -146,11 +147,11 @@ const Careers = () => {
         const file = e.target.files[0];
         if (file) {
             if (file.size > 5 * 1024 * 1024) {
-                toast.error('Resume file size must be less than 5MB');
+                toast.error(t('toasts.careers.resume_size_error'));
                 return;
             }
             if (!['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'].includes(file.type)) {
-                toast.error('Please upload a PDF or Word document');
+                toast.error(t('toasts.careers.resume_format_error'));
                 return;
             }
             setResumeFile(file);
@@ -167,7 +168,7 @@ const Careers = () => {
         e.preventDefault();
         
         if (!resumeFile) {
-            toast.error('Please upload your resume');
+            toast.error(t('toasts.careers.resume_required'));
             return;
         }
 
@@ -191,7 +192,7 @@ const Careers = () => {
             }
         } catch (error) {
             console.error('Application submission error:', error);
-            toast.error(error.response?.data?.error || 'Failed to submit application. Please try again.');
+            toast.error(translateError(error, t, 'careers.application_submit_error'));
         } finally {
             setIsSubmitting(false);
         }

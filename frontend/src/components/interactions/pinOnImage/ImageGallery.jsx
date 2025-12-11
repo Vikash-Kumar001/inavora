@@ -1,10 +1,12 @@
 import { useState, useEffect, useCallback } from 'react';
 import { X, Trash2, Image as ImageIcon, Loader2 } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { useTranslation } from 'react-i18next';
 import * as presentationService from '../../../services/presentationService';
 import ConfirmDialog from '../../common/ConfirmDialog';
 
 const ImageGallery = ({ onSelect, onClose }) => {
+  const { t } = useTranslation();
   const [images, setImages] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [deletingId, setDeletingId] = useState(null);
@@ -21,7 +23,7 @@ const ImageGallery = ({ onSelect, onClose }) => {
       setImages(response.data || []);
     } catch (error) {
       console.error('Load images error:', error);
-      toast.error('Failed to load images');
+      toast.error(t('toasts.image_gallery.failed_to_load'));
     } finally {
       setIsLoading(false);
     }
@@ -41,10 +43,10 @@ const ImageGallery = ({ onSelect, onClose }) => {
       const result = await presentationService.deleteImage(publicId);
       console.log('Delete result:', result);
       setImages(prev => prev.filter(img => img.publicId !== publicId));
-      toast.success('Image deleted successfully');
+      toast.success(t('toasts.image_gallery.deleted_success'));
     } catch (error) {
       console.error('Delete image error:', error);
-      toast.error('Failed to delete image');
+      toast.error(t('toasts.image_gallery.delete_failed'));
     } finally {
       setDeletingId(null);
       setDeleteDialog({ open: false, target: null });

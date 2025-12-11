@@ -5,6 +5,7 @@ import { Mail, Lock, User, Eye, EyeOff, UserPlus, ArrowLeft } from 'lucide-react
 import { useAuth } from '../context/AuthContext';
 import { motion } from 'framer-motion'; // eslint-disable-line
 import { useTranslation } from 'react-i18next';
+import { translateError } from '../utils/errorTranslator';
 
 const Register = () => {
   const navigate = useNavigate();
@@ -64,8 +65,8 @@ const Register = () => {
         errorMessage = t('register.invalid_email');
       } else if (error.code === 'auth/weak-password') {
         errorMessage = t('register.password_too_weak');
-      } else if (error.message) {
-        errorMessage = error.message;
+      } else {
+        errorMessage = translateError(error, t, 'register.registration_failed');
       }
 
       setError(errorMessage);
@@ -95,8 +96,8 @@ const Register = () => {
         errorMessage = t('register.popup_blocked');
       }
       // Check for server errors (from backend)
-      else if (error.message && !error.message.includes('Firebase')) {
-        errorMessage = error.message;
+      else {
+        errorMessage = translateError(error, t, 'register.google_signin_failed');
       }
 
       setError(errorMessage);

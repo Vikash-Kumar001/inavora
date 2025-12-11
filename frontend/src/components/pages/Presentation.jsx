@@ -16,6 +16,7 @@ import { v4 as uuidv4 } from 'uuid';
 import ConfirmDialog from '../common/ConfirmDialog';
 import PresentationResults from '../presentation/PresentationResults';
 import { useTranslation } from 'react-i18next';
+import { translateError } from '../../utils/errorTranslator';
 
 export default function Presentation() {
   const navigate = useNavigate();
@@ -142,7 +143,7 @@ export default function Presentation() {
       }
     } catch (error) {
       console.error('Load presentation error:', error);
-      toast.error('Failed to load presentation');
+      toast.error(t('toasts.presentation.failed_to_load'));
       navigate('/dashboard');
     } finally {
       setIsLoading(false);
@@ -165,10 +166,10 @@ export default function Presentation() {
       // Update URL to include the new presentation ID without replace
       navigate(`/presentation/${response.presentation.id}`);
 
-      toast.success('Presentation created');
+      toast.success(t('toasts.presentation.created'));
     } catch (error) {
       console.error('Create presentation error:', error);
-      toast.error('Failed to create presentation');
+      toast.error(t('toasts.presentation.failed_to_create'));
       setIsLoading(false);
       navigate('/dashboard');
     }
@@ -208,13 +209,13 @@ export default function Presentation() {
     presentationService.clearDraftFromLocalStorage();
     setIsDirty(false);
     setDraftDialog({ open: false, draft: null });
-    toast.success('Draft restored');
+    toast.success(t('toasts.presentation.draft_restored'));
   }, [draftDialog]);
 
   const handleDiscardDraft = useCallback(() => {
     presentationService.clearDraftFromLocalStorage();
     setDraftDialog({ open: false, draft: null });
-    toast.success('Draft discarded');
+    toast.success(t('toasts.presentation.draft_discarded'));
   }, []);
 
   // Save to backend
@@ -313,13 +314,13 @@ export default function Presentation() {
 
       // Basic validation
       if (!slide?.type) {
-        toast.error(`Slide ${slideNumber}: Missing slide type`);
+        toast.error(t('toasts.presentation.slide_missing_type', { number: slideNumber }));
         return false;
       }
 
       // Skip question validation for instruction slides since they are auto-generated
       if (slide.type !== 'instruction' && (typeof slide.question !== 'string' || slide.question.trim().length === 0)) {
-        toast.error(`Slide ${slideNumber}: Please add a question`);
+        toast.error(t('toasts.presentation.slide_missing_question', { number: slideNumber }));
         return false;
       }
 
@@ -328,20 +329,20 @@ export default function Presentation() {
         const settings = slide.quizSettings;
 
         if (!settings || !Array.isArray(settings.options) || settings.options.length < 2) {
-          toast.error(`Quiz Slide ${slideNumber}: At least 2 options are required`);
+          toast.error(t('toasts.presentation.quiz_min_options', { number: slideNumber }));
           return false;
         }
 
         // Check if all options have text
         const emptyOption = settings.options.findIndex(opt => !opt.text || opt.text.trim() === '');
         if (emptyOption !== -1) {
-          toast.error(`Quiz Slide ${slideNumber}: Option ${emptyOption + 1} cannot be empty`);
+          toast.error(t('toasts.presentation.quiz_empty_option', { number: slideNumber, optionNumber: emptyOption + 1 }));
           return false;
         }
 
         // Check if correct answer is selected
         if (!settings.correctOptionId) {
-          toast.error(`Quiz Slide ${slideNumber}: Please select the correct answer`);
+          toast.error(t('toasts.presentation.quiz_select_correct', { number: slideNumber }));
           return false;
         }
       }
@@ -349,14 +350,14 @@ export default function Presentation() {
       // MCQ validation
       if (slide.type === 'multiple_choice') {
         if (!Array.isArray(slide.options) || slide.options.length < 2) {
-          toast.error(`Multiple Choice Slide ${slideNumber}: At least 2 options are required`);
+          toast.error(t('toasts.presentation.mcq_min_options', { number: slideNumber }));
           return false;
         }
 
         // Check if all options have text
         const emptyOption = slide.options.findIndex(opt => !opt || opt.trim() === '');
         if (emptyOption !== -1) {
-          toast.error(`Multiple Choice Slide ${slideNumber}: Option ${emptyOption + 1} cannot be empty`);
+          toast.error(t('toasts.presentation.mcq_empty_option', { number: slideNumber, optionNumber: emptyOption + 1 }));
           return false;
         }
       }
@@ -364,24 +365,24 @@ export default function Presentation() {
       // Scales validation
       if (slide.type === 'scales') {
         if (typeof slide.minValue !== 'number' || typeof slide.maxValue !== 'number') {
-          toast.error(`Scales Slide ${slideNumber}: Min and max values are required`);
+          toast.error(t('toasts.presentation.scales_min_max_required', { number: slideNumber }));
           return false;
         }
 
         if (slide.minValue >= slide.maxValue) {
-          toast.error(`Scales Slide ${slideNumber}: Min value must be less than max value`);
+          toast.error(t('toasts.presentation.scales_min_less_than_max', { number: slideNumber }));
           return false;
         }
 
         if (!Array.isArray(slide.statements) || slide.statements.length === 0) {
-          toast.error(`Scales Slide ${slideNumber}: At least one statement is required`);
+          toast.error(t('toasts.presentation.scales_statement_required', { number: slideNumber }));
           return false;
         }
 
         // Check if all statements have text
         const emptyStatement = slide.statements.findIndex(stmt => !stmt.text || stmt.text.trim() === '');
         if (emptyStatement !== -1) {
-          toast.error(`Scales Slide ${slideNumber}: Statement ${emptyStatement + 1} cannot be empty`);
+          toast.error(t('toasts.presentation.scales_empty_statement', { number: slideNumber, statementNumber: emptyStatement + 1 }));
           return false;
         }
       }
@@ -389,14 +390,14 @@ export default function Presentation() {
       // Ranking validation
       if (slide.type === 'ranking') {
         if (!Array.isArray(slide.rankingItems) || slide.rankingItems.length < 2) {
-          toast.error(`Ranking Slide ${slideNumber}: At least 2 items are required`);
+          toast.error(t('toasts.presentation.ranking_min_items', { number: slideNumber }));
           return false;
         }
 
         // Check if all items have text
         const emptyItem = slide.rankingItems.findIndex(item => !item.text || item.text.trim() === '');
         if (emptyItem !== -1) {
-          toast.error(`Ranking Slide ${slideNumber}: Item ${emptyItem + 1} cannot be empty`);
+          toast.error(t('toasts.presentation.ranking_empty_item', { number: slideNumber, itemNumber: emptyItem + 1 }));
           return false;
         }
       }
@@ -404,14 +405,14 @@ export default function Presentation() {
       // 100 Points validation
       if (slide.type === 'hundred_points') {
         if (!Array.isArray(slide.hundredPointsItems) || slide.hundredPointsItems.length < 2) {
-          toast.error(`100 Points Slide ${slideNumber}: At least 2 items are required`);
+          toast.error(t('toasts.presentation.hundred_points_min_items', { number: slideNumber }));
           return false;
         }
 
         // Check if all items have text
         const emptyItem = slide.hundredPointsItems.findIndex(item => !item.text || item.text.trim() === '');
         if (emptyItem !== -1) {
-          toast.error(`100 Points Slide ${slideNumber}: Item ${emptyItem + 1} cannot be empty`);
+          toast.error(t('toasts.presentation.hundred_points_empty_item', { number: slideNumber, itemNumber: emptyItem + 1 }));
           return false;
         }
       }
@@ -419,39 +420,39 @@ export default function Presentation() {
       // 2x2 Grid validation
       if (slide.type === '2x2_grid') {
         if (!Array.isArray(slide.gridItems) || slide.gridItems.length < 1) {
-          toast.error(`2x2 Grid Slide ${slideNumber}: At least 1 item is required`);
+          toast.error(t('toasts.presentation.grid_min_items', { number: slideNumber }));
           return false;
         }
 
         // Check if all items have text
         const emptyItem = slide.gridItems.findIndex(item => !item.text || item.text.trim() === '');
         if (emptyItem !== -1) {
-          toast.error(`2x2 Grid Slide ${slideNumber}: Item ${emptyItem + 1} cannot be empty`);
+          toast.error(t('toasts.presentation.grid_empty_item', { number: slideNumber, itemNumber: emptyItem + 1 }));
           return false;
         }
       }
 
       // Pin on Image validation
       if (slide.type === 'pin_on_image' && (!slide.imageUrl || slide.imageUrl.trim() === '')) {
-        toast.error(`Pin on Image Slide ${slideNumber}: Image URL is required`);
+        toast.error(t('toasts.presentation.pin_image_url_required', { number: slideNumber }));
         return false;
       }
 
       // Text slide validation
       if (slide.type === 'text' && (!slide.textContent || slide.textContent.trim() === '')) {
-        toast.error(`Text Slide ${slideNumber}: Content is required`);
+        toast.error(t('toasts.presentation.text_content_required', { number: slideNumber }));
         return false;
       }
 
       // Image slide validation
       if (slide.type === 'image' && (!slide.imageUrl || slide.imageUrl.trim() === '')) {
-        toast.error(`Image Slide ${slideNumber}: Image URL is required`);
+        toast.error(t('toasts.presentation.image_url_required', { number: slideNumber }));
         return false;
       }
 
       // Video slide validation
       if (slide.type === 'video' && (!slide.videoUrl || slide.videoUrl.trim() === '')) {
-        toast.error(`Video Slide ${slideNumber}: Video URL is required`);
+        toast.error(t('toasts.presentation.video_url_required', { number: slideNumber }));
         return false;
       }
     }
@@ -591,7 +592,7 @@ export default function Presentation() {
       // Clear localStorage after successful save
       presentationService.clearDraftFromLocalStorage();
 
-      toast.success('Presentation saved');
+      toast.success(t('toasts.presentation.saved'));
       return true;
     } catch (error) {
       console.error('Save error:', error);
@@ -599,7 +600,7 @@ export default function Presentation() {
         console.error('Save error response data:', error.response.data);
         console.error('Save error status:', error.response.status);
       }
-      toast.error('Failed to save presentation');
+      toast.error(t('toasts.presentation.failed_to_save'));
       return false;
     } finally {
       setIsSaving(false);
@@ -625,7 +626,7 @@ export default function Presentation() {
     if (slideType === 'instruction') {
       const existingInstructionSlide = slides.find(slide => slide.type === 'instruction');
       if (existingInstructionSlide) {
-        toast.error('Only one instruction slide is allowed per presentation');
+        toast.error(t('toasts.presentation.only_one_instruction_slide'));
         setShowNewSlideDropdown(false);
         return;
       }
@@ -759,11 +760,11 @@ export default function Presentation() {
 
     if (isFirstSlide && presentation.accessCode) {
       toast.success(
-        `Presentation ready! Share code: ${presentation.accessCode}`,
+        t('toasts.presentation.ready_to_share', { code: presentation.accessCode }),
         { duration: 5000 }
       );
     } else {
-      toast.success('New slide added');
+      toast.success(t('toasts.presentation.new_slide_added'));
     }
   };
 
@@ -771,7 +772,7 @@ export default function Presentation() {
   // Handle delete slide click
   const handleDeleteSlide = (index) => {
     if (slides.length === 1) {
-      toast.error('Cannot delete the last slide');
+      toast.error(t('toasts.presentation.cannot_delete_last_slide'));
       return;
     }
 
@@ -779,7 +780,7 @@ export default function Presentation() {
 
     // Prevent deletion of auto-generated leaderboard slides
     if (slideToDelete.type === 'leaderboard' && slideToDelete.leaderboardSettings?.isAutoGenerated) {
-      toast.error('Auto-generated leaderboard slides cannot be deleted directly');
+      toast.error(t('toasts.presentation.leaderboard_cannot_delete'));
       return;
     }
 
@@ -810,7 +811,7 @@ export default function Presentation() {
         }
       } catch (error) {
         console.error('Delete slide error:', error);
-        toast.error(error?.response?.data?.error || 'Failed to delete slide');
+        toast.error(translateError(error, t, 'toasts.presentation.slide_deleted'));
         setDeleteDialog({ open: false, slideIndex: null });
         return;
       }
@@ -822,7 +823,7 @@ export default function Presentation() {
       setCurrentSlideIndex(currentSlideIndex - 1);
     }
 
-    toast.success('Slide deleted');
+    toast.success(t('toasts.presentation.slide_deleted'));
     setIsDirty(true);
     setDeleteDialog({ open: false, slideIndex: null });
   };
@@ -892,7 +893,7 @@ export default function Presentation() {
     if (savedSlideCount === 0 && presentation?.id) {
       try {
         await deletePresentation(presentation.id);
-        toast.success('Empty presentation discarded');
+        toast.success(t('toasts.presentation.empty_discarded'));
       } catch (error) {
         console.error('Failed to delete empty presentation:', error);
       }
@@ -905,7 +906,7 @@ export default function Presentation() {
   // Handle present button
   const handlePresent = async () => {
     if (slides.length === 0) {
-      toast.error('Please add at least one slide before presenting');
+      toast.error(t('toasts.presentation.add_slide_before_presenting'));
       return;
     }
 

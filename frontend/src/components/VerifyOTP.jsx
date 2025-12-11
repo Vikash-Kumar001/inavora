@@ -4,6 +4,7 @@ import toast from 'react-hot-toast';
 import { Shield, ArrowLeft, Loader2, RotateCcw } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
+import { translateError } from '../utils/errorTranslator';
 import api from '../config/api';
 
 const VerifyOTP = () => {
@@ -114,7 +115,7 @@ const VerifyOTP = () => {
       }
     } catch (error) {
       console.error('OTP verification error:', error);
-      const errorMessage = error.response?.data?.error || t('verify_otp.verification_failed');
+      const errorMessage = translateError(error, t, 'verify_otp.verification_failed');
       setError(errorMessage);
       toast.error(errorMessage);
       // Clear OTP on error
@@ -144,7 +145,7 @@ const VerifyOTP = () => {
       }
     } catch (error) {
       console.error('Resend OTP error:', error);
-      const errorMessage = error.response?.data?.error || t('verify_otp.resend_failed');
+      const errorMessage = translateError(error, t, 'verify_otp.resend_failed');
       setError(errorMessage);
       toast.error(errorMessage);
     } finally {

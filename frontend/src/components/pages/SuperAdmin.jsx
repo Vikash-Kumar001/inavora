@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import api from '../../config/api';
 import { useTranslation } from 'react-i18next';
+import { translateError } from '../../utils/errorTranslator';
 
 // Icons
 import { 
@@ -66,7 +67,7 @@ const SuperAdmin = () => {
     const socket = io(import.meta.env.VITE_SOCKET_URL || 'http://localhost:4001');
         
     socket.on('new-application', (data) => {
-      toast.success(`New application from ${data.candidateName} for ${data.position}`);
+      toast.success(t('toasts.super_admin.new_application', { candidateName: data.candidateName, position: data.position }));
       setNotifications(prev => [data, ...prev]);
       fetchApplications();
       fetchStats();
@@ -120,7 +121,7 @@ const SuperAdmin = () => {
         toast.error(t('super_admin.invalid_password'));
       }
     } catch (error) {
-      const errorMessage = error.response?.data?.error || 'Failed to authenticate. Please try again.';
+      const errorMessage = translateError(error, t, 'common.something_went_wrong');
       setPasswordError(errorMessage);
       setPassword('');
       toast.error(errorMessage);
@@ -229,7 +230,7 @@ const SuperAdmin = () => {
       handleCloseModal();
     } catch (error) {
       console.error('Error saving job posting:', error);
-      toast.error(error.response?.data?.error || t('super_admin.save_job_posting_error'));
+      toast.error(translateError(error, t, 'super_admin.save_job_posting_error'));
     } finally {
       setLoading(false);
     }

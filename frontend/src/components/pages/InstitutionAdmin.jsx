@@ -30,6 +30,7 @@ import {
     Image as ImageIcon
 } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { translateError } from '../../utils/errorTranslator';
 import api from '../../config/api';
 import { io } from 'socket.io-client';
 import { JoinPresentationDialog } from '../common/JoinPresentationDialog';
@@ -232,7 +233,7 @@ const InstitutionAdmin = () => {
                 fetchStats();
             }
         } catch (error) {
-            toast.error(error.response?.data?.error || t('institution_admin.add_user_error'));
+            toast.error(translateError(error, t, 'institution_admin.add_user_error'));
         } finally {
             setLoading(false);
         }
@@ -251,7 +252,7 @@ const InstitutionAdmin = () => {
                 fetchStats();
             }
         } catch (error) {
-            toast.error(error.response?.data?.error || t('institution_admin.remove_user_error'));
+            toast.error(translateError(error, t, 'institution_admin.remove_user_error'));
         }
     };
 
@@ -265,7 +266,7 @@ const InstitutionAdmin = () => {
                 setIsBrandingModalOpen(false);
             }
         } catch (error) {
-            toast.error(error.response?.data?.error || t('institution_admin.update_branding_error'));
+            toast.error(translateError(error, t, 'institution_admin.update_branding_error'));
         } finally {
             setLoading(false);
         }
@@ -281,7 +282,7 @@ const InstitutionAdmin = () => {
                 setIsSettingsModalOpen(false);
             }
         } catch (error) {
-            toast.error(error.response?.data?.error || t('institution_admin.update_settings_error'));
+            toast.error(translateError(error, t, 'institution_admin.update_settings_error'));
         } finally {
             setLoading(false);
         }
@@ -309,7 +310,7 @@ const InstitutionAdmin = () => {
             }
         } catch (error) {
             console.error('Export error:', error);
-            toast.error(error.response?.data?.error || t('institution_admin.export_error'));
+            toast.error(translateError(error, t, 'institution_admin.export_error'));
         }
     };
 

@@ -110,6 +110,13 @@ const InstitutionAdmin = () => {
     const [isJoinDialogOpen, setIsJoinDialogOpen] = useState(false);
     const [newUser, setNewUser] = useState({ email: '' });
     
+    // Payment Modal for Additional Users
+    const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
+    const [pendingEmails, setPendingEmails] = useState([]);
+    const [paymentLoading, setPaymentLoading] = useState(false);
+    const [paymentOrder, setPaymentOrder] = useState(null);
+    const [userValidation, setUserValidation] = useState(null); // Store validation results
+    
     // Branding and Settings
     const [branding, setBranding] = useState({
         primaryColor: '#3b82f6',
@@ -300,7 +307,7 @@ const InstitutionAdmin = () => {
             const response = await api.get('/institution-admin/users', {
                 params: {
                     page: usersPage,
-                    limit: 20,
+                    limit: 15,
                     search: searchQuery
                 }
             });
@@ -397,22 +404,359 @@ const InstitutionAdmin = () => {
         }
     }, [stats?.totalUsers, stats?.recentPresentations, stats?.livePresentations, users.length]);
 
+    // Helper function to extract emails from text (supports newlines, commas, spaces)
+    const extractEmails = (text) => {
+        if (!text || !text.trim()) return [];
+        
+        // Split by newlines, commas, or spaces, then filter and validate
+        const emailRegex = /[^\s,]+@[^\s,]+\.[^\s,]+/g;
+        const matches = text.match(emailRegex) || [];
+        
+        // Remove duplicates and normalize
+        const uniqueEmails = [...new Set(matches.map(email => email.toLowerCase().trim()))];
+        return uniqueEmails.filter(email => email.includes('@') && email.includes('.'));
+    };
+
     const handleAddUser = async (e) => {
         e.preventDefault();
         setLoading(true);
-        try {
-            const response = await api.post('/institution-admin/users', newUser);
-            if (response.data.success) {
+        
+        // Extract emails from the input (supports single or multiple emails)
+        const emails = extractEmails(newUser.email);
+        
+        if (emails.length === 0) {
+            toast.error(t('institution_admin.no_valid_emails') || 'Please enter at least one valid email address.');
+            setLoading(false);
+            return;
+        }
+
+        let successCount = 0;
+        let errorCount = 0;
+        const errors = [];
+
+        // Add users one by one
+        for (let i = 0; i < emails.length; i++) {
+            const email = emails[i];
+            try {
+                const response = await api.post('/institution-admin/users', { email });
+                if (response.data.success) {
+                    successCount++;
+                }
+            } catch (error) {
+                errorCount++;
+                let errorMessage = '';
+                
+                // Handle specific error cases
+                if (error.response?.status === 404 && error.response?.data?.code === 'USER_NOT_FOUND') {
+                    errorMessage = t('institution_admin.user_not_found') || 'User account not found.';
+                } else if (error.response?.status === 400 && error.response?.data?.code === 'SUBSCRIPTION_INACTIVE') {
+                    errorMessage = t('institution_admin.subscription_inactive') || 'Subscription is not active.';
+                    // Stop processing if subscription is inactive
+                    errors.push(`${email}: ${errorMessage}`);
+                    break;
+                } else if (error.response?.status === 400 && error.response?.data?.code === 'USER_IN_OTHER_INSTITUTION') {
+                    errorMessage = t('institution_admin.user_in_other_institution') || 'User belongs to another institution.';
+                } else if (error.response?.status === 400 && error.response?.data?.code === 'DUPLICATE_ENTRY') {
+                    errorMessage = t('institution_admin.duplicate_entry');
+                } else if (error.response?.status === 400 && error.response?.data?.code === 'LIMIT_REACHED') {
+                    // User limit reached - validate remaining users before showing payment modal
+                    const remainingEmails = emails.slice(i);
+                    await validateAndShowPaymentModal(remainingEmails, errors);
+                    setLoading(false);
+                    return;
+                } else {
+                    errorMessage = translateError(error, t, 'institution_admin.add_user_error') || 'Failed to add user.';
+                }
+                
+                if (errorMessage) {
+                    errors.push(`${email}: ${errorMessage}`);
+                }
+            }
+        }
+
+        // Show summary
+        if (successCount > 0) {
+            if (emails.length === 1) {
                 toast.success(t('institution_admin.user_added_success'));
-                setNewUser({ email: '' });
-                setIsAddUserModalOpen(false);
-                fetchUsers();
-                fetchStats();
+            } else {
+                toast.success(`${successCount} user(s) added successfully${errorCount > 0 ? `, ${errorCount} failed` : ''}`);
+            }
+        }
+
+        if (errorCount > 0 && successCount === 0) {
+            // Only show error toast if all failed
+            if (errors.length > 0 && errors.length <= 3) {
+                errors.forEach(err => toast.error(err));
+            } else {
+                toast.error(`${errorCount} user(s) failed to add. Check console for details.`);
+                console.error('Bulk add errors:', errors);
+            }
+        }
+
+        // Reset form and refresh data
+        setNewUser({ email: '' });
+        setIsAddUserModalOpen(false);
+        fetchUsers();
+        fetchStats();
+        setLoading(false);
+    };
+
+    // Validate users before showing payment modal
+    const validateAndShowPaymentModal = async (emails, existingErrors = []) => {
+        try {
+            // Validate users to check which ones already exist
+            const validationResponse = await api.post('/institution-admin/users/validate-before-payment', {
+                emails: emails
+            });
+
+            if (validationResponse.data.success) {
+                const validation = validationResponse.data.data;
+                setUserValidation(validation);
+
+                // Filter out users that already exist - only show payment for new users
+                const newUserEmails = validation.newUsers.map(u => u.email);
+                
+                // Show messages for existing users
+                if (validation.existingUsers.length > 0) {
+                    const existingEmails = validation.existingUsers.map(u => u.email).join(', ');
+                    toast.warning(t('institution_admin.users_already_exist', { 
+                        count: validation.existingUsers.length, 
+                        emails: existingEmails 
+                    }));
+                }
+
+                if (validation.notFoundUsers.length > 0) {
+                    const notFoundEmails = validation.notFoundUsers.join(', ');
+                    toast.error(t('institution_admin.users_not_found', { 
+                        count: validation.notFoundUsers.length, 
+                        emails: notFoundEmails 
+                    }));
+                }
+
+                if (validation.otherInstitutionUsers.length > 0) {
+                    const otherInstEmails = validation.otherInstitutionUsers.map(u => u.email).join(', ');
+                    toast.error(t('institution_admin.users_other_institution', { 
+                        count: validation.otherInstitutionUsers.length, 
+                        emails: otherInstEmails 
+                    }));
+                }
+
+                // Only show payment modal if there are new users to add
+                if (newUserEmails.length > 0) {
+                    setPendingEmails(newUserEmails);
+                    setIsAddUserModalOpen(false);
+                    setIsPaymentModalOpen(true);
+                } else {
+                    // All users already exist or have issues - don't show payment modal
+                    setIsAddUserModalOpen(false);
+                    if (validation.existingUsers.length === emails.length) {
+                        toast.info(t('institution_admin.all_users_exist'));
+                    } else {
+                        toast.error(t('institution_admin.no_valid_users_to_add'));
+                    }
+                }
+            } else {
+                throw new Error('Validation failed');
             }
         } catch (error) {
-            toast.error(translateError(error, t, 'institution_admin.add_user_error'));
-        } finally {
-            setLoading(false);
+            console.error('User validation error:', error);
+            // Fallback: show payment modal for all emails if validation fails
+            toast.warning(t('institution_admin.validation_failed_fallback') || 'Could not validate users. Proceeding with payment for all users.');
+            setPendingEmails(emails);
+            setIsAddUserModalOpen(false);
+            setIsPaymentModalOpen(true);
+        }
+    };
+
+    // Handle payment for additional users
+    const handlePayment = async () => {
+        if (pendingEmails.length === 0) {
+            toast.error(t('institution_admin.no_users_to_add'));
+            return;
+        }
+
+        setPaymentLoading(true);
+
+        try {
+            // Wait for Razorpay to be available (it's loaded in index.html)
+            // Give it a moment to initialize if it's still loading
+            let retries = 0;
+            while (!window.Razorpay && retries < 10) {
+                await new Promise(resolve => setTimeout(resolve, 100));
+                retries++;
+            }
+
+            // If still not available, try to load it
+            if (!window.Razorpay) {
+                const script = document.createElement('script');
+                script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+                script.async = true;
+                
+                await new Promise((resolve, reject) => {
+                    const timeout = setTimeout(() => {
+                        reject(new Error('Razorpay script loading timeout'));
+                    }, 10000); // 10 second timeout
+                    
+                    script.onload = () => {
+                        clearTimeout(timeout);
+                        if (window.Razorpay) {
+                            resolve();
+                        } else {
+                            reject(new Error('Razorpay failed to load'));
+                        }
+                    };
+                    script.onerror = () => {
+                        clearTimeout(timeout);
+                        reject(new Error('Failed to load Razorpay script'));
+                    };
+                    
+                    // Check if script already exists
+                    const existingScript = document.querySelector('script[src="https://checkout.razorpay.com/v1/checkout.js"]');
+                    if (existingScript) {
+                        clearTimeout(timeout);
+                        if (window.Razorpay) {
+                            resolve();
+                        } else {
+                            // Wait a bit more for existing script to load
+                            setTimeout(() => {
+                                if (window.Razorpay) {
+                                    resolve();
+                                } else {
+                                    reject(new Error('Razorpay failed to initialize'));
+                                }
+                            }, 1000);
+                        }
+                    } else {
+                        document.body.appendChild(script);
+                    }
+                });
+            }
+
+            // Create payment order
+            console.log('Creating payment order for emails:', pendingEmails);
+            const response = await api.post('/institution-admin/users/create-payment', {
+                emails: pendingEmails
+            });
+
+            console.log('Payment order response:', response.data);
+
+            if (response.data.success) {
+                // Validate response data
+                if (!response.data.orderId || !response.data.keyId) {
+                    throw new Error('Invalid payment response: missing orderId or keyId');
+                }
+
+                setPaymentOrder(response.data);
+
+                // Check if Razorpay is available
+                if (!window.Razorpay) {
+                    throw new Error('Razorpay SDK not loaded. Please refresh the page and try again.');
+                }
+
+                // Initialize Razorpay payment
+                const options = {
+                    key: response.data.keyId,
+                    amount: response.data.amount,
+                    currency: response.data.currency || 'INR',
+                    name: 'Inavora',
+                    description: `Add ${response.data.numberOfUsers} additional user(s)`,
+                    order_id: response.data.orderId,
+                    handler: async function (paymentResponse) {
+                        try {
+                            setPaymentLoading(true);
+                            
+                            // Verify payment
+                            const verifyResponse = await api.post('/institution-admin/users/verify-payment', {
+                                razorpayOrderId: paymentResponse.razorpay_order_id,
+                                razorpayPaymentId: paymentResponse.razorpay_payment_id,
+                                razorpaySignature: paymentResponse.razorpay_signature,
+                                emails: pendingEmails
+                            });
+
+                            if (verifyResponse.data.success) {
+                                toast.success(t('institution_admin.payment_success', { count: verifyResponse.data.data.addedUsers.length }));
+                                setIsPaymentModalOpen(false);
+                                setPendingEmails([]);
+                                setPaymentOrder(null);
+                                setUserValidation(null);
+                                fetchUsers();
+                                fetchStats();
+                            } else {
+                                toast.error(verifyResponse.data.message || t('institution_admin.payment_verification_failed'));
+                            }
+                        } catch (error) {
+                            console.error('Payment verification error:', error);
+                            const errorMsg = error.response?.data?.message || error.message || t('institution_admin.payment_verification_failed');
+                            toast.error(errorMsg);
+                        } finally {
+                            setPaymentLoading(false);
+                        }
+                    },
+                    prefill: {
+                        email: institution?.adminEmail || '',
+                        name: institution?.adminName || ''
+                    },
+                    theme: {
+                        color: '#14b8a6'
+                    },
+                    modal: {
+                        ondismiss: function() {
+                            setPaymentLoading(false);
+                        }
+                    }
+                };
+
+                try {
+                    console.log('Initializing Razorpay with options:', {
+                        key: options.key ? '***' : 'missing',
+                        amount: options.amount,
+                        currency: options.currency,
+                        order_id: options.order_id
+                    });
+                    
+                    const razorpay = new window.Razorpay(options);
+                    
+                    // Add error handlers
+                    razorpay.on('payment.failed', function (response) {
+                        console.error('Payment failed:', response.error);
+                        const errorMsg = response.error?.description || 
+                                        response.error?.reason || 
+                                        response.error?.code ||
+                                        t('institution_admin.payment_initiation_failed');
+                        toast.error(t('institution_admin.payment_failed', { error: errorMsg }));
+                        setPaymentLoading(false);
+                    });
+                    
+                    razorpay.on('payment.authorized', function (response) {
+                        console.log('Payment authorized:', response);
+                    });
+                    
+                    console.log('Opening Razorpay payment modal...');
+                    razorpay.open();
+                } catch (razorpayError) {
+                    console.error('Razorpay initialization error:', razorpayError);
+                    throw new Error('Failed to initialize payment gateway. Please try again.');
+                }
+            } else {
+                throw new Error(response.data.message || 'Failed to create payment order');
+            }
+        } catch (error) {
+            console.error('Payment error:', error);
+            console.error('Payment error response:', error.response?.data);
+            console.error('Payment error status:', error.response?.status);
+            
+            // Show more detailed error message
+            let errorMessage = t('institution_admin.payment_initiation_failed');
+            if (error.response?.data?.message) {
+                errorMessage = error.response.data.message;
+            } else if (error.response?.data?.error) {
+                errorMessage = error.response.data.error;
+            } else if (error.message) {
+                errorMessage = error.message;
+            }
+            
+            toast.error(errorMessage);
+            setPaymentLoading(false);
         }
     };
 
@@ -1177,79 +1521,90 @@ const InstitutionAdmin = () => {
                             </div>
                         ) : (
                             <>
-                                <div className="space-y-3 sm:space-y-4">
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
                                     {users.map((user) => (
-                                        <div key={user.id} className="bg-white/5 border border-white/10 p-4 sm:p-6 rounded-xl sm:rounded-2xl">
-                                            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
-                                                <div className="flex items-center gap-3 sm:gap-4 flex-1 min-w-0">
-                                                    {user.photoURL ? (
-                                                        <img src={user.photoURL} alt={user.displayName} className="w-10 h-10 sm:w-12 sm:h-12 rounded-full" />
-                                                    ) : (
-                                                        <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-gradient-to-br from-blue-500 to-teal-400 flex items-center justify-center text-white font-bold text-sm sm:text-base">
-                                                            {user.displayName.charAt(0).toUpperCase()}
-                                                        </div>
-                                                    )}
-                                                    <div className="flex-1 min-w-0">
-                                                        <div className="flex items-center gap-2">
-                                                            <h3 className="text-base sm:text-lg font-bold truncate">{user.displayName}</h3>
-                                                            {user.isInstitutionUser && (
-                                                                <span className="px-2 py-0.5 bg-blue-500/20 text-blue-400 rounded text-xs font-medium">
-                                                                    <UserCheck className="w-3 h-3 inline mr-1" />
-                                                                    Active
-                                                                </span>
-                                                            )}
-                                                        </div>
-                                                        <p className="text-gray-400 text-xs sm:text-sm truncate">{user.email}</p>
-                                                        <div className="flex flex-wrap gap-2 sm:gap-3 mt-1 sm:mt-2">
-                                                            <span className="text-xs text-gray-500 flex items-center gap-1">
-                                                                <Presentation className="w-3 h-3" />
-                                                                {user.presentationCount || 0} {t('institution_admin.presentations_count')}
-                                                            </span>
-                                                            <span className="text-xs text-gray-500 flex items-center gap-1">
-                                                                <FileText className="w-3 h-3" />
-                                                                {user.slideCount || 0} {t('institution_admin.slides_count')}
-                                                            </span>
-                                                            {user.createdAt && (
-                                                                <span className="text-xs text-gray-500 flex items-center gap-1">
-                                                                    <Calendar className="w-3 h-3" />
-                                                                    {t('institution_admin.joined')} {new Date(user.createdAt).toLocaleDateString()}
-                                                                </span>
-                                                            )}
+                                        <div key={user.id} className="bg-white/5 border border-white/10 p-4 sm:p-6 rounded-xl sm:rounded-2xl flex flex-col">
+                                            <div className="flex flex-col gap-3 sm:gap-4 flex-1">
+                                                <div className="flex items-start justify-between gap-3">
+                                                    <div className="flex items-center gap-3 sm:gap-4 flex-1 min-w-0">
+                                                        {user.photoURL ? (
+                                                            <img src={user.photoURL} alt={user.displayName} className="w-10 h-10 sm:w-12 sm:h-12 rounded-full flex-shrink-0" />
+                                                        ) : (
+                                                            <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-gradient-to-br from-blue-500 to-teal-400 flex items-center justify-center text-white font-bold text-sm sm:text-base flex-shrink-0">
+                                                                {user.displayName.charAt(0).toUpperCase()}
+                                                            </div>
+                                                        )}
+                                                        <div className="flex-1 min-w-0">
+                                                            <div className="flex items-center gap-2 flex-wrap">
+                                                                <h3 className="text-base sm:text-lg font-bold truncate">{user.displayName}</h3>
+                                                                {user.isInstitutionUser && (
+                                                                    <span className="px-2 py-0.5 bg-blue-500/20 text-blue-400 rounded text-xs font-medium whitespace-nowrap">
+                                                                        <UserCheck className="w-3 h-3 inline mr-1" />
+                                                                        Active
+                                                                    </span>
+                                                                )}
+                                                            </div>
+                                                            <p className="text-gray-400 text-xs sm:text-sm truncate mt-1">{user.email}</p>
                                                         </div>
                                                     </div>
-                                                </div>
-                                                <div className="flex items-center gap-2 sm:gap-3">
                                                     <button
                                                         onClick={() => handleRemoveUser(user.id)}
-                                                        className="p-2 hover:bg-red-500/20 text-red-400 rounded-lg transition-colors"
+                                                        className="p-2 hover:bg-red-500/20 text-red-400 rounded-lg transition-colors flex-shrink-0"
+                                                        title={t('institution_admin.remove_user') || 'Remove user'}
                                                     >
                                                         <Trash2 className="w-4 h-4 sm:w-5 sm:h-5" />
                                                     </button>
+                                                </div>
+                                                <div className="flex flex-col gap-2 mt-auto">
+                                                    <div className="flex flex-wrap gap-2 sm:gap-3">
+                                                        <span className="text-xs text-gray-500 flex items-center gap-1">
+                                                            <Presentation className="w-3 h-3" />
+                                                            {user.presentationCount || 0} {t('institution_admin.presentations_count')}
+                                                        </span>
+                                                        <span className="text-xs text-gray-500 flex items-center gap-1">
+                                                            <FileText className="w-3 h-3" />
+                                                            {user.slideCount || 0} {t('institution_admin.slides_count')}
+                                                        </span>
+                                                    </div>
+                                                    {user.createdAt && (
+                                                        <span className="text-xs text-gray-500 flex items-center gap-1">
+                                                            <Calendar className="w-3 h-3" />
+                                                            {t('institution_admin.joined')} {new Date(user.createdAt).toLocaleDateString()}
+                                                        </span>
+                                                    )}
                                                 </div>
                                             </div>
                                         </div>
                                     ))}
                                 </div>
 
-                                {/* Pagination */}
+                                {/* Pagination - Show when there are more than 15 users */}
                                 {usersPagination.pages > 1 && (
-                                    <div className="flex items-center justify-center gap-2 mt-6">
+                                    <div className="flex items-center justify-center gap-2 sm:gap-4 mt-6 sm:mt-8">
                                         <button
                                             onClick={() => setUsersPage(prev => Math.max(1, prev - 1))}
                                             disabled={usersPage === 1}
-                                            className="px-3 py-2 bg-white/10 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
+                                            className="px-4 py-2 bg-white/10 hover:bg-white/20 text-white rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-sm sm:text-base"
                                         >
-                                            Previous
+                                            {t('institution_admin.previous')}
                                         </button>
-                                        <span className="text-sm text-gray-400">
-                                            Page {usersPagination.page} of {usersPagination.pages}
+                                        <span className="text-sm sm:text-base text-gray-400 px-2">
+                                            {t('institution_admin.page_info', { 
+                                                current: usersPagination.page || usersPage, 
+                                                total: usersPagination.pages || 1
+                                            })}
+                                            {usersPagination.total && (
+                                                <span className="text-xs text-gray-500 ml-2">
+                                                    ({usersPagination.total} {t('institution_admin.total_users')})
+                                                </span>
+                                            )}
                                         </span>
                                         <button
-                                            onClick={() => setUsersPage(prev => Math.min(usersPagination.pages, prev + 1))}
-                                            disabled={usersPage === usersPagination.pages}
-                                            className="px-3 py-2 bg-white/10 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
+                                            onClick={() => setUsersPage(prev => Math.min(usersPagination.pages || 1, prev + 1))}
+                                            disabled={usersPage >= (usersPagination.pages || 1)}
+                                            className="px-4 py-2 bg-white/10 hover:bg-white/20 text-white rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-sm sm:text-base"
                                         >
-                                            Next
+                                            {t('institution_admin.next')}
                                         </button>
                                     </div>
                                 )}
@@ -1358,17 +1713,20 @@ const InstitutionAdmin = () => {
                                             disabled={currentPage === 1}
                                             className="px-3 py-2 bg-white/10 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed text-sm"
                                         >
-                                            Previous
+                                            {t('institution_admin.previous')}
                                         </button>
                                         <span className="text-sm text-gray-400">
-                                            Page {pagination.page} of {pagination.pages}
+                                            {t('institution_admin.page_info', { 
+                                                current: pagination.page, 
+                                                total: pagination.pages 
+                                            })}
                                         </span>
                                         <button
                                             onClick={() => setCurrentPage(prev => Math.min(pagination.pages, prev + 1))}
                                             disabled={currentPage === pagination.pages}
                                             className="px-3 py-2 bg-white/10 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed text-sm"
                                         >
-                                            Next
+                                            {t('institution_admin.next')}
                                         </button>
                                     </div>
                                 )}
@@ -2348,15 +2706,21 @@ const InstitutionAdmin = () => {
 
                                 <form onSubmit={handleAddUser} className="space-y-4">
                                     <div>
-                                        <label className="block text-sm font-medium text-gray-300 mb-2">{t('institution_admin.email_label')} *</label>
-                                        <input
-                                            type="email"
+                                        <label className="block text-sm font-medium text-gray-300 mb-2">
+                                            {t('institution_admin.email_label')} *
+                                            <span className="text-xs text-gray-400 ml-2">{t('institution_admin.email_input_hint')}</span>
+                                        </label>
+                                        <textarea
                                             required
                                             value={newUser.email}
                                             onChange={(e) => setNewUser({ ...newUser, email: e.target.value })}
-                                            className="w-full px-4 py-2.5 bg-black/30 border border-white/10 rounded-lg text-white focus:ring-2 focus:ring-teal-500 focus:border-transparent outline-none transition-all text-sm sm:text-base"
-                                            placeholder={t('institution_admin.email_placeholder')}
+                                            className="w-full px-4 py-2.5 bg-black/30 border border-white/10 rounded-lg text-white focus:ring-2 focus:ring-teal-500 focus:border-transparent outline-none transition-all text-sm sm:text-base resize-y min-h-[100px] font-mono"
+                                            placeholder={t('institution_admin.email_placeholder') || 'user@example.com\nuser2@example.com\nuser3@example.com'}
+                                            rows={6}
                                         />
+                                        <p className="text-xs text-gray-400 mt-1">
+                                            {t('institution_admin.email_input_description')}
+                                        </p>
                                     </div>
                                     <div className="flex gap-3 sm:gap-4 pt-4">
                                         <button
@@ -2375,6 +2739,143 @@ const InstitutionAdmin = () => {
                                         </button>
                                     </div>
                                 </form>
+                            </motion.div>
+                        </div>
+                    </>
+                )}
+            </AnimatePresence>
+
+            {/* Payment Modal for Additional Users */}
+            <AnimatePresence>
+                {isPaymentModalOpen && (
+                    <>
+                        <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            onClick={() => {
+                                setIsPaymentModalOpen(false);
+                                setUserValidation(null);
+                            }}
+                            className="fixed inset-0 z-50 bg-black/60 backdrop-blur-md"
+                        />
+                        <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 pointer-events-none">
+                            <motion.div
+                                initial={{ opacity: 0, scale: 0.9 }}
+                                animate={{ opacity: 1, scale: 1 }}
+                                exit={{ opacity: 0, scale: 0.9 }}
+                                onClick={(e) => e.stopPropagation()}
+                                className="bg-[#1e293b] border border-white/10 rounded-2xl sm:rounded-3xl p-4 sm:p-6 md:p-8 max-w-lg w-full pointer-events-auto shadow-2xl"
+                            >
+                                <div className="flex items-center justify-between mb-4 sm:mb-6">
+                                    <h2 className="text-xl sm:text-2xl font-bold">{t('institution_admin.user_limit_reached_title')}</h2>
+                                    <button
+                                        onClick={() => {
+                                            setIsPaymentModalOpen(false);
+                                            setUserValidation(null);
+                                        }}
+                                        className="p-2 hover:bg-white/10 rounded-lg transition-colors"
+                                    >
+                                        <X className="w-5 h-5 sm:w-6 sm:h-6 text-gray-400 hover:text-white" />
+                                    </button>
+                                </div>
+
+                                <div className="space-y-4">
+                                    <div className="bg-yellow-500/10 border border-yellow-500/20 rounded-lg p-4">
+                                        <div className="flex items-start gap-3">
+                                            <AlertTriangle className="w-5 h-5 text-yellow-400 mt-0.5 flex-shrink-0" />
+                                            <div>
+                                                <p className="text-sm text-yellow-200 font-medium mb-1">{t('institution_admin.user_limit_reached_title')}</p>
+                                                <p className="text-xs text-yellow-300/80">
+                                                    {t('institution_admin.user_limit_reached_message', { price: t('institution_admin.additional_user_price') })}
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div className="bg-white/5 rounded-lg p-4">
+                                        <p className="text-sm text-gray-300 mb-3">{t('institution_admin.users_to_be_added')}</p>
+                                        <div className="max-h-32 overflow-y-auto space-y-1">
+                                            {pendingEmails.map((email, index) => (
+                                                <div key={index} className="text-xs text-gray-400 font-mono bg-black/30 px-2 py-1 rounded">
+                                                    {email}
+                                                </div>
+                                            ))}
+                                        </div>
+                                        
+                                        {/* Show validation summary if available */}
+                                        {userValidation && (
+                                            <div className="mt-3 pt-3 border-t border-white/10 space-y-2">
+                                                {userValidation.existingUsers.length > 0 && (
+                                                    <div className="text-xs text-yellow-400">
+                                                        <CheckCircle className="w-3 h-3 inline mr-1" />
+                                                        {t('institution_admin.users_exist_skipped', { count: userValidation.existingUsers.length })}
+                                                    </div>
+                                                )}
+                                                {userValidation.notFoundUsers.length > 0 && (
+                                                    <div className="text-xs text-red-400">
+                                                        <AlertCircle className="w-3 h-3 inline mr-1" />
+                                                        {t('institution_admin.users_not_found_skipped', { count: userValidation.notFoundUsers.length })}
+                                                    </div>
+                                                )}
+                                                {userValidation.otherInstitutionUsers.length > 0 && (
+                                                    <div className="text-xs text-orange-400">
+                                                        <AlertCircle className="w-3 h-3 inline mr-1" />
+                                                        {t('institution_admin.users_other_institution_skipped', { count: userValidation.otherInstitutionUsers.length })}
+                                                    </div>
+                                                )}
+                                            </div>
+                                        )}
+                                        
+                                        <div className="mt-4 pt-4 border-t border-white/10">
+                                            <div className="flex justify-between items-center">
+                                                <span className="text-sm text-gray-300">{t('institution_admin.number_of_users')}</span>
+                                                <span className="text-lg font-bold text-white">{pendingEmails.length}</span>
+                                            </div>
+                                            <div className="flex justify-between items-center mt-2">
+                                                <span className="text-sm text-gray-300">{t('institution_admin.price_per_user')}</span>
+                                                <span className="text-lg font-bold text-white">{t('institution_admin.price_per_user_value')}</span>
+                                            </div>
+                                            <div className="flex justify-between items-center mt-3 pt-3 border-t border-white/10">
+                                                <span className="text-base font-semibold text-gray-200">{t('institution_admin.total_amount')}</span>
+                                                <span className="text-2xl font-bold text-teal-400">{t('institution_admin.total_amount_value', { amount: pendingEmails.length * 499 })}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div className="flex gap-3 sm:gap-4 pt-4">
+                                        <button
+                                            type="button"
+                                            onClick={() => {
+                                                setIsPaymentModalOpen(false);
+                                                setPendingEmails([]);
+                                                setUserValidation(null);
+                                            }}
+                                            disabled={paymentLoading}
+                                            className="flex-1 py-2.5 sm:py-3 bg-white/10 text-white font-semibold rounded-lg hover:bg-white/20 transition-all text-sm sm:text-base disabled:opacity-50"
+                                        >
+                                            {t('institution_admin.cancel')}
+                                        </button>
+                                        <button
+                                            type="button"
+                                            onClick={handlePayment}
+                                            disabled={paymentLoading}
+                                            className="flex-1 py-2.5 sm:py-3 bg-gradient-to-r from-blue-600 to-teal-500 text-white font-bold rounded-lg hover:shadow-lg hover:shadow-teal-500/25 transition-all disabled:opacity-50 text-sm sm:text-base flex items-center justify-center gap-2"
+                                        >
+                                            {paymentLoading ? (
+                                                <>
+                                                    <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                                                    {t('institution_admin.processing_payment')}
+                                                </>
+                                            ) : (
+                                                <>
+                                                    <CreditCard className="w-4 h-4" />
+                                                    {t('institution_admin.pay_button', { amount: pendingEmails.length * 499 })}
+                                                </>
+                                            )}
+                                        </button>
+                                    </div>
+                                </div>
                             </motion.div>
                         </div>
                     </>

@@ -4,7 +4,13 @@ const paymentSchema = new mongoose.Schema({
     userId: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User',
-        required: true,
+        required: false,
+        index: true
+    },
+    institutionId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Institution',
+        required: false,
         index: true
     },
     razorpayOrderId: {
@@ -35,8 +41,12 @@ const paymentSchema = new mongoose.Schema({
     },
     plan: {
         type: String,
-        enum: ['pro', 'lifetime', 'institution'],
+        enum: ['pro', 'lifetime', 'institution', 'additional_users'],
         required: true
+    },
+    metadata: {
+        type: Object,
+        default: {}
     },
     originalPlan: {
         type: String

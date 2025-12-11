@@ -50,6 +50,40 @@ const userSchema = new mongoose.Schema({
     },
     razorpayCustomerId: {
       type: String
+    },
+    // Track original plan before institution (for restoration when institution expires)
+    originalPlan: {
+      plan: {
+        type: String,
+        enum: ['free', 'pro', 'lifetime', null],
+        default: null
+      },
+      status: {
+        type: String,
+        enum: ['active', 'expired', 'cancelled', null],
+        default: null
+      },
+      endDate: {
+        type: Date,
+        default: null
+      }
+    },
+    // Institution plan inheritance
+    institutionPlan: {
+      institutionId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Institution',
+        default: null
+      },
+      inheritedFrom: {
+        type: String,
+        default: null // 'institution' when plan is inherited
+      },
+      institutionPlanStatus: {
+        type: String,
+        enum: ['active', 'expired', 'cancelled', null],
+        default: null
+      }
     }
   },
   institutionId: {

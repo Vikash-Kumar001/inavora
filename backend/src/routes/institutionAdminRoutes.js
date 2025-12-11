@@ -76,6 +76,27 @@ router.delete('/users/:userId', verifyInstitutionAdmin, institutionAdminControll
 router.post('/users/bulk-import', verifyInstitutionAdmin, upload.single('file'), institutionAdminController.bulkImportUsers);
 
 /**
+ * @route   POST /api/institution-admin/users/validate-before-payment
+ * @desc    Validate users before payment - check which users already exist
+ * @access  Private (Institution Admin)
+ */
+router.post('/users/validate-before-payment', verifyInstitutionAdmin, institutionAdminController.validateUsersBeforePayment);
+
+/**
+ * @route   POST /api/institution-admin/users/create-payment
+ * @desc    Create payment order for additional users
+ * @access  Private (Institution Admin)
+ */
+router.post('/users/create-payment', verifyInstitutionAdmin, institutionAdminController.createAdditionalUsersPaymentOrder);
+
+/**
+ * @route   POST /api/institution-admin/users/verify-payment
+ * @desc    Verify payment and add additional users
+ * @access  Private (Institution Admin)
+ */
+router.post('/users/verify-payment', verifyInstitutionAdmin, institutionAdminController.verifyAdditionalUsersPayment);
+
+/**
  * @route   GET /api/institution-admin/presentations
  * @desc    Get all presentations by institution users
  * @access  Private (Institution Admin)

@@ -34,6 +34,7 @@ const institutionRegistrationRoutes = require('./routes/institutionRegistrationR
 const passwordResetRoutes = require('./routes/passwordResetRoutes');
 const testEmailRoutes = require('./routes/testEmailRoutes');
 const setupSocketHandlers = require('./socket/socketHandlers');
+const { checkExpiredInstitutionSubscriptions } = require('./services/institutionPlanService');
 
 const app = express();
 const server = http.createServer(app);
@@ -120,6 +121,35 @@ const startServer = async () => {
             Logger.info(`Environment: ${process.env.NODE_ENV || 'development'}`);
             Logger.info(`Socket.IO ready for connections`);
             Logger.startup('='.repeat(50) + '\n');
+            
+            // Start scheduled job to check expired institution subscriptions
+            // Run every hour
+            setInterval(async () => {
+                try {
+                    const result = await checkExpiredInstitutionSubscriptions();
+                    if (result.success && result.expiredInstitutions > 0) {
+                        Logger.info(`Scheduled job: ${result.expiredInstitutions} institutions expired, ${result.updatedUsers} users updated`);
+                        
+                        // Emit real-time notifications to affected users
+                        if (io && result.userIds && result.userIds.length > 0) {
+                            result.userIds.forEach(userId => {
+                                io.to(`user-${userId}`).emit('plan-updated', {
+                                    plan: 'free',
+                                    source: 'original',
+                                    message: 'Your institution subscription has expired. Your plan has been reverted to your original subscription.'
+                                });
+                            });
+                        }
+                    }
+                } catch (error) {
+                    Logger.error('Error in scheduled institution subscription check', error);
+                }
+            }, 60 * 60 * 1000); // Every hour
+            
+            // Run immediately on startup
+            checkExpiredInstitutionSubscriptions().catch(error => {
+                Logger.error('Error in initial institution subscription check', error);
+            });
         });
     } catch (error) {
         Logger.error('Failed to start server', error);

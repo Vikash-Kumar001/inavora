@@ -73,6 +73,7 @@ const errorHandler = (err, req, res, next) => {
   const message = error.message || 'Server Error';
   res.status(statusCode).json({
     success: false,
+    message: message,
     error: message,
     code: error.code || 'INTERNAL_ERROR',
     ...(process.env.NODE_ENV === 'development' && {

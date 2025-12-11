@@ -1,13 +1,39 @@
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const XLSX = require('xlsx');
+const crypto = require('crypto');
+const Razorpay = require('razorpay');
 const Institution = require('../models/Institution');
 const User = require('../models/User');
 const Presentation = require('../models/Presentation');
 const Slide = require('../models/Slide');
 const Response = require('../models/Response');
+const Payment = require('../models/Payment');
 const { AppError, asyncHandler } = require('../middleware/errorHandler');
 const Logger = require('../utils/logger');
+const { applyInstitutionPlan, removeInstitutionPlan, isInstitutionSubscriptionActive, updateInstitutionUsersPlans } = require('../services/institutionPlanService');
+
+// Initialize Razorpay only if keys are available
+let razorpay = null;
+if (process.env.RAZORPAY_KEY_ID && process.env.RAZORPAY_KEY_SECRET) {
+  try {
+    razorpay = new Razorpay({
+      key_id: process.env.RAZORPAY_KEY_ID,
+      key_secret: process.env.RAZORPAY_KEY_SECRET
+    });
+    Logger.startup('Razorpay initialized successfully for additional users payment');
+  } catch (error) {
+    Logger.error('Failed to initialize Razorpay', {
+      message: error.message,
+      error: error
+    });
+  }
+} else {
+  Logger.warn('Razorpay not initialized: Missing RAZORPAY_KEY_ID or RAZORPAY_KEY_SECRET');
+}
+
+// Price per additional user (₹499 in paise)
+const ADDITIONAL_USER_PRICE = 49900; // ₹499 in paise
 
 /**
  * Login Institution Admin
@@ -287,18 +313,20 @@ const getInstitutionUsers = asyncHandler(async (req, res, next) => {
  */
 const addInstitutionUser = asyncHandler(async (req, res, next) => {
   const institutionId = req.institutionId;
-  const { email, displayName } = req.body;
+  const { email } = req.body;
 
   if (!email) {
     throw new AppError('Email is required', 400, 'VALIDATION_ERROR');
   }
 
-  // Generate displayName from email if not provided
-  const userDisplayName = displayName?.trim() || email.split('@')[0];
-
   const institution = await Institution.findById(institutionId);
   if (!institution) {
     throw new AppError('Institution not found', 404, 'RESOURCE_NOT_FOUND');
+  }
+
+  // Check if institution subscription is active
+  if (!isInstitutionSubscriptionActive(institution)) {
+    throw new AppError('Institution subscription is not active. Please renew your subscription to add users.', 400, 'SUBSCRIPTION_INACTIVE');
   }
 
   const currentUserCount = await User.countDocuments({ 
@@ -310,46 +338,64 @@ const addInstitutionUser = asyncHandler(async (req, res, next) => {
     throw new AppError(`User limit reached. Maximum ${institution.subscription.maxUsers} users allowed.`, 400, 'LIMIT_REACHED');
   }
 
-  let user = await User.findOne({ email: email.toLowerCase() });
+  // IMPORTANT: Only link existing users, do not create new accounts
+  const user = await User.findOne({ email: email.toLowerCase() });
 
-  if (user) {
-    if (!user.institutionId || user.institutionId.toString() !== institutionId.toString()) {
-      user.institutionId = institutionId;
-      user.isInstitutionUser = true;
-      user.subscription.plan = 'institution';
-      user.subscription.status = 'active';
-      // Set displayName if it's not already set
-      if (!user.displayName) {
-        user.displayName = userDisplayName;
-      }
-      await user.save();
-    } else {
-      throw new AppError('User already exists in this institution', 400, 'DUPLICATE_ENTRY');
-    }
-  } else {
-    user = new User({
-      email: email.toLowerCase(),
-      displayName: userDisplayName,
-      institutionId,
-      isInstitutionUser: true,
-      subscription: {
-        plan: 'institution',
-        status: 'active'
-      }
-    });
-    await user.save();
+  if (!user) {
+    throw new AppError('User account not found. The user must first create an account on the platform before they can be added to the institution.', 404, 'USER_NOT_FOUND');
   }
 
+  // Check if user already belongs to this institution
+  if (user.institutionId && user.institutionId.toString() === institutionId.toString()) {
+    throw new AppError('User already exists in this institution', 400, 'DUPLICATE_ENTRY');
+  }
+
+  // Check if user belongs to another institution
+  if (user.institutionId && user.institutionId.toString() !== institutionId.toString()) {
+    throw new AppError('User already belongs to another institution. Please remove them from the other institution first.', 400, 'USER_IN_OTHER_INSTITUTION');
+  }
+
+  // Apply institution plan to user (gives them Pro plan benefits)
+  await applyInstitutionPlan(user, institution);
+
+  // Update institution user count
   institution.subscription.currentUsers = currentUserCount + 1;
+  await institution.save();
+
+  // Emit real-time notification to user if they're online
+  const io = req.app.get('io');
+  if (io) {
+    io.to(`user-${user._id}`).emit('plan-updated', {
+      plan: 'pro',
+      source: 'institution',
+      institutionId: institution._id,
+      institutionName: institution.name,
+      message: 'You have been granted Pro plan access through your institution'
+    });
+  }
+
+  // Log audit
+  if (!institution.auditLogs) {
+    institution.auditLogs = [];
+  }
+  institution.auditLogs.push({
+    timestamp: new Date(),
+    action: 'user_added',
+    user: req.institutionAdmin?.email || req.institution?.adminEmail || 'System',
+    details: `User ${user.email} added to institution and granted Pro plan access`,
+    ipAddress: req.ip || req.headers['x-forwarded-for'] || 'unknown'
+  });
   await institution.save();
 
   res.status(201).json({
     success: true,
-    message: 'User added successfully',
+    message: 'User added successfully and granted Pro plan access',
     data: {
       id: user._id,
       email: user.email,
-      displayName: user.displayName
+      displayName: user.displayName,
+      plan: 'pro', // Institution users get Pro plan
+      institutionPlanActive: true
     }
   });
 });
@@ -373,15 +419,39 @@ const removeInstitutionUser = asyncHandler(async (req, res, next) => {
     throw new AppError('User not found in this institution', 404, 'RESOURCE_NOT_FOUND');
   }
 
-  user.institutionId = null;
-  user.isInstitutionUser = false;
-  user.subscription.plan = 'free';
-  user.subscription.status = 'active';
-  await user.save();
+  // Remove institution plan and restore original plan
+  await removeInstitutionPlan(user);
 
   const institution = await Institution.findById(institutionId);
-  institution.subscription.currentUsers = Math.max(0, institution.subscription.currentUsers - 1);
+  if (!institution) {
+    throw new AppError('Institution not found', 404, 'RESOURCE_NOT_FOUND');
+  }
+
+  institution.subscription.currentUsers = Math.max(0, (institution.subscription.currentUsers || 0) - 1);
   await institution.save();
+
+  // Log audit
+  if (!institution.auditLogs) {
+    institution.auditLogs = [];
+  }
+  institution.auditLogs.push({
+    timestamp: new Date(),
+    action: 'user_removed',
+    user: req.institutionAdmin?.email || req.institution?.adminEmail || 'System',
+    details: `User ${user.email} removed from institution. Plan reverted to original.`,
+    ipAddress: req.ip || req.headers['x-forwarded-for'] || 'unknown'
+  });
+  await institution.save();
+
+  // Emit real-time notification to user if they're online
+  const io = req.app.get('io');
+  if (io) {
+    io.to(`user-${user._id}`).emit('plan-updated', {
+      plan: user.subscription.plan,
+      source: 'personal',
+      message: 'Your institution plan access has been removed. Your plan has been reverted to your original subscription.'
+    });
+  }
 
   res.status(200).json({
     success: true,
@@ -1257,6 +1327,420 @@ const updateSecuritySettings = asyncHandler(async (req, res, next) => {
   });
 });
 
+/**
+ * Validate Users Before Payment - Check which users already exist
+ * @route POST /api/institution-admin/users/validate-before-payment
+ * @access Private (Institution Admin)
+ */
+const validateUsersBeforePayment = asyncHandler(async (req, res, next) => {
+  const institutionId = req.institutionId;
+  const { emails } = req.body; // Array of email addresses
+
+  if (!emails || !Array.isArray(emails) || emails.length === 0) {
+    throw new AppError('Email addresses are required', 400, 'VALIDATION_ERROR');
+  }
+
+  const institution = await Institution.findById(institutionId);
+  if (!institution) {
+    throw new AppError('Institution not found', 404, 'RESOURCE_NOT_FOUND');
+  }
+
+  // Validate emails
+  const validEmails = emails.filter(email => email && email.includes('@'));
+  if (validEmails.length === 0) {
+    throw new AppError('No valid email addresses provided', 400, 'VALIDATION_ERROR');
+  }
+
+  const existingUsers = [];
+  const newUsers = [];
+  const notFoundUsers = [];
+  const otherInstitutionUsers = [];
+
+  // Check each user
+  for (const email of validEmails) {
+    const user = await User.findOne({ email: email.toLowerCase() });
+
+    if (!user) {
+      notFoundUsers.push(email);
+      continue;
+    }
+
+    // Check if user already belongs to this institution
+    if (user.institutionId && user.institutionId.toString() === institutionId.toString()) {
+      existingUsers.push({
+        email: email,
+        displayName: user.displayName || email.split('@')[0]
+      });
+      continue;
+    }
+
+    // Check if user belongs to another institution
+    if (user.institutionId && user.institutionId.toString() !== institutionId.toString()) {
+      otherInstitutionUsers.push({
+        email: email,
+        displayName: user.displayName || email.split('@')[0]
+      });
+      continue;
+    }
+
+    // User exists but not in any institution - can be added
+    newUsers.push({
+      email: email,
+      displayName: user.displayName || email.split('@')[0]
+    });
+  }
+
+  res.status(200).json({
+    success: true,
+    data: {
+      existingUsers, // Already in this institution
+      newUsers, // Can be added (need payment)
+      notFoundUsers, // User account doesn't exist
+      otherInstitutionUsers, // Belongs to another institution
+      summary: {
+        total: validEmails.length,
+        existing: existingUsers.length,
+        new: newUsers.length,
+        notFound: notFoundUsers.length,
+        otherInstitution: otherInstitutionUsers.length
+      }
+    }
+  });
+});
+
+/**
+ * Create Payment Order for Additional Users
+ * @route POST /api/institution-admin/users/create-payment
+ * @access Private (Institution Admin)
+ */
+const createAdditionalUsersPaymentOrder = asyncHandler(async (req, res, next) => {
+  const institutionId = req.institutionId;
+  const { emails } = req.body; // Array of email addresses
+
+  if (!emails || !Array.isArray(emails) || emails.length === 0) {
+    throw new AppError('Email addresses are required', 400, 'VALIDATION_ERROR');
+  }
+
+  const institution = await Institution.findById(institutionId);
+  if (!institution) {
+    throw new AppError('Institution not found', 404, 'RESOURCE_NOT_FOUND');
+  }
+
+  // Check if institution subscription is active
+  if (!isInstitutionSubscriptionActive(institution)) {
+    throw new AppError('Institution subscription is not active. Please renew your subscription to add users.', 400, 'SUBSCRIPTION_INACTIVE');
+  }
+
+  // Validate emails
+  const validEmails = emails.filter(email => email && email.includes('@'));
+  if (validEmails.length === 0) {
+    throw new AppError('No valid email addresses provided', 400, 'VALIDATION_ERROR');
+  }
+
+  // Check if Razorpay is configured
+  if (!razorpay) {
+    const hasKeyId = !!process.env.RAZORPAY_KEY_ID;
+    const hasKeySecret = !!process.env.RAZORPAY_KEY_SECRET;
+    
+    Logger.error('Razorpay not initialized. Check RAZORPAY_KEY_ID and RAZORPAY_KEY_SECRET environment variables.', {
+      hasKeyId,
+      hasKeySecret,
+      keyIdLength: process.env.RAZORPAY_KEY_ID?.length || 0,
+      keySecretLength: process.env.RAZORPAY_KEY_SECRET?.length || 0
+    });
+    
+    if (!hasKeyId || !hasKeySecret) {
+      throw new AppError('Payment gateway is not configured. Razorpay keys are missing. Please contact support.', 500, 'PAYMENT_CONFIG_ERROR');
+    } else {
+      throw new AppError('Payment gateway initialization failed. Please contact support.', 500, 'PAYMENT_CONFIG_ERROR');
+    }
+  }
+
+  // Validate Razorpay keys are present
+  if (!process.env.RAZORPAY_KEY_ID || !process.env.RAZORPAY_KEY_SECRET) {
+    Logger.error('Razorpay keys missing in environment variables', {
+      hasKeyId: !!process.env.RAZORPAY_KEY_ID,
+      hasKeySecret: !!process.env.RAZORPAY_KEY_SECRET
+    });
+    throw new AppError('Payment gateway configuration is incomplete. Razorpay keys are missing. Please contact support.', 500, 'PAYMENT_CONFIG_ERROR');
+  }
+
+  // Calculate amount (₹499 per user in paise)
+  const numberOfUsers = validEmails.length;
+  const amount = numberOfUsers * ADDITIONAL_USER_PRICE;
+
+  // Razorpay minimum amount is ₹1 (100 paise)
+  if (amount < 100) {
+    throw new AppError('Invalid amount. Minimum payment amount is ₹1.', 400, 'VALIDATION_ERROR');
+  }
+
+  // Create Razorpay order
+  // Receipt must be max 40 characters (Razorpay requirement)
+  // Generate a unique, scalable receipt that always stays under 40 chars
+  const generateReceipt = () => {
+    const timestamp = Date.now().toString(); // 13 digits
+    const prefix = 'usr_'; // 4 chars
+    const receipt = `${prefix}${timestamp}`; // Total: 4 + 13 = 17 chars (well under 40)
+    
+    // Safety validation - ensure it never exceeds 40 chars
+    if (receipt.length > 40) {
+      Logger.error('Receipt length exceeded 40 characters', { receipt, length: receipt.length });
+      // Fallback: use just timestamp (13 chars) - always safe
+      return timestamp;
+    }
+    return receipt;
+  };
+
+  const receipt = generateReceipt();
+  
+  // Final validation before creating order
+  if (receipt.length > 40) {
+    Logger.error('Receipt validation failed - length exceeds 40 characters', { 
+      receipt, 
+      length: receipt.length,
+      institutionId,
+      numberOfUsers 
+    });
+    throw new AppError('Failed to generate payment receipt. Please contact support.', 500, 'PAYMENT_ERROR');
+  }
+
+  const options = {
+    amount: amount,
+    currency: 'INR',
+    receipt: receipt,
+    notes: {
+      institutionId: institutionId.toString(),
+      numberOfUsers: numberOfUsers,
+      emails: validEmails.join(','),
+      type: 'additional_users',
+      receiptId: receipt // Store receipt in notes for reference/tracking
+    }
+  };
+
+  try {
+    const order = await razorpay.orders.create(options);
+
+    res.status(200).json({
+      success: true,
+      orderId: order.id,
+      amount: order.amount,
+      currency: order.currency,
+      keyId: process.env.RAZORPAY_KEY_ID,
+      numberOfUsers: numberOfUsers,
+      pricePerUser: ADDITIONAL_USER_PRICE,
+      emails: validEmails
+    });
+  } catch (error) {
+    // Log full error for debugging - handle circular references
+    try {
+      console.error('Full Razorpay error:', {
+        message: error.message,
+        statusCode: error.statusCode,
+        error: error.error,
+        stack: error.stack
+      });
+    } catch (e) {
+      console.error('Error logging failed:', e);
+    }
+    
+    // Extract error details from Razorpay error object
+    const razorpayError = error.error || error;
+    const errorDetails = {
+      message: error.message || razorpayError?.message,
+      statusCode: error.statusCode || razorpayError?.statusCode,
+      description: razorpayError?.description,
+      field: razorpayError?.field,
+      source: razorpayError?.source,
+      step: razorpayError?.step,
+      reason: razorpayError?.reason,
+      metadata: razorpayError?.metadata
+    };
+    
+    Logger.error('Razorpay order creation failed for additional users', errorDetails);
+    
+    // Provide more specific error messages
+    let errorMessage = 'Failed to create payment order. Please try again.';
+    
+    if (razorpayError?.description) {
+      errorMessage = `Payment gateway error: ${razorpayError.description}`;
+    } else if (razorpayError?.reason) {
+      errorMessage = `Payment gateway error: ${razorpayError.reason}`;
+    } else if (error.message) {
+      errorMessage = `Payment error: ${error.message}`;
+    } else if (razorpayError?.message) {
+      errorMessage = `Payment error: ${razorpayError.message}`;
+    }
+    
+    // Check for common Razorpay errors
+    const statusCode = error.statusCode || razorpayError?.statusCode;
+    if (statusCode === 401 || statusCode === 403) {
+      errorMessage = 'Payment gateway authentication failed. Please check your Razorpay configuration.';
+    } else if (statusCode === 400) {
+      errorMessage = razorpayError?.description || 'Invalid payment request. Please check the details.';
+    }
+    
+    throw new AppError(errorMessage, 500, 'PAYMENT_ERROR');
+  }
+});
+
+/**
+ * Verify Payment and Add Additional Users
+ * @route POST /api/institution-admin/users/verify-payment
+ * @access Private (Institution Admin)
+ */
+const verifyAdditionalUsersPayment = asyncHandler(async (req, res, next) => {
+  const institutionId = req.institutionId;
+  const {
+    razorpayOrderId,
+    razorpayPaymentId,
+    razorpaySignature,
+    emails
+  } = req.body;
+
+  if (!razorpayOrderId || !razorpayPaymentId || !razorpaySignature) {
+    throw new AppError('Payment verification details are required', 400, 'VALIDATION_ERROR');
+  }
+
+  if (!emails || !Array.isArray(emails) || emails.length === 0) {
+    throw new AppError('Email addresses are required', 400, 'VALIDATION_ERROR');
+  }
+
+  const institution = await Institution.findById(institutionId);
+  if (!institution) {
+    throw new AppError('Institution not found', 404, 'RESOURCE_NOT_FOUND');
+  }
+
+  // Verify payment signature
+  const body = razorpayOrderId + '|' + razorpayPaymentId;
+  const expectedSignature = crypto
+    .createHmac('sha256', process.env.RAZORPAY_KEY_SECRET)
+    .update(body.toString())
+    .digest('hex');
+
+  if (expectedSignature !== razorpaySignature) {
+    throw new AppError('Invalid payment signature. Payment verification failed.', 400, 'INVALID_PAYMENT');
+  }
+
+  // Check if payment already processed
+  const existingPayment = await Payment.findOne({ razorpayOrderId });
+  if (existingPayment && existingPayment.status === 'captured') {
+    throw new AppError('Payment already processed', 400, 'PAYMENT_ALREADY_PROCESSED');
+  }
+
+  // Validate emails and add users
+  const validEmails = emails.filter(email => email && email.includes('@'));
+  const addedUsers = [];
+  const skippedUsers = [];
+  const errors = [];
+
+  for (const email of validEmails) {
+    try {
+      // Check if user exists
+      let user = await User.findOne({ email: email.toLowerCase() });
+
+      if (!user) {
+        errors.push(`${email}: User account not found. The user must first create an account on the platform.`);
+        continue;
+      }
+
+      // Check if user already belongs to this institution
+      if (user.institutionId && user.institutionId.toString() === institutionId.toString()) {
+        skippedUsers.push({ email, reason: 'User already exists in this institution' });
+        continue;
+      }
+
+      // Check if user belongs to another institution
+      if (user.institutionId && user.institutionId.toString() !== institutionId.toString()) {
+        errors.push(`${email}: User already belongs to another institution.`);
+        continue;
+      }
+
+      // Apply institution plan to user
+      await applyInstitutionPlan(user, institution);
+
+      // Update user
+      user.institutionId = institutionId;
+      user.isInstitutionUser = true;
+      await user.save();
+
+      addedUsers.push({
+        id: user._id,
+        email: user.email,
+        displayName: user.displayName
+      });
+
+      // Emit real-time notification
+      const io = req.app.get('io');
+      if (io) {
+        io.to(`user-${user._id}`).emit('plan-updated', {
+          plan: 'pro',
+          source: 'institution',
+          institutionId: institution._id,
+          institutionName: institution.name,
+          message: 'You have been granted Pro plan access through your institution'
+        });
+      }
+    } catch (error) {
+      Logger.error(`Error adding user ${email}`, error);
+      errors.push(`${email}: ${error.message}`);
+    }
+  }
+
+  // Update institution user count and max users
+  const currentUserCount = await User.countDocuments({
+    institutionId,
+    isInstitutionUser: true
+  });
+  institution.subscription.currentUsers = currentUserCount;
+  institution.subscription.maxUsers = institution.subscription.maxUsers + addedUsers.length;
+  await institution.save();
+
+  // Save payment record
+  const payment = new Payment({
+    userId: null, // Institution payment
+    institutionId: institutionId,
+    amount: validEmails.length * ADDITIONAL_USER_PRICE,
+    currency: 'INR',
+    status: 'captured',
+    plan: 'additional_users',
+    razorpayOrderId,
+    razorpayPaymentId,
+    razorpaySignature,
+    metadata: {
+      numberOfUsers: validEmails.length,
+      addedUsers: addedUsers.length,
+      skippedUsers: skippedUsers.length,
+      emails: validEmails
+    }
+  });
+  await payment.save();
+
+  // Log audit
+  if (!institution.auditLogs) {
+    institution.auditLogs = [];
+  }
+  institution.auditLogs.push({
+    timestamp: new Date(),
+    action: 'users_added_via_payment',
+    user: req.institutionAdmin?.email || institution.adminEmail || 'System',
+    details: `${addedUsers.length} user(s) added via payment. Payment ID: ${razorpayPaymentId}`,
+    ipAddress: req.ip || req.headers['x-forwarded-for'] || 'unknown'
+  });
+  await institution.save();
+
+  res.status(200).json({
+    success: true,
+    message: `Payment verified successfully. ${addedUsers.length} user(s) added.`,
+    data: {
+      addedUsers,
+      skippedUsers,
+      errors: errors.length > 0 ? errors : undefined,
+      paymentId: razorpayPaymentId,
+      newMaxUsers: institution.subscription.maxUsers
+    }
+  });
+});
+
 module.exports = {
   loginInstitutionAdmin,
   checkInstitutionAdmin,
@@ -1283,6 +1767,9 @@ module.exports = {
   createCustomReport,
   generateCustomReport,
   deleteCustomReport,
-  updateSecuritySettings
+  updateSecuritySettings,
+  validateUsersBeforePayment,
+  createAdditionalUsersPaymentOrder,
+  verifyAdditionalUsersPayment
 };
 

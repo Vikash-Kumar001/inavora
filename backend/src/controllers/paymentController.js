@@ -205,7 +205,7 @@ const getSubscriptionStatusEndpoint = asyncHandler(async (req, res, next) => {
         throw new AppError('User not found', 404, 'RESOURCE_NOT_FOUND');
     }
 
-    const subscriptionStatus = getSubscriptionStatus(user.subscription);
+    const subscriptionStatus = await getSubscriptionStatus(user.subscription, user);
 
     res.status(200).json({
         success: true,

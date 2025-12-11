@@ -14,7 +14,7 @@ const checkSlideLimit = async (req, res, next) => {
             return res.status(404).json({ error: 'User not found' });
         }
 
-        const isFreePlan = !isSubscriptionActive(user.subscription);
+        const isFreePlan = !(await isSubscriptionActive(user.subscription, user));
 
         if (isFreePlan) {
             const slideCount = await Slide.countDocuments({ presentationId });
@@ -39,7 +39,7 @@ const checkAudienceLimit = async (userId, presentationId, currentCount) => {
         const user = await User.findById(userId);
         if (!user) return false;
 
-        const isFreePlan = !isSubscriptionActive(user.subscription);
+        const isFreePlan = !(await isSubscriptionActive(user.subscription, user));
 
         if (isFreePlan && currentCount >= 21) {
             return false;

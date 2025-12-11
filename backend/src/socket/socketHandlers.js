@@ -132,6 +132,14 @@ const setupSocketHandlers = (io, socket) => {
   // Emit updated total to all clients in the landing page room
   io.to('landing-page').emit('platform-users-updated', { count: totalPlatformUsers });
 
+  // Handle user authentication and join user-specific room for plan updates
+  socket.on('authenticate-user', ({ userId }) => {
+    if (userId) {
+      socket.join(`user-${userId}`);
+      Logger.debug(`User ${userId} joined their notification room`);
+    }
+  });
+
   // Presenter starts presentation
   socket.on('start-presentation', async ({ presentationId, userId, startIndex }) => {
     try {

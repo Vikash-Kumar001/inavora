@@ -71,7 +71,14 @@ const DroppableList = ({ id, items, itemMap, title, placeholder, disabled }) => 
   );
 };
 
-const RankingParticipantInput = ({ slide, onSubmit, hasSubmitted, initialRanking = [] }) => {
+const RankingParticipantInput = ({ 
+  slide, 
+  onSubmit, 
+  hasSubmitted, 
+  initialRanking = [],
+  rankingResults = [],
+  totalResponses = 0
+}) => {
   const { t } = useTranslation();
   const items = useMemo(() => Array.isArray(slide?.rankingItems) ? slide.rankingItems : [], [slide?.rankingItems]);
   const itemMap = useMemo(() => new Map(items.map((item) => [item.id, item])), [items]);
@@ -179,14 +186,65 @@ const RankingParticipantInput = ({ slide, onSubmit, hasSubmitted, initialRanking
       </div>
 
       {hasSubmitted ? (
-        <div className="rounded-3xl border border-[#2E7D32]/30 bg-[#1D2A20] px-8 py-12 text-center shadow-lg">
-          <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-[#2E7D32]/20">
-            <svg className="h-10 w-10 text-[#4CAF50]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
-            </svg>
+        <div className="space-y-6">
+          {/* Submission confirmation */}
+          <div className="rounded-3xl border border-[#4CAF50]/30 bg-[#1D2A20] px-8 py-12 text-center shadow-lg">
+            <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-[#2E7D32]/20">
+              <svg className="h-10 w-10 text-[#4CAF50]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
+              </svg>
+            </div>
+            <h3 className="text-xl font-semibold text-[#E0E0E0]">{t('slide_editors.ranking.submitted_title') || 'Ranking submitted'}</h3>
+            <p className="mt-2 text-sm text-[#B0B0B0]">Thanks for sharing your order. Viewing live results...</p>
           </div>
-          <h3 className="text-xl font-semibold text-[#E0E0E0]">{t('slide_editors.ranking.submitted_title') || 'Ranking submitted'}</h3>
-          <p className="mt-2 text-sm text-[#B0B0B0]">{t('slide_editors.ranking.thanks_message') || 'Thanks for sharing your order.'}</p>
+
+          {/* Live Results */}
+          {rankingResults.length > 0 && totalResponses > 0 && (
+            <div className="rounded-3xl border border-[#2A2A2A] bg-[#1F1F1F] p-6 sm:p-8 shadow-xl">
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-xl sm:text-2xl font-semibold text-[#E0E0E0]">Live Ranking Results</h3>
+                <div className="flex items-center gap-2 text-sm text-[#9E9E9E]">
+                  <div className="w-2 h-2 rounded-full bg-[#4CAF50] animate-pulse"></div>
+                  <span>{totalResponses} {totalResponses === 1 ? 'response' : 'responses'}</span>
+                </div>
+              </div>
+
+              <div className="space-y-3">
+                {rankingResults.map((result, index) => {
+                  const item = itemMap.get(result.itemId);
+                  if (!item) return null;
+                  
+                  const avgRank = result.averageRank || 0;
+                  const maxRank = items.length;
+                  
+                  return (
+                    <div
+                      key={result.itemId}
+                      className="flex items-center gap-4 p-4 rounded-xl bg-[#2A2A2A] border border-[#2F2F2F] hover:border-[#4CAF50]/50 transition-all"
+                    >
+                      <div className="flex-shrink-0 w-10 h-10 rounded-full bg-gradient-to-br from-[#4CAF50] to-[#388E3C] flex items-center justify-center text-white font-bold text-lg">
+                        {index + 1}
+                      </div>
+                      <div className="flex-1">
+                        <p className="text-base sm:text-lg font-semibold text-[#E0E0E0]">{item.label}</p>
+                        <div className="flex items-center gap-4 mt-1">
+                          <span className="text-sm text-[#4CAF50] font-medium">
+                            Avg Rank: {avgRank.toFixed(2)}
+                          </span>
+                          <div className="flex-1 h-2 bg-[#1F1F1F] rounded-full overflow-hidden">
+                            <div
+                              className="h-full bg-gradient-to-r from-[#388E3C] to-[#4CAF50] transition-all duration-500"
+                              style={{ width: `${((maxRank - avgRank + 1) / maxRank) * 100}%` }}
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
         </div>
       ) : (
         <DndContext sensors={sensors} collisionDetection={closestCorners} onDragEnd={handleDragEnd}>

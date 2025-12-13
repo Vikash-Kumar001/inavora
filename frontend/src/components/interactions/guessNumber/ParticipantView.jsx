@@ -4,7 +4,9 @@ import { Send } from 'lucide-react';
 const ParticipantGuessView = ({
   slide,
   onSubmit,
-  hasSubmitted
+  hasSubmitted,
+  guessDistribution = {},
+  totalResponses = 0
 }) => {
   const minValue = slide?.guessNumberSettings?.minValue ?? 1;
   const maxValue = slide?.guessNumberSettings?.maxValue ?? 10;
@@ -65,14 +67,62 @@ const ParticipantGuessView = ({
           </button>
         </div>
       ) : (
-        <div className="bg-[#1D2A20] border border-[#2E7D32]/30 rounded-2xl p-8 text-center">
-          <div className="inline-block p-4 bg-[#2E7D32]/20 rounded-full mb-4">
-            <svg className="h-12 w-12 text-[#4CAF50]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-            </svg>
+        <div className="space-y-6">
+          {/* Submission confirmation */}
+          <div className="bg-[#1D2A20] border border-[#4CAF50]/30 rounded-2xl p-8 text-center">
+            <div className="inline-block p-4 bg-[#2E7D32]/20 rounded-full mb-4">
+              <svg className="h-12 w-12 text-[#4CAF50]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+              </svg>
+            </div>
+            <h3 className="text-2xl font-semibold text-[#E0E0E0] mb-2">Guess Submitted!</h3>
+            <p className="text-[#4CAF50]">You guessed: <span className="font-bold text-2xl">{guess}</span></p>
+            <p className="text-sm text-[#B0B0B0] mt-2">Viewing live distribution...</p>
           </div>
-          <h3 className="text-2xl font-semibold text-[#E0E0E0] mb-2">Guess Submitted!</h3>
-          <p className="text-[#4CAF50]">You guessed: <span className="font-bold text-2xl">{guess}</span></p>
+
+          {/* Live Distribution */}
+          {totalResponses > 0 && Object.keys(guessDistribution).length > 0 && (
+            <div className="bg-[#1F1F1F] rounded-2xl border border-[#2A2A2A] shadow-xl p-6 sm:p-8">
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-xl sm:text-2xl font-semibold text-[#E0E0E0]">Live Distribution</h3>
+                <div className="flex items-center gap-2 text-sm text-[#9E9E9E]">
+                  <div className="w-2 h-2 rounded-full bg-[#4CAF50] animate-pulse"></div>
+                  <span>{totalResponses} {totalResponses === 1 ? 'guess' : 'guesses'}</span>
+                </div>
+              </div>
+
+              <div className="space-y-3">
+                {Object.entries(guessDistribution)
+                  .sort((a, b) => Number(a[0]) - Number(b[0]))
+                  .map(([value, count]) => {
+                    const maxCount = Math.max(...Object.values(guessDistribution), 1);
+                    const percentage = (count / maxCount) * 100;
+                    const isYourGuess = Number(value) === guess;
+                    
+                    return (
+                      <div key={value} className="space-y-1">
+                        <div className="flex items-center justify-between">
+                          <span className={`text-sm font-medium ${isYourGuess ? 'text-[#4CAF50]' : 'text-[#E0E0E0]'}`}>
+                            {value} {isYourGuess && '← Your guess'}
+                          </span>
+                          <span className="text-sm font-bold text-[#E0E0E0]">{count}</span>
+                        </div>
+                        <div className="h-6 bg-[#2A2A2A] rounded-lg overflow-hidden border border-[#2F2F2F]">
+                          <div
+                            className={`h-full transition-all duration-500 flex items-center justify-end pr-2 ${
+                              isYourGuess
+                                ? 'bg-gradient-to-r from-[#4CAF50] to-[#388E3C]'
+                                : 'bg-gradient-to-r from-[#388E3C]/60 to-[#4CAF50]/60'
+                            }`}
+                            style={{ width: `${percentage}%` }}
+                          />
+                        </div>
+                      </div>
+                    );
+                  })}
+              </div>
+            </div>
+          )}
         </div>
       )}
 

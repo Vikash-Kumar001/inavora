@@ -8,6 +8,7 @@ import toast from 'react-hot-toast';
 // eslint-disable-next-line no-unused-vars
 import { motion } from 'framer-motion';
 import { createOrder, verifyPayment, loadRazorpay } from '../../services/paymentService';
+import { detectCountryFromBrowser } from '../../utils/countryDetector';
 
 const PricingPage = () => {
     const { t } = useTranslation(); // Added useTranslation hook
@@ -107,7 +108,30 @@ const PricingPage = () => {
     const handleUpgrade = async (planId) => {
         // Institution plan should redirect to registration flow
         if (planId === 'institution') {
-            navigate('/institution/register');
+            // Detect country from browser
+            const detectedCountry = detectCountryFromBrowser();
+            
+            // Prepare navigation state
+            const navigationState = {
+                country: detectedCountry || ''
+            };
+            
+            // Add user data if logged in
+            if (user) {
+                // Check and add displayName
+                if (user.displayName && user.displayName.trim() !== '') {
+                    navigationState.adminName = user.displayName;
+                }
+                // Check and add email
+                if (user.email && user.email.trim() !== '') {
+                    navigationState.adminEmail = user.email;
+                }
+            }
+            
+            // Pass user data to pre-fill the form
+            navigate('/institution/register', {
+                state: navigationState
+            });
             return;
         }
 

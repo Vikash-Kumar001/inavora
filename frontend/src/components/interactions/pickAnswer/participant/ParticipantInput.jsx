@@ -40,10 +40,12 @@ const PickAnswerParticipantInput = ({
         <div className="space-y-3 sm:space-y-4 mb-6 sm:mb-8">
           {slide.options?.map((option, index) => {
             const optionText = typeof option === 'string' ? option : (option?.text || `Option ${index + 1}`);
+            const optionKey = typeof option === 'string' ? option : (option?.id || `option-${index}`);
             return (
               <button
-                key={index}
+                key={optionKey}
                 onClick={() => onSelect(option)}
+                aria-label={`Select option: ${optionText}`}
                 className={`w-full p-4 sm:p-6 rounded-xl text-left text-base sm:text-xl font-semibold transition-all active:scale-[0.98] ${selectedAnswer === option
                   ? 'bg-gradient-to-r from-[#388E3C] to-[#2E7D32] text-white shadow-lg shadow-[#4CAF50]/30 scale-[1.02]'
                   : 'bg-[#2A2A2A] text-[#E0E0E0] hover:bg-[#333333] border border-[#2F2F2F]'
@@ -58,6 +60,7 @@ const PickAnswerParticipantInput = ({
         <div className="space-y-4 sm:space-y-5 mb-6 sm:mb-8">
           {slide.options?.map((option, index) => {
             const optionText = typeof option === 'string' ? option : (option?.text || `Option ${index + 1}`);
+            const optionKey = typeof option === 'string' ? option : (option?.id || `option-${index}`);
             const voteCount = getVoteCount(option);
             const maxVotes = Math.max(...Object.values(voteCounts || {}), 1);
             const percentage = maxVotes > 0 ? (voteCount / maxVotes) * 100 : 0;
@@ -65,7 +68,7 @@ const PickAnswerParticipantInput = ({
             const isSelected = selectedAnswer === option;
 
             return (
-              <div key={index} className="relative group">
+              <div key={optionKey} className="relative group" role="group" aria-label={`${optionText}: ${voteCount} votes (${totalPercentage}%)`}>
                 <div className={`relative min-h-[4rem] sm:min-h-[5rem] rounded-xl overflow-hidden border-2 transition-all duration-300 ${
                   isSelected 
                     ? 'border-[#4CAF50] bg-[#1D2A20] shadow-lg shadow-[#4CAF50]/20' 

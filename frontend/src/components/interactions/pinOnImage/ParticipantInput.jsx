@@ -1,7 +1,13 @@
 import { useState, useRef, useEffect } from 'react';
 import { MapPin, Send } from 'lucide-react';
 
-const PinOnImageParticipantInput = ({ slide, onSubmit, hasSubmitted }) => {
+const PinOnImageParticipantInput = ({ 
+  slide, 
+  onSubmit, 
+  hasSubmitted,
+  pinResults = [],
+  totalResponses = 0
+}) => {
   const [pin, setPin] = useState(null);
   const imageRef = useRef(null);
   const containerRef = useRef(null);
@@ -109,24 +115,42 @@ const PinOnImageParticipantInput = ({ slide, onSubmit, hasSubmitted }) => {
         )}
 
         {/* Submit Button */}
-        <div className="flex justify-center">
-          <button
-            type="button"
-            onClick={handleSubmit}
-            disabled={!canSubmit}
-            className={`
-              inline-flex items-center gap-2 px-8 py-3 rounded-full font-medium text-base
-              transition-all duration-200 transform
-              ${canSubmit
-                ? 'bg-gradient-to-r from-[#388E3C] to-[#2E7D32] hover:from-[#4CAF50] hover:to-[#388E3C] text-white shadow-lg hover:shadow-xl hover:scale-105'
-                : 'bg-[#2A2A2A] text-[#6C6C6C] cursor-not-allowed'
-              }
-            `}
-          >
-            <Send className="w-5 h-5" />
-            {hasSubmitted ? 'Submitted' : 'Submit'}
-          </button>
-        </div>
+        {!hasSubmitted && (
+          <div className="flex justify-center">
+            <button
+              type="button"
+              onClick={handleSubmit}
+              disabled={!canSubmit}
+              className={`
+                inline-flex items-center gap-2 px-8 py-3 rounded-full font-medium text-base
+                transition-all duration-200 transform
+                ${canSubmit
+                  ? 'bg-gradient-to-r from-[#388E3C] to-[#2E7D32] hover:from-[#4CAF50] hover:to-[#388E3C] text-white shadow-lg hover:shadow-xl hover:scale-105'
+                  : 'bg-[#2A2A2A] text-[#6C6C6C] cursor-not-allowed'
+                }
+              `}
+            >
+              <Send className="w-5 h-5" />
+              Submit
+            </button>
+          </div>
+        )}
+
+        {/* Live Results */}
+        {hasSubmitted && totalResponses > 0 && (
+          <div className="mt-6 bg-[#1F1F1F] rounded-xl border border-[#2A2A2A] p-4">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold text-[#E0E0E0]">Live Pin Results</h3>
+              <div className="flex items-center gap-2 text-sm text-[#9E9E9E]">
+                <div className="w-2 h-2 rounded-full bg-[#4CAF50] animate-pulse"></div>
+                <span>{totalResponses} {totalResponses === 1 ? 'pin' : 'pins'}</span>
+              </div>
+            </div>
+            <p className="text-sm text-[#B0B0B0]">
+              {pinResults.length} pin{pinResults.length !== 1 ? 's' : ''} placed on the image. Check the presenter view for the heatmap.
+            </p>
+          </div>
+        )}
       </div>
 
       <style>{`

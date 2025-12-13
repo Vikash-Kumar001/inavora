@@ -1,7 +1,13 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Send } from 'lucide-react';
 
-const TwoByTwoGridParticipantInput = ({ slide, onSubmit, hasSubmitted }) => {
+const TwoByTwoGridParticipantInput = ({ 
+  slide, 
+  onSubmit, 
+  hasSubmitted,
+  gridResults = [],
+  totalResponses = 0
+}) => {
   const items = useMemo(() => Array.isArray(slide?.gridItems) ? slide.gridItems : [], [slide?.gridItems]);
 
   const axisXLabel = useMemo(() => slide?.gridAxisXLabel || 'Horizontal', [slide?.gridAxisXLabel]);
@@ -9,13 +15,11 @@ const TwoByTwoGridParticipantInput = ({ slide, onSubmit, hasSubmitted }) => {
   const axisYLabel = useMemo(() => slide?.gridAxisYLabel || 'Vertical', [slide?.gridAxisYLabel]);
 
   const axisRange = useMemo(() => {
-    console.log('Participant slide data:', slide);
-    console.log('Axis range:', slide?.gridAxisRange);
     return {
       min: slide?.gridAxisRange?.min ?? 0,
       max: slide?.gridAxisRange?.max ?? 10
     };
-  }, [slide]);
+  }, [slide?.gridAxisRange?.min, slide?.gridAxisRange?.max]);
 
   const [positions, setPositions] = useState(() => {
     const initial = {};
@@ -104,14 +108,56 @@ const TwoByTwoGridParticipantInput = ({ slide, onSubmit, hasSubmitted }) => {
       </div>
 
       {hasSubmitted ? (
-        <div className="rounded-3xl border border-[#2E7D32]/30 bg-[#1D2A20] px-8 py-12 text-center shadow-lg">
-          <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-[#2E7D32]/20">
-            <svg className="h-10 w-10 text-[#4CAF50]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
-            </svg>
+        <div className="space-y-6">
+          {/* Submission confirmation */}
+          <div className="rounded-3xl border border-[#4CAF50]/30 bg-[#1D2A20] px-8 py-12 text-center shadow-lg">
+            <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-[#2E7D32]/20">
+              <svg className="h-10 w-10 text-[#4CAF50]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
+              </svg>
+            </div>
+            <h3 className="text-xl font-semibold text-[#E0E0E0]">Positions submitted</h3>
+            <p className="mt-2 text-sm text-[#B0B0B0]">Thanks for sharing your input. Viewing live results...</p>
           </div>
-          <h3 className="text-xl font-semibold text-[#E0E0E0]">Positions submitted</h3>
-          <p className="mt-2 text-sm text-[#B0B0B0]">Thanks for sharing your input.</p>
+
+          {/* Live Results */}
+          {gridResults.length > 0 && totalResponses > 0 && (
+            <div className="rounded-3xl border border-[#2A2A2A] bg-[#1F1F1F] p-6 sm:p-8 shadow-xl">
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-xl sm:text-2xl font-semibold text-[#E0E0E0]">Live Results</h3>
+                <div className="flex items-center gap-2 text-sm text-[#9E9E9E]">
+                  <div className="w-2 h-2 rounded-full bg-[#4CAF50] animate-pulse"></div>
+                  <span>{totalResponses} {totalResponses === 1 ? 'response' : 'responses'}</span>
+                </div>
+              </div>
+
+              <div className="space-y-4">
+                {items.map((item) => {
+                  const result = gridResults.find(r => r.itemId === item.id);
+                  if (!result) return null;
+                  
+                  const avgX = result.averageX || axisRange.min;
+                  const avgY = result.averageY || axisRange.min;
+                  
+                  return (
+                    <div key={item.id} className="bg-[#2A2A2A] rounded-xl border border-[#2F2F2F] p-4">
+                      <h4 className="text-base sm:text-lg font-semibold text-[#E0E0E0] mb-3">{item.label}</h4>
+                      <div className="grid grid-cols-2 gap-4 text-sm">
+                        <div>
+                          <div className="text-[#6C6C6C] mb-1">{axisXLabel}</div>
+                          <div className="text-lg font-bold text-[#4CAF50]">{avgX.toFixed(1)}</div>
+                        </div>
+                        <div>
+                          <div className="text-[#6C6C6C] mb-1">{axisYLabel}</div>
+                          <div className="text-lg font-bold text-[#4CAF50]">{avgY.toFixed(1)}</div>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
         </div>
       ) : (
         <div className="space-y-8">

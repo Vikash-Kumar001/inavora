@@ -192,4 +192,31 @@ router.post('/:presentationId/generate-leaderboards', presentationController.gen
  */
 router.put('/:presentationId/qna/:questionId/status', presentationController.toggleQnaStatus);
 
+/**
+ * @swagger
+ * /api/presentations/{presentationId}/slides/{slideId}/responses:
+ *   get:
+ *     summary: Get all responses for a specific slide
+ *     tags: [Presentations]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: presentationId
+ *         required: true
+ *         schema:
+ *           type: string
+ *       - in: path
+ *         name: slideId
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Responses retrieved successfully
+ *       404:
+ *         description: Presentation or slide not found
+ */
+router.get('/:presentationId/slides/:slideId/responses', presentationController.getSlideResponses);
+
 module.exports = router;

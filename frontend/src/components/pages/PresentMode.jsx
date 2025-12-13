@@ -97,6 +97,7 @@ const PresentMode = () => {
     return colors[index % colors.length];
   };
 
+
   // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -901,10 +902,6 @@ const PresentMode = () => {
           />
         );
       case 'pick_answer':
-        console.log('[renderSlideContent] Pick Answer - slide:', slide);
-        console.log('[renderSlideContent] Pick Answer - voteCounts:', voteCounts);
-        console.log('[renderSlideContent] Pick Answer - totalResponses:', totalResponses);
-        console.log('[renderSlideContent] Pick Answer - options:', slide.options);
         return (
           <PickAnswerPresenterView
             slide={slide}

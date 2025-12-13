@@ -111,7 +111,8 @@ function buildResults(slide, responses) {
   });
 
   const results = Array.from(pointsMap.values()).map((entry) => ({
-    id: entry.id,
+    itemId: entry.id, // Use itemId for consistency with frontend
+    id: entry.id, // Keep id for backward compatibility
     label: entry.label,
     totalPoints: entry.totalPoints,
     participantCount: entry.participantCount,

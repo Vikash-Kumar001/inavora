@@ -1,7 +1,11 @@
 import { useState, useEffect, useRef } from 'react';
 import { LoaderCircle, Download } from 'lucide-react';
+import { io } from 'socket.io-client';
+import { getSocketUrl } from '../../utils/config';
 import * as presentationService from '../../services/presentationService';
+import { formatSlideDataForExport, exportAllSlidesToPDF } from '../../utils/exportUtils';
 import toast from 'react-hot-toast';
+import * as XLSX from 'xlsx';
 
 // Import new Result Components
 import MCQResult from '../interactions/Results/MCQResult';
@@ -34,7 +38,9 @@ const PresentationResults = ({ slides, presentationId }) => {
     const [error, setError] = useState(null);
     const [isExporting, setIsExporting] = useState(false);
     const resultsRef = useRef(null);
+    const socketRef = useRef(null);
 
+    // Fetch initial data
     useEffect(() => {
         const fetchData = async () => {
             if (!presentationId) return;
@@ -47,7 +53,7 @@ const PresentationResults = ({ slides, presentationId }) => {
                     presentationService.getPresentationById(presentationId)
                 ]);
                 
-                setResults(resultsData);
+                setResults(resultsData.results || resultsData);
                 setPresentation(presentationData.presentation);
             } catch (err) {
                 console.error('Failed to fetch data:', err);
@@ -60,28 +66,151 @@ const PresentationResults = ({ slides, presentationId }) => {
         fetchData();
     }, [presentationId]);
 
+    // Setup WebSocket connection for real-time updates
+    useEffect(() => {
+        if (!presentationId) return;
+
+        // Initialize socket connection
+        const socket = io(getSocketUrl());
+        socketRef.current = socket;
+
+        // Join presentation room to receive updates
+        const joinRoom = () => {
+            socket.emit('join-presentation-results', { presentationId });
+        };
+
+        // Join immediately if already connected, otherwise wait for connect event
+        if (socket.connected) {
+            joinRoom();
+        } else {
+            socket.on('connect', joinRoom);
+        }
+
+        // Handle response updates
+        const handleResponseUpdated = (data) => {
+            if (!data || !data.slideId) return;
+
+            setResults(prevResults => {
+                if (!prevResults) return prevResults;
+
+                const slideId = data.slideId.toString();
+                const updatedResults = { ...prevResults };
+
+                // Update or create result entry for this slide
+                if (updatedResults[slideId]) {
+                    // Merge with existing data
+                    updatedResults[slideId] = {
+                        ...updatedResults[slideId],
+                        ...data,
+                        totalResponses: data.totalResponses !== undefined 
+                            ? data.totalResponses 
+                            : updatedResults[slideId].totalResponses
+                    };
+                } else {
+                    // Create new entry if it doesn't exist
+                    updatedResults[slideId] = {
+                        slideId: slideId,
+                        type: slides?.find(s => (s.id || s._id)?.toString() === slideId)?.type || 'unknown',
+                        totalResponses: data.totalResponses || 0,
+                        ...data
+                    };
+                }
+
+                return updatedResults;
+            });
+        };
+
+        // Handle slide changes (refresh all results)
+        const handleSlideChanged = async () => {
+            // Refetch all results when slide changes
+            try {
+                const resultsData = await presentationService.getPresentationResults(presentationId);
+                setResults(resultsData.results || resultsData);
+            } catch (err) {
+                console.error('Failed to refresh results:', err);
+            }
+        };
+
+        // Listen for events
+        socket.on('response-updated', handleResponseUpdated);
+        socket.on('slide-changed', handleSlideChanged);
+        socket.on('connect', () => {
+            console.log('Connected to presentation results socket');
+        });
+        socket.on('disconnect', () => {
+            console.log('Disconnected from presentation results socket');
+        });
+        socket.on('error', (error) => {
+            console.error('Socket error:', error);
+        });
+
+        // Cleanup on unmount
+        return () => {
+            socket.off('response-updated', handleResponseUpdated);
+            socket.off('slide-changed', handleSlideChanged);
+            socket.off('connect');
+            socket.off('disconnect');
+            socket.off('error');
+            socket.disconnect();
+        };
+    }, [presentationId, slides]);
+
     const handleExportData = async (format) => {
-        if (!presentationId) {
-            toast.error('No presentation selected');
+        if (!presentationId || !slides || slides.length === 0) {
+            toast.error('No presentation or slides available');
             return;
         }
         
         setIsExporting(true);
         try {
-            const blob = await presentationService.exportPresentationResults(presentationId, format);
-            const url = window.URL.createObjectURL(blob);
-            const link = document.createElement('a');
-            link.href = url;
-            const extension = format === 'csv' ? 'csv' : 'xlsx';
-            const fileName = presentation?.title 
-                ? `presentation-results-${presentation.title.replace(/[^a-z0-9]/gi, '_')}-${new Date().toISOString().split('T')[0]}.${extension}`
-                : `presentation-results-${new Date().toISOString().split('T')[0]}.${extension}`;
-            link.download = fileName;
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            window.URL.revokeObjectURL(url);
-            toast.success(`Exported as ${format.toUpperCase()}`);
+            // Fetch all slide responses
+            const allSlideData = [];
+            
+            for (const slide of slides) {
+                try {
+                    const slideId = slide.id || slide._id;
+                    if (!slideId) continue;
+                    
+                    const response = await presentationService.getSlideResponses(presentationId, slideId);
+                    
+                    if (response && response.success && response.slide && response.responses) {
+                        const formattedData = formatSlideDataForExport(
+                            response.slide,
+                            response.responses,
+                            response.aggregatedData
+                        );
+                        allSlideData.push({
+                            slide,
+                            formattedData,
+                            slideIndex: slides.indexOf(slide)
+                        });
+                    }
+                } catch (err) {
+                    console.error(`Error fetching data for slide ${slide.id || slide._id}:`, err);
+                    // Continue with other slides even if one fails
+                }
+            }
+            
+            if (allSlideData.length === 0) {
+                toast.error('No data available to export');
+                setIsExporting(false);
+                return;
+            }
+            
+            // Generate filename
+            const sanitizedTitle = (presentation?.title || 'Presentation').replace(/[^a-z0-9]/gi, '_').toLowerCase();
+            const dateStr = new Date().toISOString().split('T')[0];
+            const filename = `${sanitizedTitle}_results_${dateStr}`;
+            
+            if (format === 'csv') {
+                // Export all slides to a single CSV file
+                exportAllSlidesToCSV(allSlideData, filename);
+            } else if (format === 'excel') {
+                // Export all slides to a multi-sheet Excel file
+                exportAllSlidesToExcel(allSlideData, filename);
+            }
+            
+            toast.success(`Exported ${allSlideData.length} slide(s) as ${format.toUpperCase()}`);
         } catch (error) {
             console.error('Export error:', error);
             toast.error('Failed to export results');
@@ -89,311 +218,180 @@ const PresentationResults = ({ slides, presentationId }) => {
             setIsExporting(false);
         }
     };
+    
+    // Export all slides to CSV
+    const exportAllSlidesToCSV = (allSlideData, filename) => {
+        let csvContent = `"${presentation?.title || 'Presentation Results'}"\n`;
+        csvContent += `"Exported: ${new Date().toLocaleString()}"\n`;
+        csvContent += `"Total Slides: ${allSlideData.length}"\n\n`;
+        
+        allSlideData.forEach(({ slide, formattedData, slideIndex }) => {
+            const { question, timestamp, summary, detailed, metadata } = formattedData;
+            
+            csvContent += `"${'='.repeat(80)}"\n`;
+            csvContent += `"Slide ${slideIndex + 1}: ${question}"\n`;
+            csvContent += `"Type: ${formattedData.slideType}"\n`;
+            csvContent += `"Total Responses: ${metadata.totalResponses}"\n`;
+            csvContent += `"${'='.repeat(80)}"\n\n`;
+            
+            // Summary section
+            if (summary.length > 0) {
+                csvContent += '"SUMMARY"\n';
+                const summaryHeaders = Object.keys(summary[0]);
+                csvContent += summaryHeaders.map(h => `"${h}"`).join(',') + '\n';
+                summary.forEach(row => {
+                    csvContent += summaryHeaders.map(h => `"${String(row[h] || '').replace(/"/g, '""')}"`).join(',') + '\n';
+                });
+                csvContent += '\n';
+            }
+            
+            // Detailed section
+            if (detailed.length > 0) {
+                csvContent += '"DETAILED RESPONSES"\n';
+                const detailedHeaders = Object.keys(detailed[0]);
+                csvContent += detailedHeaders.map(h => `"${h}"`).join(',') + '\n';
+                detailed.forEach(row => {
+                    csvContent += detailedHeaders.map(h => `"${String(row[h] || '').replace(/"/g, '""')}"`).join(',') + '\n';
+                });
+            }
+            
+            csvContent += '\n\n';
+        });
+        
+        // Create blob and download
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement('a');
+        const url = URL.createObjectURL(blob);
+        link.setAttribute('href', url);
+        link.setAttribute('download', `${filename}.csv`);
+        link.style.visibility = 'hidden';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+    };
+    
+    // Export all slides to Excel
+    const exportAllSlidesToExcel = (allSlideData, filename) => {
+        const wb = XLSX.utils.book_new();
+        
+        // Overview sheet
+        const overviewData = [
+            ['Presentation Title', presentation?.title || 'Untitled Presentation'],
+            ['Exported', new Date().toLocaleString()],
+            ['Total Slides', allSlideData.length],
+            [''],
+            ['Slide', 'Question', 'Type', 'Total Responses']
+        ];
+        
+        allSlideData.forEach(({ slide, formattedData, slideIndex }) => {
+            overviewData.push([
+                slideIndex + 1,
+                formattedData.question || 'N/A',
+                formattedData.slideType || 'unknown',
+                formattedData.metadata?.totalResponses || 0
+            ]);
+        });
+        
+        const wsOverview = XLSX.utils.aoa_to_sheet(overviewData);
+        XLSX.utils.book_append_sheet(wb, wsOverview, 'Overview');
+        
+        // Create a sheet for each slide
+        allSlideData.forEach(({ slide, formattedData, slideIndex }) => {
+            const { question, summary, detailed, metadata } = formattedData;
+            const sheetName = `Slide ${slideIndex + 1}`.substring(0, 31); // Excel sheet name limit
+            
+            // Metadata
+            const metadataData = [
+                ['Question', question],
+                ['Type', formattedData.slideType],
+                ['Total Responses', metadata.totalResponses],
+                ['']
+            ];
+            
+            // Summary
+            if (summary.length > 0) {
+                metadataData.push(['SUMMARY']);
+                const summaryHeaders = Object.keys(summary[0]);
+                metadataData.push(summaryHeaders);
+                summary.forEach(row => {
+                    metadataData.push(summaryHeaders.map(h => row[h] || ''));
+                });
+                metadataData.push(['']);
+            }
+            
+            // Detailed
+            if (detailed.length > 0) {
+                metadataData.push(['DETAILED RESPONSES']);
+                const detailedHeaders = Object.keys(detailed[0]);
+                metadataData.push(detailedHeaders);
+                detailed.forEach(row => {
+                    metadataData.push(detailedHeaders.map(h => row[h] || ''));
+                });
+            }
+            
+            const ws = XLSX.utils.aoa_to_sheet(metadataData);
+            XLSX.utils.book_append_sheet(wb, ws, sheetName);
+        });
+        
+        XLSX.writeFile(wb, `${filename}.xlsx`);
+    };
 
     const handleExportToPDF = async () => {
-        if (!resultsRef.current) {
-            alert('No content to export.');
+        if (!presentationId || !slides || slides.length === 0) {
+            toast.error('No presentation or slides available');
             return;
         }
         
         setIsExporting(true);
-        
         try {
-            // Create a print-friendly version with preserved styling
-            const printWindow = window.open('', '_blank');
-            const content = resultsRef.current.innerHTML;
+            // Fetch all slide responses
+            const allSlideData = [];
             
-            printWindow.document.write(`
-                <!DOCTYPE html>
-                <html>
-                <head>
-                    <title>Presentation Results</title>
-                    <style>
-                        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
-                        
-                        body {
-                            font-family: 'Inter', sans-serif;
-                            background-color: #1a1a1a;
-                            color: #e0e0e0;
-                            padding: 20px;
-                            margin: 0;
-                        }
-                        
-                        .pdf-header {
-                            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
-                            color: white;
-                            padding: 30px;
-                            text-align: center;
-                            border-radius: 12px;
-                            margin-bottom: 30px;
-                            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
-                        }
-                        
-                        .pdf-title {
-                            font-size: 28px;
-                            font-weight: 700;
-                            margin-bottom: 10px;
-                        }
-                        
-                        .pdf-subtitle {
-                            font-size: 16px;
-                            opacity: 0.8;
-                        }
-                        
-                        .pdf-slide {
-                            page-break-inside: avoid;
-                            margin-bottom: 30px;
-                            background: #1f1f1f;
-                            border-radius: 12px;
-                            padding: 20px;
-                            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
-                            border: 1px solid #2a2a2a;
-                        }
-                        
-                        .pdf-slide-title {
-                            font-size: 20px;
-                            font-weight: 600;
-                            color: #e0e0e0;
-                            margin-bottom: 15px;
-                            padding-bottom: 10px;
-                            border-bottom: 1px solid #2a2a2a;
-                        }
-                        
-                        /* Result Card Styles */
-                        .result-card {
-                            background-color: #1f1f1f;
-                            border-radius: 12px;
-                            border: 1px solid #2a2a2a;
-                            padding: 20px;
-                        }
-                        
-                        .result-header {
-                            margin-bottom: 20px;
-                            padding-bottom: 15px;
-                            border-bottom: 1px solid #2a2a2a;
-                        }
-                        
-                        .result-title {
-                            font-size: 18px;
-                            font-weight: 600;
-                            color: #e0e0e0;
-                            margin-bottom: 5px;
-                        }
-                        
-                        .result-meta {
-                            display: flex;
-                            gap: 15px;
-                            font-size: 14px;
-                            color: #94a3b8;
-                        }
-                        
-                        /* Progress Bar Styles */
-                        .progress-bar-container {
-                            position: relative;
-                            height: 56px;
-                            background: #334155;
-                            border-radius: 12px;
-                            overflow: hidden;
-                            margin-bottom: 10px;
-                        }
-                        
-                        .progress-bar-fill {
-                            height: 100%;
-                            background: linear-gradient(90deg, #3b82f6, #2563eb);
-                            border-radius: 12px;
-                        }
-                        
-                        .progress-bar-content {
-                            position: absolute;
-                            top: 0;
-                            left: 0;
-                            right: 0;
-                            bottom: 0;
-                            display: flex;
-                            align-items: center;
-                            justify-content: space-between;
-                            padding: 0 24px;
-                            color: #e0e0e0;
-                        }
-                        
-                        /* Scale Result Styles */
-                        .scale-container {
-                            margin-bottom: 20px;
-                        }
-                        
-                        .scale-header {
-                            display: flex;
-                            justify-content: space-between;
-                            align-items: flex-end;
-                            margin-bottom: 8px;
-                        }
-                        
-                        .scale-label {
-                            font-size: 16px;
-                            font-weight: 500;
-                            color: #e2e8f0;
-                        }
-                        
-                        .scale-value {
-                            font-size: 24px;
-                            font-weight: 700;
-                            color: #f97316;
-                        }
-                        
-                        .scale-bar {
-                            position: relative;
-                            height: 16px;
-                            background: #334155;
-                            border-radius: 9999px;
-                            overflow: hidden;
-                        }
-                        
-                        .scale-fill {
-                            height: 100%;
-                            background: linear-gradient(90deg, #f97316, #ea580c);
-                            border-radius: 9999px;
-                        }
-                        
-                        .scale-labels {
-                            display: flex;
-                            justify-content: space-between;
-                            font-size: 12px;
-                            color: #94a3b8;
-                            font-weight: 500;
-                            margin-top: 4px;
-                        }
-                        
-                        /* Word Cloud Styles */
-                        .word-cloud-container {
-                            background: #2a2a2a;
-                            border-radius: 12px;
-                            padding: 20px;
-                            min-height: 300px;
-                            display: flex;
-                            flex-wrap: wrap;
-                            justify-content: center;
-                            align-items: center;
-                            gap: 10px;
-                        }
-                        
-                        .word-cloud-word {
-                            display: inline-block;
-                            font-weight: bold;
-                            color: #cbd5e1;
-                            margin: 5px;
-                        }
-                        
-                        /* Quiz Result Styles */
-                        .quiz-option {
-                            position: relative;
-                            margin-bottom: 12px;
-                        }
-                        
-                        .quiz-bar-container {
-                            position: relative;
-                            height: 64px;
-                            background: #334155;
-                            border-radius: 12px;
-                            overflow: hidden;
-                        }
-                        
-                        .quiz-bar-fill {
-                            height: 100%;
-                            background: linear-gradient(90deg, #8b5cf6, #7c3aed);
-                            border-radius: 12px;
-                        }
-                        
-                        .quiz-correct .quiz-bar-fill {
-                            background: linear-gradient(90deg, #10b981, #059669);
-                        }
-                        
-                        .quiz-bar-content {
-                            position: absolute;
-                            top: 0;
-                            left: 0;
-                            right: 0;
-                            bottom: 0;
-                            display: flex;
-                            align-items: center;
-                            justify-content: space-between;
-                            padding: 0 24px;
-                            color: #e0e0e0;
-                        }
-                        
-                        .quiz-option-text {
-                            font-size: 16px;
-                            font-weight: 500;
-                        }
-                        
-                        .quiz-stats {
-                            display: flex;
-                            align-items: center;
-                            gap: 12px;
-                        }
-                        
-                        .quiz-votes {
-                            font-size: 14px;
-                            color: #94a3b8;
-                        }
-                        
-                        .quiz-percentage {
-                            font-size: 18px;
-                            font-weight: 700;
-                        }
-                        
-                        .quiz-correct .quiz-percentage {
-                            color: #10b981;
-                        }
-                        
-                        /* Hide interactive elements */
-                        button, input, textarea, .interactive-element {
-                            display: none !important;
-                        }
-                        
-                        /* Ensure all elements are visible */
-                        * {
-                            visibility: visible !important;
-                        }
-                        
-                        /* Print specific styles */
-                        @media print {
-                            body {
-                                background-color: #1a1a1a;
-                                color: #e0e0e0;
-                                -webkit-print-color-adjust: exact;
-                                color-adjust: exact;
-                            }
-                            
-                            .pdf-header, .pdf-slide {
-                                box-shadow: none;
-                                border: 1px solid #2a2a2a;
-                            }
-                        }
-                    </style>
-                </head>
-                <body>
-                    <div class="pdf-header">
-                        <div class="pdf-title">Presentation Results Report</div>
-                        <div class="pdf-subtitle">Detailed Analysis of All Responses Collected</div>
-                        <div class="pdf-subtitle">Generated on: ${new Date().toLocaleString()}</div>
-                    </div>
-                    ${content}
-                </body>
-                </html>
-            `);
+            for (const slide of slides) {
+                try {
+                    const slideId = slide.id || slide._id;
+                    if (!slideId) continue;
+                    
+                    const response = await presentationService.getSlideResponses(presentationId, slideId);
+                    
+                    if (response && response.success && response.slide && response.responses) {
+                        const formattedData = formatSlideDataForExport(
+                            response.slide,
+                            response.responses,
+                            response.aggregatedData
+                        );
+                        allSlideData.push({
+                            slide: response.slide,
+                            formattedData,
+                            slideIndex: slides.indexOf(slide)
+                        });
+                    }
+                } catch (err) {
+                    console.error(`Error fetching data for slide ${slide.id || slide._id}:`, err);
+                    // Continue with other slides even if one fails
+                }
+            }
             
-            printWindow.document.close();
-            printWindow.focus();
-            
-            // Wait a bit for content to load then print
-            setTimeout(() => {
-                printWindow.print();
-                printWindow.close();
+            if (allSlideData.length === 0) {
+                toast.error('No data available to export');
                 setIsExporting(false);
-            }, 1500);
-        } catch (err) {
-            console.error('Failed to export PDF:', err);
-            alert(`Failed to export PDF. Error: ${err.message || 'Unknown error'}.`);
+                return;
+            }
+            
+            // Generate filename
+            const sanitizedTitle = (presentation?.title || 'Presentation').replace(/[^a-z0-9]/gi, '_').toLowerCase();
+            const dateStr = new Date().toISOString().split('T')[0];
+            const filename = `${sanitizedTitle}_results_${dateStr}`;
+            
+            // Export all slides to PDF
+            exportAllSlidesToPDF(allSlideData, presentation?.title || 'Presentation Results', filename);
+            
+            toast.success(`Exported ${allSlideData.length} slide(s) as PDF`);
+        } catch (error) {
+            console.error('PDF export error:', error);
+            toast.error('Failed to export PDF');
+        } finally {
             setIsExporting(false);
         }
     };

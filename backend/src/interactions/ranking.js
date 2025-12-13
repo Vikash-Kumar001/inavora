@@ -81,15 +81,20 @@ function buildResults(slide, responses) {
   });
 
   const rankedItems = Array.from(scoreMap.values()).map((entry) => ({
-    id: entry.id,
+    itemId: entry.id, // Use itemId for consistency with frontend
+    id: entry.id, // Keep id for backward compatibility
     label: entry.label,
     score: entry.score,
-    averagePosition: entry.count > 0 ? Number((entry.totalPosition / entry.count).toFixed(2)) : null,
+    averageRank: entry.count > 0 ? Number((entry.totalPosition / entry.count).toFixed(2)) : 0, // Use averageRank for frontend compatibility
+    averagePosition: entry.count > 0 ? Number((entry.totalPosition / entry.count).toFixed(2)) : null, // Keep for backward compatibility
     responseCount: entry.count
   }));
 
   rankedItems.sort((a, b) => {
     if (b.score !== a.score) return b.score - a.score;
+    // Use averageRank for sorting (it's always a number, never null)
+    if (a.averageRank !== b.averageRank) return a.averageRank - b.averageRank;
+    // Fallback to averagePosition if averageRank is the same
     if (a.averagePosition === null && b.averagePosition === null) return 0;
     if (a.averagePosition === null) return 1;
     if (b.averagePosition === null) return -1;

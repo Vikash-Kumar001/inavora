@@ -257,3 +257,14 @@ export const toggleQnaStatus = async (presentationId, questionId, isAnswered) =>
     throw error;
   }
 };
+
+// Get all responses for a specific slide
+export const getSlideResponses = async (presentationId, slideId) => {
+  try {
+    const response = await api.get(`/presentations/${presentationId}/slides/${slideId}/responses`);
+    return response.data;
+  } catch (error) {
+    console.error('Get slide responses error:', error);
+    throw error;
+  }
+};

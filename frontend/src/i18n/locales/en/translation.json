@@ -365,7 +365,9 @@
       "presenter_scan_qr_code_title": "Scan QR Code",
       "presenter_scan_qr_code_description": "Participants can scan this QR code to join directly",
       "presenter_qr_code_redirect": "QR code automatically directs to this presentation",
-      "presenter_name_prompt": "Participants who are not signed in will be prompted to enter their name before joining."
+      "presenter_name_prompt": "Participants who are not signed in will be prompted to enter their name before joining.",
+      "scan_to_join_directly": "Scan to join directly",
+      "when_scanned_description": "When scanned, participants will be directed to the presentation. If not signed in, they will need to enter their name to join."
     },
     "leaderboard": {
       "read_only_title": "Read-Only Slide",
@@ -380,6 +382,9 @@
       "participant": "Participant {{rank}}",
       "example_participant_name": "Example participant name",
       "points": "points",
+      "quizzes_played": "quizzes played",
+      "anonymous": "Anonymous",
+      "no_participants_yet": "No participants yet",
       "how_it_works": "How it works:",
       "info_item_1": "Leaderboard slides are automatically created after quiz slides",
       "info_item_2": "They display cumulative scores from all quizzes in the presentation",
@@ -408,7 +413,9 @@
       "default_title": "Add your quiz question to get started",
       "preview_prompt": "Add options in the editor to preview your quiz.",
       "correct_answer_label": "Correct answer",
-      "points_message": "Participants earn between 500 and 1000 points based on how fast they answer."
+      "points_message": "Participants earn between 500 and 1000 points based on how fast they answer.",
+      "correct_answers": "Correct Answers",
+      "votes": "votes"
     },
     "pick_answer": {
       "question_label": "Question",

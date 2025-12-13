@@ -6,6 +6,8 @@ const QuizParticipantInput = ({
   quizState = {},
   hasSubmitted,
   submissionResult,
+  voteCounts = {},
+  totalResponses = 0,
   onSubmit
 }) => {
   const [selectedAnswer, setSelectedAnswer] = useState(null);
@@ -126,17 +128,35 @@ const QuizParticipantInput = ({
     );
   }
 
+  // Helper to get vote count for an option
+  const getVoteCount = (optionId) => {
+    // Try to find the option ID in voteCounts
+    if (voteCounts[optionId] !== undefined) {
+      return voteCounts[optionId];
+    }
+    // Try to find by option text
+    const option = options.find(opt => opt.id === optionId);
+    if (option && voteCounts[option.text]) {
+      return voteCounts[option.text];
+    }
+    return 0;
+  };
+
+  // Get correct answer ID
+  const correctAnswerId = quizSettings.correctAnswerId || null;
+
   // Show submission result
   if (hasSubmitted && submissionResult) {
     return (
-      <div className="w-full max-w-3xl mx-auto">
+      <div className="w-full max-w-3xl mx-auto space-y-6">
         <div className="mb-8 sm:mb-12">
           <h2 className="text-2xl sm:text-3xl lg:text-4xl font-semibold text-[#E0E0E0] text-center leading-tight">
             {slide.question}
           </h2>
         </div>
 
-        <div className={`rounded-2xl p-6 sm:p-8 text-center mb-6 ${
+        {/* Submission Result */}
+        <div className={`rounded-2xl p-6 sm:p-8 text-center ${
           submissionResult.isCorrect 
             ? 'bg-[#1D2A20] border-2 border-[#2E7D32]/30' 
             : 'bg-[#2A1F1F] border-2 border-[#EF5350]/30'
@@ -172,8 +192,88 @@ const QuizParticipantInput = ({
           )}
         </div>
 
-        <div className="text-center text-[#6C6C6C]">
-          <p className="text-sm sm:text-base">Waiting for next slide...</p>
+        {/* Live Results */}
+        {totalResponses > 0 && (
+          <div className="bg-[#1F1F1F] rounded-2xl border border-[#2A2A2A] shadow-xl p-6 sm:p-8">
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-xl sm:text-2xl font-semibold text-[#E0E0E0]">Live Results</h3>
+              <div className="flex items-center gap-2 text-sm text-[#9E9E9E]">
+                <div className="w-2 h-2 rounded-full bg-[#4CAF50] animate-pulse"></div>
+                <span>{totalResponses} {totalResponses === 1 ? 'response' : 'responses'}</span>
+              </div>
+            </div>
+
+            <div className="space-y-3 sm:space-y-4">
+              {options.map((option) => {
+                const voteCount = getVoteCount(option.id);
+                const maxVotes = Math.max(...Object.values(voteCounts || {}), 1);
+                const percentage = maxVotes > 0 ? (voteCount / maxVotes) * 100 : 0;
+                const isCorrect = correctAnswerId === option.id;
+                const isSelected = selectedAnswer === option.id;
+                
+                return (
+                  <div
+                    key={option.id}
+                    className={`relative rounded-xl overflow-hidden border-2 transition-all ${
+                      isCorrect
+                        ? 'border-[#4CAF50] bg-[#1D2A20]/50'
+                        : isSelected
+                          ? 'border-[#FF9800] bg-[#2A2520]/50'
+                          : 'border-[#2F2F2F] bg-[#2A2A2A]'
+                    }`}
+                  >
+                    {/* Progress bar */}
+                    <div
+                      className={`absolute inset-0 transition-all duration-500 ${
+                        isCorrect
+                          ? 'bg-gradient-to-r from-[#4CAF50]/30 to-[#388E3C]/30'
+                          : 'bg-gradient-to-r from-[#333333]/50 to-[#3A3A3A]/50'
+                      }`}
+                      style={{ width: `${percentage}%` }}
+                    />
+                    
+                    {/* Content */}
+                    <div className="relative flex items-center justify-between px-4 sm:px-6 py-3 sm:py-4">
+                      <div className="flex items-center gap-3 flex-1">
+                        <span className={`text-base sm:text-lg font-semibold ${
+                          isCorrect ? 'text-[#4CAF50]' : isSelected ? 'text-[#FF9800]' : 'text-[#E0E0E0]'
+                        }`}>
+                          {option.text}
+                        </span>
+                        {isCorrect && (
+                          <span className="px-2 py-1 rounded bg-[#4CAF50]/20 text-[#4CAF50] text-xs font-bold">
+                            ✓ Correct
+                          </span>
+                        )}
+                        {isSelected && !isCorrect && (
+                          <span className="px-2 py-1 rounded bg-[#FF9800]/20 text-[#FF9800] text-xs font-bold">
+                            Your Answer
+                          </span>
+                        )}
+                      </div>
+                      <div className="text-right">
+                        <div className="text-xl sm:text-2xl font-bold text-[#E0E0E0]">
+                          {voteCount}
+                        </div>
+                        <div className="text-xs text-[#6C6C6C]">
+                          {totalResponses > 0 ? `${((voteCount / totalResponses) * 100).toFixed(1)}%` : '0%'}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        <div className="text-center py-4">
+          <div className="inline-flex items-center gap-3 px-6 py-3 rounded-xl bg-[#1D2A20] border border-[#4CAF50]/30">
+            <div className="w-2 h-2 rounded-full bg-[#4CAF50] animate-pulse"></div>
+            <p className="text-sm sm:text-base text-[#4CAF50] font-semibold">
+              Waiting for next slide...
+            </p>
+          </div>
         </div>
       </div>
     );

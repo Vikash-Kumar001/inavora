@@ -2,7 +2,14 @@ import { useEffect, useMemo, useState } from 'react';
 import { Send } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
-const HundredPointsParticipantInput = ({ slide, onSubmit, hasSubmitted, initialAllocations = [] }) => {
+const HundredPointsParticipantInput = ({ 
+  slide, 
+  onSubmit, 
+  hasSubmitted, 
+  initialAllocations = [],
+  hundredPointsResults = [],
+  totalResponses = 0
+}) => {
   const { t } = useTranslation();
   const items = useMemo(() => Array.isArray(slide?.hundredPointsItems) ? slide.hundredPointsItems : [], [slide?.hundredPointsItems]);
 
@@ -91,14 +98,65 @@ const HundredPointsParticipantInput = ({ slide, onSubmit, hasSubmitted, initialA
       </div>
 
       {hasSubmitted ? (
-        <div className="rounded-3xl border border-[#2E7D32]/30 bg-[#1D2A20] px-8 py-12 text-center shadow-lg">
-          <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-[#2E7D32]/20">
-            <svg className="h-10 w-10 text-[#4CAF50]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
-            </svg>
+        <div className="space-y-6">
+          {/* Submission confirmation */}
+          <div className="rounded-3xl border border-[#4CAF50]/30 bg-[#1D2A20] px-8 py-12 text-center shadow-lg">
+            <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-[#2E7D32]/20">
+              <svg className="h-10 w-10 text-[#4CAF50]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
+              </svg>
+            </div>
+            <h3 className="text-xl font-semibold text-[#E0E0E0]">{t('slide_editors.hundred_points.submitted_title') || 'Points allocated'}</h3>
+            <p className="mt-2 text-sm text-[#B0B0B0]">Thanks for sharing your preferences. Viewing live results...</p>
           </div>
-          <h3 className="text-xl font-semibold text-[#E0E0E0]">{t('slide_editors.hundred_points.submitted_title') || 'Points allocated'}</h3>
-          <p className="mt-2 text-sm text-[#B0B0B0]">{t('slide_editors.hundred_points.thanks_message') || 'Thanks for sharing your preferences.'}</p>
+
+          {/* Live Results */}
+          {hundredPointsResults.length > 0 && totalResponses > 0 && (
+            <div className="rounded-3xl border border-[#2A2A2A] bg-[#1F1F1F] p-6 sm:p-8 shadow-xl">
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-xl sm:text-2xl font-semibold text-[#E0E0E0]">Live Results</h3>
+                <div className="flex items-center gap-2 text-sm text-[#9E9E9E]">
+                  <div className="w-2 h-2 rounded-full bg-[#4CAF50] animate-pulse"></div>
+                  <span>{totalResponses} {totalResponses === 1 ? 'response' : 'responses'}</span>
+                </div>
+              </div>
+
+              <div className="space-y-4">
+                {hundredPointsResults
+                  .sort((a, b) => (b.averagePoints || 0) - (a.averagePoints || 0))
+                  .map((result, index) => {
+                    const item = items.find(i => i.id === result.itemId);
+                    if (!item) return null;
+                    
+                    const avgPoints = result.averagePoints || 0;
+                    const maxAvg = Math.max(...hundredPointsResults.map(r => r.averagePoints || 0), 1);
+                    const percentage = (avgPoints / maxAvg) * 100;
+                    
+                    return (
+                      <div key={result.itemId} className="space-y-2">
+                        <div className="flex items-center justify-between">
+                          <span className="text-base sm:text-lg font-semibold text-[#E0E0E0]">{item.label}</span>
+                          <div className="text-right">
+                            <div className="text-lg sm:text-xl font-bold text-[#4CAF50]">
+                              {avgPoints.toFixed(1)}
+                            </div>
+                            <div className="text-xs text-[#6C6C6C]">Avg Points</div>
+                          </div>
+                        </div>
+                        <div className="h-8 bg-[#2A2A2A] rounded-lg overflow-hidden border border-[#2F2F2F]">
+                          <div
+                            className="h-full bg-gradient-to-r from-[#388E3C] to-[#4CAF50] transition-all duration-500 flex items-center justify-end pr-3"
+                            style={{ width: `${percentage}%` }}
+                          >
+                            <span className="text-sm font-bold text-white">{avgPoints.toFixed(1)}</span>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+              </div>
+            </div>
+          )}
         </div>
       ) : (
         <div className="space-y-6">

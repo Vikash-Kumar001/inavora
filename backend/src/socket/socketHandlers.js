@@ -489,6 +489,14 @@ const setupSocketHandlers = (io, socket) => {
     }
   });
 
+  // Join presentation room for results viewing (no authentication required, just viewing results)
+  socket.on('join-presentation-results', ({ presentationId }) => {
+    if (presentationId) {
+      socket.join(`presentation-${presentationId}`);
+      Logger.debug(`Socket joined presentation-${presentationId} for results viewing`);
+    }
+  });
+
   // Participant submits response
   socket.on('submit-response', async ({ presentationId, slideId, participantId, participantName, answer }) => {
     try {

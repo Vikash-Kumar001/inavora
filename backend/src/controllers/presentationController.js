@@ -1113,6 +1113,103 @@ const toggleQnaStatus = asyncHandler(async (req, res, next) => {
   });
 });
 
+/**
+ * Get all responses for a specific slide
+ * @route GET /api/presentations/:presentationId/slides/:slideId/responses
+ * @access Private
+ * @param {string} req.params.presentationId - Presentation ID
+ * @param {string} req.params.slideId - Slide ID
+ * @returns {Object} Array of responses with aggregated data
+ */
+const getSlideResponses = asyncHandler(async (req, res, next) => {
+  const { presentationId, slideId } = req.params;
+  const userId = req.userId;
+
+  // Verify presentation belongs to user
+  const presentation = await Presentation.findOne({ _id: presentationId, userId });
+  if (!presentation) {
+    throw new AppError('Presentation not found', 404, 'RESOURCE_NOT_FOUND');
+  }
+
+  // Verify slide belongs to presentation
+  const slide = await Slide.findOne({ _id: slideId, presentationId });
+  if (!slide) {
+    throw new AppError('Slide not found', 404, 'RESOURCE_NOT_FOUND');
+  }
+
+  // Get all responses for this slide
+  const responses = await Response.find({ slideId }).sort({ createdAt: 1 }).lean();
+
+  // Build aggregated data using the same logic as socket handlers
+  const { getHandler } = require('../interactions');
+  const handler = getHandler(slide.type);
+  let aggregatedData = { totalResponses: responses.length };
+
+  if (handler && typeof handler.buildResults === 'function') {
+    const openEndedSettings = slide.openEndedSettings && typeof slide.openEndedSettings.toObject === 'function'
+      ? slide.openEndedSettings.toObject()
+      : (slide.openEndedSettings || {});
+    const qnaSettings = slide.qnaSettings && typeof slide.qnaSettings.toObject === 'function'
+      ? slide.qnaSettings.toObject()
+      : (slide.qnaSettings || {});
+
+    aggregatedData = {
+      ...aggregatedData,
+      ...handler.buildResults(slide, responses, {
+        openEndedSettings,
+        qnaSettings
+      })
+    };
+  }
+
+  // For QnA slides, get questions from session
+  if (slide.type === 'qna') {
+    const { getState: getQnaState } = require('../services/qnaSession');
+    const qnaState = getQnaState(slideId);
+    if (qnaState) {
+      aggregatedData.questions = qnaState.questions || [];
+    }
+  }
+
+  res.status(200).json({
+    success: true,
+    slide: {
+      id: slide._id,
+      type: slide.type,
+      question: slide.question,
+      options: slide.options,
+      statements: slide.statements,
+      rankingItems: slide.rankingItems,
+      hundredPointsItems: slide.hundredPointsItems,
+      gridItems: slide.gridItems,
+      quizSettings: slide.quizSettings,
+      guessNumberSettings: slide.guessNumberSettings,
+      qnaSettings: slide.qnaSettings,
+      openEndedSettings: slide.openEndedSettings,
+      pinOnImageSettings: slide.pinOnImageSettings,
+      minValue: slide.minValue,
+      maxValue: slide.maxValue,
+      minLabel: slide.minLabel,
+      maxLabel: slide.maxLabel,
+      gridAxisXLabel: slide.gridAxisXLabel,
+      gridAxisYLabel: slide.gridAxisYLabel,
+      gridAxisRange: slide.gridAxisRange,
+      maxWordsPerParticipant: slide.maxWordsPerParticipant
+    },
+    responses: responses.map(r => ({
+      id: r._id,
+      participantId: r.participantId,
+      participantName: r.participantName,
+      answer: r.answer,
+      votes: r.votes,
+      isCorrect: r.isCorrect,
+      responseTime: r.responseTime,
+      createdAt: r.createdAt
+    })),
+    aggregatedData
+  });
+});
+
 module.exports = {
   createPresentation,
   getUserPresentations,
@@ -1127,5 +1224,6 @@ module.exports = {
   createLeaderboardForQuiz,
   getLeaderboard,
   generateLeaderboards,
-  toggleQnaStatus
+  toggleQnaStatus,
+  getSlideResponses
 };

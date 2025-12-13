@@ -1,7 +1,7 @@
 // eslint-disable-next-line
 import { motion, AnimatePresence } from 'framer-motion';
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { 
   ArrowLeft, Mail, Lock, User, Building2, Phone, Globe, 
@@ -14,6 +14,7 @@ import { translateError } from '../../utils/errorTranslator';
 
 const InstitutionRegister = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { t } = useTranslation();
   
   const [currentStep, setCurrentStep] = useState(1);
@@ -58,13 +59,25 @@ const InstitutionRegister = () => {
   const [paymentResponse, setPaymentResponse] = useState(null);
   const [isPaymentProcessing, setIsPaymentProcessing] = useState(false);
 
-  // Load from sessionStorage on mount
+  // Load from sessionStorage on mount and pre-fill from navigation state
   useEffect(() => {
     const savedData = sessionStorage.getItem('institutionRegistration');
+    const initialFormData = {
+      institutionName: '',
+      adminName: '',
+      adminEmail: '',
+      country: '',
+      phoneNumber: '',
+      institutionType: ''
+    };
+    let loadedFormData = initialFormData;
+    
     if (savedData) {
       try {
         const data = JSON.parse(savedData);
-        if (data.formData) setFormData(data.formData);
+        if (data.formData) {
+          loadedFormData = { ...initialFormData, ...data.formData };
+        }
         if (data.passwordData) setPasswordData(data.passwordData);
         if (data.paymentData) setPaymentData(data.paymentData);
         if (data.selectedPlan) setSelectedPlan(data.selectedPlan);
@@ -76,8 +89,36 @@ const InstitutionRegister = () => {
         console.error('Failed to load registration data from sessionStorage:', error);
       }
     }
+    
+    // Pre-fill from navigation state if available
+    // Only pre-fill if fields are empty (either no saved data or saved data has empty fields)
+    const userData = location.state;
+    if (userData) {
+      // Check if fields are empty (empty string or null/undefined)
+      const isNameEmpty = !loadedFormData.adminName || loadedFormData.adminName.trim() === '';
+      const isEmailEmpty = !loadedFormData.adminEmail || loadedFormData.adminEmail.trim() === '';
+      const isCountryEmpty = !loadedFormData.country || loadedFormData.country.trim() === '';
+      
+      const shouldUpdateName = isNameEmpty && userData.adminName && userData.adminName.trim() !== '';
+      const shouldUpdateEmail = isEmailEmpty && userData.adminEmail && userData.adminEmail.trim() !== '';
+      const shouldUpdateCountry = isCountryEmpty && userData.country && userData.country.trim() !== '';
+      
+      if (shouldUpdateName || shouldUpdateEmail || shouldUpdateCountry) {
+        loadedFormData = {
+          ...loadedFormData,
+          adminName: shouldUpdateName ? userData.adminName.trim() : loadedFormData.adminName,
+          adminEmail: shouldUpdateEmail ? userData.adminEmail.trim() : loadedFormData.adminEmail,
+          country: shouldUpdateCountry ? userData.country.trim() : loadedFormData.country
+        };
+      }
+    }
+    
+    // Set formData once with all updates
+    setFormData(loadedFormData);
+    
     loadPlans();
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [location.state]);
 
   const loadPlans = async () => {
     try {

@@ -59,6 +59,8 @@ const JoinPresentation = () => {
   const [totalResponses, setTotalResponses] = useState(0);
   const [scaleDistribution, setScaleDistribution] = useState({});
   const [scaleAverage, setScaleAverage] = useState(0);
+  const [scaleStatementAverages, setScaleStatementAverages] = useState({});
+  const [scaleStatements, setScaleStatements] = useState([]);
   const [wordFrequencies, setWordFrequencies] = useState({});
   const [rankingResults, setRankingResults] = useState([]);
   const [hundredPointsResults, setHundredPointsResults] = useState([]);
@@ -106,17 +108,15 @@ const JoinPresentation = () => {
 
     // Wait for socket to connect
     newSocket.on('connect', () => {
-      console.log('Socket connected');
       setSocketConnected(true);
     });
 
     newSocket.on('disconnect', () => {
-      console.log('Socket disconnected');
       setSocketConnected(false);
     });
 
     newSocket.on('connect_error', (error) => {
-      console.error('Socket connection error:', error);
+      // Connection error handled by UI state
       setSocketConnected(false);
     });
 
@@ -140,14 +140,12 @@ const JoinPresentation = () => {
       // Set a timeout to reset isAutoJoining if no response is received
       const timeoutTimer = setTimeout(() => {
         if (!hasJoined) {
-          console.warn('Join presentation timeout - no response received');
           setIsAutoJoining(false);
           setJoinError('Connection timeout. Please try again.');
         }
       }, 10000); // 10 second timeout
 
       // Auto-join after socket is connected
-      console.log('Auto-joining presentation with code:', code);
       socket.emit('join-presentation', {
         accessCode: code,
         participantName: currentUser.displayName,
@@ -189,9 +187,7 @@ const JoinPresentation = () => {
     if (!socket) return;
 
     const handlePresentationJoin = (data, toastMessage = 'Joined presentation!') => {
-      console.log('Presentation live payload:', data);
       if (!data || !data.presentation) {
-        console.error('Invalid presentation data received');
         setIsAutoJoining(false);
         setJoinError('Invalid presentation data. Please try again.');
         return;
@@ -202,6 +198,8 @@ const JoinPresentation = () => {
       setTotalResponses(data.totalResponses || 0);
       setScaleDistribution(data.scaleDistribution || {});
       setScaleAverage(data.scaleAverage || 0);
+      setScaleStatementAverages(data.scaleStatementAverages || {});
+      setScaleStatements(data.scaleStatements || []);
       setWordFrequencies(data.wordFrequencies || {});
       setRankingResults(data.rankingResults || []);
       setHundredPointsResults(data.hundredPointsResults || []);
@@ -260,6 +258,8 @@ const JoinPresentation = () => {
       setTotalResponses(data.totalResponses || 0);
       setScaleDistribution(data.scaleDistribution || {});
       setScaleAverage(data.scaleAverage || 0);
+      setScaleStatementAverages(data.scaleStatementAverages || {});
+      setScaleStatements(data.scaleStatements || []);
       setWordFrequencies(data.wordFrequencies || {});
       setRankingResults(data.rankingResults || []);
       setHundredPointsResults(data.hundredPointsResults || []);
@@ -298,6 +298,12 @@ const JoinPresentation = () => {
       }
       if (data.scaleAverage !== undefined) {
         setScaleAverage(data.scaleAverage);
+      }
+      if (data.scaleStatementAverages !== undefined) {
+        setScaleStatementAverages(data.scaleStatementAverages);
+      }
+      if (data.scaleStatements !== undefined) {
+        setScaleStatements(data.scaleStatements);
       }
       if (data.wordFrequencies !== undefined) {
         setWordFrequencies(data.wordFrequencies);
@@ -429,7 +435,6 @@ const JoinPresentation = () => {
     };
 
     socket.on('error', (data) => {
-      console.error('Socket error:', data);
       setIsAutoJoining(false);
       setJoinError(data.message || 'An error occurred. Please try again.');
       setIsWaiting(false);
@@ -647,6 +652,8 @@ const JoinPresentation = () => {
             onSubmit={handleSubmitResponse}
             submissionCount={submissionCount}
             maxSubmissions={currentSlide.maxWordsPerParticipant || 1}
+            wordFrequencies={wordFrequencies}
+            totalResponses={totalResponses}
           />
         );
       case 'open_ended':
@@ -661,6 +668,7 @@ const JoinPresentation = () => {
             isVotingEnabled={openEndedSettings.isVotingEnabled}
             participantId={participantId}
             onVote={handleVoteOpenEndedResponse}
+            totalResponses={totalResponses}
           />
         );
       case 'scales':
@@ -669,6 +677,10 @@ const JoinPresentation = () => {
             slide={currentSlide}
             onSubmit={handleSubmitResponse}
             hasSubmitted={hasSubmitted}
+            scaleDistribution={scaleDistribution}
+            scaleAverage={scaleAverage}
+            scaleStatementAverages={scaleStatementAverages}
+            totalResponses={totalResponses}
           />
         );
       case 'ranking':
@@ -678,6 +690,8 @@ const JoinPresentation = () => {
             onSubmit={handleSubmitResponse}
             hasSubmitted={hasSubmitted}
             initialRanking={participantRanking}
+            rankingResults={rankingResults}
+            totalResponses={totalResponses}
           />
         );
       case 'qna':
@@ -705,6 +719,8 @@ const JoinPresentation = () => {
           <ParticipantGuessView
             slide={currentSlide}
             hasSubmitted={hasSubmitted}
+            guessDistribution={guessDistribution}
+            totalResponses={totalResponses}
             onSubmit={(guess) => {
               if (!socket) return;
               socket.emit('submit-guess', {
@@ -722,6 +738,8 @@ const JoinPresentation = () => {
             slide={currentSlide}
             onSubmit={handleSubmitResponse}
             hasSubmitted={hasSubmitted}
+            hundredPointsResults={hundredPointsResults}
+            totalResponses={totalResponses}
           />
         );
       case '2x2_grid':
@@ -730,6 +748,8 @@ const JoinPresentation = () => {
             slide={currentSlide}
             onSubmit={handleSubmitResponse}
             hasSubmitted={hasSubmitted}
+            gridResults={gridResults}
+            totalResponses={totalResponses}
           />
         );
       case 'pin_on_image':
@@ -738,6 +758,8 @@ const JoinPresentation = () => {
             slide={currentSlide}
             onSubmit={handleSubmitResponse}
             hasSubmitted={hasSubmitted}
+            pinResults={pinResults}
+            totalResponses={totalResponses}
           />
         );
       case 'quiz':
@@ -747,6 +769,8 @@ const JoinPresentation = () => {
             quizState={quizState}
             hasSubmitted={hasSubmitted}
             submissionResult={quizSubmissionResult}
+            voteCounts={voteCounts}
+            totalResponses={totalResponses}
             onSubmit={handleSubmitQuizAnswer}
           />
         );

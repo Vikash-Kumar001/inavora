@@ -8,37 +8,23 @@ function buildResults(slide, responses) {
     voteCounts[key] = 0;
   });
   
-  console.log('[pickAnswer buildResults] Initialized voteCounts:', voteCounts);
-  console.log('[pickAnswer buildResults] Options:', slide.options);
-  console.log('[pickAnswer buildResults] Responses count:', responses.length);
-  
   responses.forEach(r => {
     // Handle both string and array answers, normalize to match option keys
     const answer = Array.isArray(r.answer) ? r.answer[0] : r.answer;
     const normalizedAnswer = String(answer).trim();
-    console.log('[pickAnswer buildResults] Processing response:', {
-      rawAnswer: r.answer,
-      normalizedAnswer,
-      voteCountsKeys: Object.keys(voteCounts)
-    });
     
     // Check if the normalized answer exists as a key (case-sensitive match)
     if (voteCounts.hasOwnProperty(normalizedAnswer)) {
       voteCounts[normalizedAnswer]++;
-      console.log('[pickAnswer buildResults] Matched key, incremented:', normalizedAnswer, '->', voteCounts[normalizedAnswer]);
     } else {
       // Fallback: try to find a matching key (in case of type mismatch)
       const matchingKey = Object.keys(voteCounts).find(key => String(key).trim() === normalizedAnswer);
       if (matchingKey) {
         voteCounts[matchingKey]++;
-        console.log('[pickAnswer buildResults] Found matching key via fallback:', matchingKey, '->', voteCounts[matchingKey]);
-      } else {
-        console.log('[pickAnswer buildResults] No matching key found for:', normalizedAnswer);
       }
     }
   });
   
-  console.log('[pickAnswer buildResults] Final voteCounts:', voteCounts);
   return { voteCounts };
 }
 

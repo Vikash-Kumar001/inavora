@@ -18,7 +18,11 @@ const quiz = {
     
     // If we have session results, use them
     if (sessionResults && sessionResults.totalResponses > 0) {
+      // Extract voteCounts from session results for participant view
+      const voteCounts = sessionResults.optionCounts || {};
+      
       return {
+        voteCounts, // Add voteCounts for participant view
         quizState: {
           results: sessionResults
         }
@@ -27,13 +31,35 @@ const quiz = {
     
     // Otherwise, build from stored responses
     const optionCounts = {};
+    const voteCounts = {}; // For participant view compatibility
     let correctCount = 0;
     let incorrectCount = 0;
     let totalResponseTime = 0;
     
+    // Initialize voteCounts with all quiz options
+    const quizOptions = slide?.quizSettings?.options || [];
+    quizOptions.forEach(option => {
+      const key = option.id || option.text || String(option);
+      voteCounts[key] = 0;
+    });
+    
     responses.forEach((response) => {
       if (response.answer) {
-        optionCounts[response.answer] = (optionCounts[response.answer] || 0) + 1;
+        const answerKey = response.answer;
+        optionCounts[answerKey] = (optionCounts[answerKey] || 0) + 1;
+        // Also populate voteCounts for participant view
+        if (voteCounts.hasOwnProperty(answerKey)) {
+          voteCounts[answerKey]++;
+        } else {
+          // Fallback: try to find matching key
+          const matchingKey = Object.keys(voteCounts).find(key => String(key) === String(answerKey));
+          if (matchingKey) {
+            voteCounts[matchingKey]++;
+          } else {
+            // Add if not found
+            voteCounts[answerKey] = 1;
+          }
+        }
       }
       
       if (response.isCorrect) {
@@ -51,6 +77,7 @@ const quiz = {
     const averageResponseTime = totalResponses > 0 ? totalResponseTime / totalResponses : 0;
     
     return {
+      voteCounts, // Add voteCounts for participant view
       quizState: {
         results: {
           totalResponses,

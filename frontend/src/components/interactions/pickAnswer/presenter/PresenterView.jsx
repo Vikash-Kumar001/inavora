@@ -12,13 +12,6 @@ const PickAnswerPresenterView = ({
   const { t } = useTranslation();
   
   // Use external voteCounts if provided, otherwise compute from responses
-  console.log('[PickAnswerPresenterView] Props:', {
-    externalVoteCounts,
-    externalTotalResponses,
-    responsesLength: responses.length,
-    slideOptions: slide.options
-  });
-  
   let voteCounts = externalVoteCounts || {};
   let totalResponses = externalTotalResponses;
   

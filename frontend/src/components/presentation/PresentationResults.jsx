@@ -483,8 +483,8 @@ const PresentationResults = ({ slides, presentationId }) => {
             const dateStr = new Date().toISOString().split('T')[0];
             const filename = `${sanitizedTitle}_results_${dateStr}`;
             
-            // Export all slides to PDF
-            exportAllSlidesToPDF(allSlideData, presentation?.title || 'Presentation Results', filename);
+            // Export all slides to PDF (now async to handle QR code generation)
+            await exportAllSlidesToPDF(allSlideData, presentation?.title || 'Presentation Results', filename);
             
             toast.success(`Exported ${allSlideData.length} slide(s) as PDF`);
         } catch (error) {

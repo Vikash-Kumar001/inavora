@@ -1,5 +1,6 @@
 import * as XLSX from 'xlsx';
 import jsPDF from 'jspdf';
+import QRCode from 'qrcode';
 
 /**
  * Export utilities for CSV, Excel, and PDF formats
@@ -688,7 +689,8 @@ const formatInstructionData = (slide, responses, aggregatedData, question, times
     summary: summaryRows,
     detailed: [],
     metadata: {
-      totalResponses: 0
+      totalResponses: 0,
+      accessCode: accessCode // Store access code in metadata for QR code generation
     }
   };
 };
@@ -1429,7 +1431,7 @@ export const exportToPDF = (formattedData, presentationTitle, filename, slide = 
 /**
  * Export multiple slides to a single PDF
  */
-export const exportAllSlidesToPDF = (allSlideData, presentationTitle, filename) => {
+export const exportAllSlidesToPDF = async (allSlideData, presentationTitle, filename) => {
   const pdf = new jsPDF({
     orientation: 'portrait',
     unit: 'mm',
@@ -1491,7 +1493,8 @@ export const exportAllSlidesToPDF = (allSlideData, presentationTitle, filename) 
   yPosition += titleHeaderHeight + 20;
   
   // Export each slide
-  allSlideData.forEach(({ slide, formattedData, slideIndex }, dataIndex) => {
+  for (let dataIndex = 0; dataIndex < allSlideData.length; dataIndex++) {
+    const { slide, formattedData, slideIndex } = allSlideData[dataIndex];
     // Add page break between slides (except first)
     if (dataIndex > 0) {
       pdf.addPage();
@@ -1500,7 +1503,8 @@ export const exportAllSlidesToPDF = (allSlideData, presentationTitle, filename) 
     
     // Use the existing exportToPDF logic but for multi-slide
     // We'll call a helper function that renders a single slide page
-    yPosition = renderSlideToPDF(
+    // Note: renderSlideToPDF is now async to handle QR code generation
+    yPosition = await renderSlideToPDF(
       pdf,
       formattedData,
       slide,
@@ -1513,7 +1517,7 @@ export const exportAllSlidesToPDF = (allSlideData, presentationTitle, filename) 
       yPosition,
       checkNewPage
     );
-  });
+  }
   
   // Add footer to all pages
   const totalPages = pdf.internal.pages.length - 1;
@@ -1535,14 +1539,38 @@ export const exportAllSlidesToPDF = (allSlideData, presentationTitle, filename) 
 };
 
 /**
+ * Generate QR code as data URL
+ */
+const generateQRCodeDataURL = async (text) => {
+  try {
+    const dataURL = await QRCode.toDataURL(text, {
+      errorCorrectionLevel: 'H',
+      type: 'image/png',
+      quality: 0.92,
+      margin: 1,
+      width: 200
+    });
+    return dataURL;
+  } catch (error) {
+    console.error('Error generating QR code:', error);
+    return null;
+  }
+};
+
+/**
  * Render a single slide to PDF (helper function for multi-slide export)
  */
-const renderSlideToPDF = (pdf, formattedData, slide, slideNumber, presentationTitle, pageWidth, pageHeight, margin, contentWidth, startY, checkNewPage) => {
+const renderSlideToPDF = async (pdf, formattedData, slide, slideNumber, presentationTitle, pageWidth, pageHeight, margin, contentWidth, startY, checkNewPage) => {
   if (!formattedData || typeof formattedData !== 'object') {
     return startY;
   }
   const { question = '', timestamp = '', summary = [], detailed = [], metadata = {}, slideType = 'unknown' } = formattedData;
   let yPosition = startY;
+  
+  // Store access code in slide object if available in metadata (for instruction slides)
+  if (slideType === 'instruction' && metadata?.accessCode && !slide?.accessCode) {
+    slide = { ...slide, accessCode: metadata.accessCode };
+  }
   
   // Helper function to draw gradient background (professional blue-gray gradient)
   const drawGradientHeader = (y, height) => {
@@ -1881,6 +1909,80 @@ const renderSlideToPDF = (pdf, formattedData, slide, slideNumber, presentationTi
       
       yPosition += rowHeight + 1;
     });
+    
+    // For instruction slides, don't add extra spacing - QR code will go directly below
+    if (slideType !== 'instruction') {
+      yPosition += 10;
+    }
+  }
+  
+  // For instruction slides, add QR code directly below the table
+  if (slideType === 'instruction') {
+    const accessCode = metadata?.accessCode || slide?.accessCode || '';
+    if (accessCode) {
+      try {
+        // Generate join URL
+        let joinUrl = '';
+        try {
+          const origin = typeof window !== 'undefined' ? window.location.origin : 'https://inavora.com';
+          joinUrl = `${origin}/join/${btoa(accessCode)}`;
+        } catch (e) {
+          console.error('Error encoding access code:', e);
+          joinUrl = `https://inavora.com/join/${accessCode}`;
+        }
+        
+        // Generate QR code
+        const qrCodeDataURL = await generateQRCodeDataURL(joinUrl);
+        
+        if (qrCodeDataURL) {
+          // Calculate required space: title (5mm) + spacing (6mm) + QR code (25mm) + spacing (6mm) + text (4mm) + footer space (15mm) = 61mm
+          const requiredSpace = 61;
+          const footerSpace = 15; // Space reserved for footer at bottom
+          
+          // Check if we need a new page, accounting for footer space
+          // Only create new page if absolutely necessary
+          if (yPosition + requiredSpace > pageHeight - margin - footerSpace) {
+            pdf.addPage();
+            yPosition = margin;
+          }
+          
+          yPosition += 3; // Minimal spacing after table
+          
+          // QR Code section title - centered
+          pdf.setFontSize(10);
+          pdf.setTextColor(33, 33, 33);
+          pdf.setFont('helvetica', 'bold');
+          const titleText = 'Scan this QR code to join';
+          pdf.text(titleText, pageWidth / 2, yPosition, { align: 'center' });
+          yPosition += 6; // Spacing between title and QR code
+          
+          // Calculate QR code size (25mm x 25mm - smaller but still scannable)
+          const qrSize = 25;
+          const qrX = pageWidth / 2 - qrSize / 2; // Center on page
+          
+          // Add white background for QR code with border
+          pdf.setFillColor(255, 255, 255);
+          pdf.setDrawColor(200, 200, 200);
+          pdf.setLineWidth(0.5);
+          pdf.roundedRect(qrX - 2, yPosition - 2, qrSize + 4, qrSize + 4, 2, 2, 'FD');
+          
+          // Add QR code image
+          pdf.addImage(qrCodeDataURL, 'PNG', qrX, yPosition, qrSize, qrSize);
+          
+          yPosition += qrSize + 6; // Spacing between QR code and description
+          
+          // Add instruction text below QR code - centered and more visible
+          pdf.setFontSize(8);
+          pdf.setTextColor(66, 66, 66);
+          pdf.setFont('helvetica', 'normal');
+          const instructionText = 'with your mobile device to join the presentation';
+          pdf.text(instructionText, pageWidth / 2, yPosition, { align: 'center' });
+          yPosition += 5; // Minimal spacing before footer
+        }
+      } catch (error) {
+        console.error('Error adding QR code to PDF:', error);
+      }
+    }
   }
   
   return yPosition;

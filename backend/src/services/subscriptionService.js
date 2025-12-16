@@ -47,8 +47,8 @@ const isSubscriptionActive = async (subscription, user = null) => {
     if (user && user.isInstitutionUser && user.institutionId) {
         try {
             const effectivePlan = await getEffectivePlan(user);
-            // If effective plan is 'pro' or 'lifetime', subscription is active
-            return effectivePlan.plan === 'pro' || effectivePlan.plan === 'lifetime';
+            // If effective plan is 'pro', 'institution', or 'lifetime', subscription is active
+            return effectivePlan.plan === 'pro' || effectivePlan.plan === 'institution' || effectivePlan.plan === 'lifetime';
         } catch (error) {
             Logger.error('Error checking institution plan', error);
             // Fall through to regular check
@@ -64,7 +64,7 @@ const isSubscriptionActive = async (subscription, user = null) => {
         return false;
     }
 
-    if (subscription.plan === 'lifetime') {
+    if (subscription.plan === 'lifetime' || subscription.plan === 'institution') {
         return true;
     }
 

@@ -1057,6 +1057,14 @@
     "footer_rights_reserved": "© 2025 Inavora。保留所有权利。",
     "back": "返回"
   },
+  "support_widget": {
+    "need_help": "需要帮助？",
+    "get_in_touch": "联系我们的支持团队",
+    "email_support": "电子邮件支持",
+    "contact_form": "联系表单",
+    "send_message": "给我们发消息",
+    "support_request": "支持请求"
+  },
   "testimonials": {
     "back": "返回",
     "page_title": "客户评价",

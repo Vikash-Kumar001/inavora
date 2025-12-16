@@ -60,5 +60,11 @@ const systemController = require('../controllers/systemController');
 router.get('/system/health', verifySuperAdmin, systemController.getSystemHealth);
 router.get('/system/performance', verifySuperAdmin, systemController.getPerformanceMetrics);
 
+/**
+ * Settings Routes
+ */
+router.get('/settings', verifySuperAdmin, superAdminController.getSettings);
+router.put('/settings', verifySuperAdmin, superAdminController.updateSettings);
+
 module.exports = router;
 

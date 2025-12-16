@@ -1426,6 +1426,14 @@
     "footer_rights_reserved": "© ২০২৫ ইনভোরা। সমস্ত অধিকার সংরক্ষিত।",
     "back": "পিছনে"
   },
+  "support_widget": {
+    "need_help": "সাহায্য প্রয়োজন?",
+    "get_in_touch": "আমাদের সহায়তা দলের সাথে যোগাযোগ করুন",
+    "email_support": "ইমেইল সহায়তা",
+    "contact_form": "যোগাযোগ ফর্ম",
+    "send_message": "আমাদের একটি বার্তা পাঠান",
+    "support_request": "সহায়তা অনুরোধ"
+  },
   "testimonials": {
     "back": "পিছনে",
     "page_title": "প্রশংসাপত্র",

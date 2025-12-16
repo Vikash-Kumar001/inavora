@@ -819,6 +819,14 @@
     "privacy_policy": "سياسة الخصوصية",
     "terms_of_service": "شروط الخدمة"
   },
+  "support_widget": {
+    "need_help": "تحتاج مساعدة؟",
+    "get_in_touch": "تواصل مع فريق الدعم لدينا",
+    "email_support": "دعم البريد الإلكتروني",
+    "contact_form": "نموذج الاتصال",
+    "send_message": "أرسل لنا رسالة",
+    "support_request": "طلب الدعم"
+  },
   "about": {
     "mission_badge": "مهمتنا",
     "hero_title_line1": "حيث العروض التقديمية",

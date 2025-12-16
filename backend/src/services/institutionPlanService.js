@@ -62,9 +62,9 @@ const getEffectivePlan = async (user) => {
   const isInstitutionActive = isInstitutionSubscriptionActive(institution);
 
   if (isInstitutionActive) {
-    // Institution is active, user gets Pro plan benefits
+    // Institution is active, user gets institution plan
     return {
-      plan: 'pro', // Institution users get Pro plan benefits
+      plan: 'institution', // Institution users get institution plan
       status: 'active',
       endDate: institution.subscription.endDate,
       source: 'institution',
@@ -98,9 +98,9 @@ const applyInstitutionPlan = async (user, institution) => {
     };
   }
 
-  // Apply institution plan (Pro benefits)
+  // Apply institution plan
   const isActive = isInstitutionSubscriptionActive(institution);
-  user.subscription.plan = 'pro'; // Institution users get Pro plan
+  user.subscription.plan = 'institution'; // Institution users get institution plan
   user.subscription.status = isActive ? 'active' : 'expired';
   user.subscription.endDate = institution.subscription.endDate;
   user.subscription.institutionPlan = {
@@ -171,7 +171,7 @@ const updateInstitutionUsersPlans = async (institutionId, notifyUsers = true) =>
 
     for (const user of users) {
       if (isActive) {
-        // Institution is active, apply Pro plan
+        // Institution is active, apply institution plan
         await applyInstitutionPlan(user, institution);
         updatedUsers.push(user._id);
         updatedCount++;
@@ -246,12 +246,83 @@ const checkExpiredInstitutionSubscriptions = async () => {
   }
 };
 
+/**
+ * Fix existing institution users who have 'pro' plan instead of 'institution' plan
+ * This is a migration function to update users who were added before the fix
+ */
+const fixInstitutionUsersPlans = async () => {
+  try {
+    // Find all users who are institution users but have 'pro' plan
+    const usersToFix = await User.find({
+      isInstitutionUser: true,
+      institutionId: { $exists: true, $ne: null },
+      'subscription.plan': 'pro'
+    });
+
+    Logger.info(`Found ${usersToFix.length} institution users with 'pro' plan to fix`);
+
+    let fixedCount = 0;
+    const fixedUsers = [];
+
+    for (const user of usersToFix) {
+      try {
+        const institution = await Institution.findById(user.institutionId);
+        if (!institution) {
+          Logger.warn(`Institution ${user.institutionId} not found for user ${user._id}`);
+          continue;
+        }
+
+        // Save original plan if not already saved
+        if (!user.subscription.originalPlan?.plan) {
+          user.subscription.originalPlan = {
+            plan: 'free', // Default to free if no original plan
+            status: user.subscription.status,
+            endDate: user.subscription.endDate
+          };
+        }
+
+        // Apply institution plan
+        const isActive = isInstitutionSubscriptionActive(institution);
+        user.subscription.plan = 'institution';
+        user.subscription.status = isActive ? 'active' : 'expired';
+        user.subscription.endDate = institution.subscription.endDate;
+        user.subscription.institutionPlan = {
+          institutionId: institution._id,
+          inheritedFrom: 'institution',
+          institutionPlanStatus: institution.subscription.status
+        };
+
+        await user.save();
+        fixedUsers.push(user._id);
+        fixedCount++;
+      } catch (error) {
+        Logger.error(`Error fixing user ${user._id}`, error);
+      }
+    }
+
+    Logger.info(`Fixed plans for ${fixedCount} institution users`);
+
+    return {
+      success: true,
+      fixedCount,
+      userIds: fixedUsers
+    };
+  } catch (error) {
+    Logger.error('Error fixing institution users plans', error);
+    return {
+      success: false,
+      error: error.message
+    };
+  }
+};
+
 module.exports = {
   isInstitutionSubscriptionActive,
   getEffectivePlan,
   applyInstitutionPlan,
   removeInstitutionPlan,
   updateInstitutionUsersPlans,
-  checkExpiredInstitutionSubscriptions
+  checkExpiredInstitutionSubscriptions,
+  fixInstitutionUsersPlans
 };
 

@@ -9,7 +9,8 @@ const DataTable = ({
   onLimitChange,
   renderRow,
   emptyMessage = 'No data available',
-  showLimitSelector = true
+  showLimitSelector = true,
+  limitOptions
 }) => {
   const handlePageChange = (newPage) => {
     if (onPageChange && newPage >= 1 && newPage <= pagination?.pages) {
@@ -74,6 +75,7 @@ const DataTable = ({
           onPageChange={handlePageChange}
           onLimitChange={handleLimitChange}
           showLimitSelector={showLimitSelector}
+          limitOptions={limitOptions}
         />
       )}
     </div>

@@ -12,7 +12,8 @@ const Response = require('../models/Response');
 const Payment = require('../models/Payment');
 const { AppError, asyncHandler } = require('../middleware/errorHandler');
 const Logger = require('../utils/logger');
-const { applyInstitutionPlan, removeInstitutionPlan, isInstitutionSubscriptionActive, updateInstitutionUsersPlans } = require('../services/institutionPlanService');
+const { applyInstitutionPlan, removeInstitutionPlan, isInstitutionSubscriptionActive, updateInstitutionUsersPlans, getEffectivePlan } = require('../services/institutionPlanService');
+const settingsService = require('../services/settingsService');
 
 // Initialize Razorpay only if keys are available
 let razorpay = null;
@@ -147,7 +148,9 @@ const verifyToken = asyncHandler(async (req, res, next) => {
     institution: {
       id: req.institution._id,
       name: req.institution.name,
-      email: req.institution.email
+      email: req.institution.email,
+      adminEmail: req.institution.adminEmail,
+      adminName: req.institution.adminName
     }
   });
 });
@@ -281,16 +284,34 @@ const getInstitutionUsers = asyncHandler(async (req, res, next) => {
     }
   });
 
-  const usersWithStats = users.map((user) => ({
-    id: user._id,
-    email: user.email,
-    displayName: user.displayName,
-    photoURL: user.photoURL,
-    subscription: user.subscription,
-    presentationCount: presentationCountMap.get(user._id.toString()) || 0,
-    slideCount: userSlideCountMap.get(user._id.toString()) || 0,
-    createdAt: user.createdAt,
-    updatedAt: user.updatedAt
+  // Get effective plans for all users
+  const usersWithStats = await Promise.all(users.map(async (user) => {
+    let subscription = user.subscription;
+    if (user.isInstitutionUser && user.institutionId) {
+      try {
+        const effectivePlan = await getEffectivePlan(user);
+        subscription = {
+          ...user.subscription,
+          plan: effectivePlan.plan,
+          status: effectivePlan.status,
+          endDate: effectivePlan.endDate
+        };
+      } catch (error) {
+        Logger.error(`Error getting effective plan for user ${user._id}`, error);
+      }
+    }
+    
+    return {
+      id: user._id,
+      email: user.email,
+      displayName: user.displayName,
+      photoURL: user.photoURL,
+      subscription: subscription,
+      presentationCount: presentationCountMap.get(user._id.toString()) || 0,
+      slideCount: userSlideCountMap.get(user._id.toString()) || 0,
+      createdAt: user.createdAt,
+      updatedAt: user.updatedAt
+    };
   }));
 
   res.status(200).json({
@@ -335,6 +356,14 @@ const addInstitutionUser = asyncHandler(async (req, res, next) => {
     isInstitutionUser: true 
   });
 
+  // Check system-wide max users per institution setting
+  const maxUsersPerInstitution = await settingsService.getMaxUsersPerInstitution();
+  
+  if (currentUserCount >= maxUsersPerInstitution) {
+    throw new AppError(`User limit reached. Maximum ${maxUsersPerInstitution} users allowed per institution.`, 400, 'LIMIT_REACHED');
+  }
+
+  // Also check institution-specific limit
   if (currentUserCount >= institution.subscription.maxUsers) {
     throw new AppError(`User limit reached. Maximum ${institution.subscription.maxUsers} users allowed.`, 400, 'LIMIT_REACHED');
   }
@@ -356,7 +385,7 @@ const addInstitutionUser = asyncHandler(async (req, res, next) => {
     throw new AppError('User already belongs to another institution. Please remove them from the other institution first.', 400, 'USER_IN_OTHER_INSTITUTION');
   }
 
-  // Apply institution plan to user (gives them Pro plan benefits)
+  // Apply institution plan to user (gives them institution plan benefits)
   await applyInstitutionPlan(user, institution);
 
   // Update institution user count
@@ -367,11 +396,11 @@ const addInstitutionUser = asyncHandler(async (req, res, next) => {
   const io = req.app.get('io');
   if (io) {
     io.to(`user-${user._id}`).emit('plan-updated', {
-      plan: 'pro',
+      plan: 'institution',
       source: 'institution',
       institutionId: institution._id,
       institutionName: institution.name,
-      message: 'You have been granted Pro plan access through your institution'
+      message: 'You have been granted institution plan access through your institution'
     });
   }
 
@@ -383,19 +412,19 @@ const addInstitutionUser = asyncHandler(async (req, res, next) => {
     timestamp: new Date(),
     action: 'user_added',
     user: req.institutionAdmin?.email || req.institution?.adminEmail || 'System',
-    details: `User ${user.email} added to institution and granted Pro plan access`,
+    details: `User ${user.email} added to institution and granted institution plan access`,
     ipAddress: req.ip || req.headers['x-forwarded-for'] || 'unknown'
   });
   await institution.save();
 
   res.status(201).json({
     success: true,
-    message: 'User added successfully and granted Pro plan access',
+    message: 'User added successfully and granted institution plan access',
     data: {
       id: user._id,
       email: user.email,
       displayName: user.displayName,
-      plan: 'pro', // Institution users get Pro plan
+      plan: 'institution', // Institution users get institution plan
       institutionPlanActive: true
     }
   });
@@ -1809,11 +1838,11 @@ const verifyAdditionalUsersPayment = asyncHandler(async (req, res, next) => {
       const io = req.app.get('io');
       if (io) {
         io.to(`user-${user._id}`).emit('plan-updated', {
-          plan: 'pro',
+          plan: 'institution',
           source: 'institution',
           institutionId: institution._id,
           institutionName: institution.name,
-          message: 'You have been granted Pro plan access through your institution'
+          message: 'You have been granted institution plan access through your institution'
         });
       }
     } catch (error) {
@@ -1822,11 +1851,20 @@ const verifyAdditionalUsersPayment = asyncHandler(async (req, res, next) => {
     }
   }
 
+  // Check system-wide max users per institution setting
+  const maxUsersPerInstitution = await settingsService.getMaxUsersPerInstitution();
+  
   // Update institution user count and max users
   const currentUserCount = await User.countDocuments({
     institutionId,
     isInstitutionUser: true
   });
+  
+  // Ensure we don't exceed system-wide limit
+  if (currentUserCount >= maxUsersPerInstitution) {
+    throw new AppError(`Cannot add users. System-wide limit of ${maxUsersPerInstitution} users per institution has been reached.`, 400, 'LIMIT_REACHED');
+  }
+  
   institution.subscription.currentUsers = currentUserCount;
   institution.subscription.maxUsers = institution.subscription.maxUsers + addedUsers.length;
   await institution.save();
@@ -2215,8 +2253,11 @@ const changePassword = asyncHandler(async (req, res, next) => {
     throw new AppError('Current password and new password are required', 400, 'VALIDATION_ERROR');
   }
 
-  if (newPassword.length < 8) {
-    throw new AppError('New password must be at least 8 characters long', 400, 'VALIDATION_ERROR');
+  // Get password minimum length from settings
+  const passwordMinLength = await settingsService.getPasswordMinLength();
+  
+  if (newPassword.length < passwordMinLength) {
+    throw new AppError(`New password must be at least ${passwordMinLength} characters long`, 400, 'VALIDATION_ERROR');
   }
 
   const institution = await Institution.findById(institutionId);

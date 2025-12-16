@@ -992,6 +992,14 @@
     "footer_rights_reserved": "© 2025 इनवोरा। सर्वाधिकार सुरक्षित।",
     "back": "वापस"
   },
+  "support_widget": {
+    "need_help": "मदद चाहिए?",
+    "get_in_touch": "हमारी सहायता टीम से संपर्क करें",
+    "email_support": "ईमेल सहायता",
+    "contact_form": "संपर्क फॉर्म",
+    "send_message": "हमें एक संदेश भेजें",
+    "support_request": "सहायता अनुरोध"
+  },
   "testimonials": {
     "back": "वापस",
     "page_title": "प्रशंसापत्र",

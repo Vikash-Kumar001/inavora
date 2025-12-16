@@ -10,7 +10,7 @@ import { Eye, Download, CheckSquare, Square } from 'lucide-react';
 const UsersList = ({ onUserClick }) => {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [pagination, setPagination] = useState({ page: 1, limit: 25, total: 0, pages: 1 });
+  const [pagination, setPagination] = useState({ page: 1, limit: 15, total: 0, pages: 1 });
   const [filters, setFilters] = useState({});
   const [selectedUser, setSelectedUser] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -19,7 +19,7 @@ const UsersList = ({ onUserClick }) => {
 
   useEffect(() => {
     fetchUsers();
-  }, [pagination.page, filters]);
+  }, [pagination.page, pagination.limit, filters]);
 
   const fetchUsers = async () => {
     try {
@@ -282,6 +282,7 @@ const UsersList = ({ onUserClick }) => {
         onLimitChange={handleLimitChange}
         renderRow={renderRow}
         emptyMessage="No users found"
+        limitOptions={[10, 15, 25, 50, 100]}
       />
       {selectedUser && (
         <UserDetailModal

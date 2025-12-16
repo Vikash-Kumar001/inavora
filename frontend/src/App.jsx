@@ -24,6 +24,7 @@ const Contact = lazy(() => import('./components/pages/Contact'));
 const PrivacyPolicy = lazy(() => import('./components/pages/PrivacyPolicy'));
 const TermsOfService = lazy(() => import('./components/pages/TermsOfService'));
 const Testimonials = lazy(() => import('./components/pages/Testimonials'));
+const Maintenance = lazy(() => import('./components/pages/Maintenance'));
 const SuperAdminLayout = lazy(() => import('./components/SuperAdmin/SuperAdminLayout'));
 const SuperAdminLogin = lazy(() => import('./components/SuperAdmin/pages/SuperAdminLogin'));
 const DashboardPage = lazy(() => import('./components/SuperAdmin/pages/DashboardPage'));
@@ -156,6 +157,7 @@ function App() {
               <Route path="/privacy-policy" element={<PrivacyPolicy />} />
               <Route path="/terms-of-service" element={<TermsOfService />} />
               <Route path="/testimonials" element={<Testimonials />} />
+              <Route path="/maintenance" element={<Maintenance />} />
               
               {/* Super Admin Routes */}
               <Route path="/super-admin/login" element={<SuperAdminLogin />} />

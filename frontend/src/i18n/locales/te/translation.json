@@ -486,6 +486,14 @@
     "footer_rights_reserved": "© ౨౦౨౫ ఇనవోరా. అన్ని హక్కులు కాపాడబడ్డాయి.",
     "back": "వెనక్కి"
   },
+  "support_widget": {
+    "need_help": "సహాయం కావాలా?",
+    "get_in_touch": "మా మద్దతు బృందంతో సంప్రదించండి",
+    "email_support": "ఇమెయిల్ మద్దతు",
+    "contact_form": "సంప్రదింపు ఫారమ్",
+    "send_message": "మాకు సందేశం పంపండి",
+    "support_request": "మద్దతు అభ్యర్థన"
+  },
   "testimonials": {
     "back": "వెనక్కి",
     "page_title": "సాక్ష్యాలు",

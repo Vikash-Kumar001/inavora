@@ -1070,6 +1070,14 @@
     "footer_rights_reserved": "© 2025 Inavora. All rights reserved.",
     "back": "Back"
   },
+  "support_widget": {
+    "need_help": "Need Help?",
+    "get_in_touch": "Get in touch with our support team",
+    "email_support": "Email Support",
+    "contact_form": "Contact Form",
+    "send_message": "Send us a message",
+    "support_request": "Support Request"
+  },
   "slide_canvas": {
     "google_slides_presentation": "Google Slides Presentation",
     "participants_can_view": "Participants can view the presentation",
@@ -1481,6 +1489,8 @@
     "change_password": "Change Password",
     "admin_name": "Admin Name",
     "admin_name_placeholder": "Enter your name",
+    "fetch_automatically": "fetch name automatically",
+    "admin_name_fetched": "Admin name is fetched automatically from your institution profile",
     "admin_email": "Admin Email",
     "admin_email_placeholder": "Enter your email",
     "institution_name": "Institution Name",

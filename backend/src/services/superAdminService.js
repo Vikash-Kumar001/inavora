@@ -4,6 +4,7 @@ const Payment = require('../models/Payment');
 const Presentation = require('../models/Presentation');
 const Response = require('../models/Response');
 const Logger = require('../utils/logger');
+const { getEffectivePlan } = require('./institutionPlanService');
 
 /**
  * Get overall platform statistics
@@ -21,8 +22,16 @@ const getPlatformStats = async () => {
     ] = await Promise.all([
       User.countDocuments(),
       User.countDocuments({
-        'subscription.status': 'active',
-        'subscription.plan': { $ne: 'free' }
+        $or: [
+          {
+            'subscription.status': 'active',
+            'subscription.plan': { $in: ['pro', 'lifetime', 'institution'] }
+          },
+          {
+            isInstitutionUser: true,
+            institutionId: { $exists: true, $ne: null }
+          }
+        ]
       }),
       Institution.countDocuments(),
       Institution.countDocuments({ 'subscription.status': 'active' }),
@@ -31,15 +40,39 @@ const getPlatformStats = async () => {
       Presentation.countDocuments({ isLive: true })
     ]);
 
-    // Get users by plan
-    const usersByPlan = await User.aggregate([
-      {
-        $group: {
-          _id: '$subscription.plan',
-          count: { $sum: 1 }
+    // Get users by plan (including effective plans for institution users)
+    // First get all users and calculate effective plans
+    const allUsers = await User.find({}).lean();
+    const planCounts = {
+      free: 0,
+      pro: 0,
+      lifetime: 0,
+      institution: 0
+    };
+
+    for (const user of allUsers) {
+      let plan = user.subscription?.plan || 'free';
+      
+      // If institution user, get effective plan
+      if (user.isInstitutionUser && user.institutionId) {
+        try {
+          const userDoc = await User.findById(user._id);
+          if (userDoc) {
+            const effectivePlan = await getEffectivePlan(userDoc);
+            plan = effectivePlan.plan;
+          }
+        } catch (error) {
+          Logger.error(`Error getting effective plan for user ${user._id} in stats`, error);
         }
       }
-    ]);
+      
+      planCounts[plan] = (planCounts[plan] || 0) + 1;
+    }
+
+    const usersByPlan = Object.entries(planCounts).map(([plan, count]) => ({
+      _id: plan,
+      count
+    }));
 
     // Get recent registrations (last 30 days)
     const thirtyDaysAgo = new Date();
@@ -131,9 +164,27 @@ const getUsers = async (filters = {}, page = 1, limit = 50) => {
       ];
     }
 
-    // Plan filter
+    // Plan filter - handle institution users correctly
     if (filters.plan) {
-      query['subscription.plan'] = filters.plan;
+      if (filters.plan === 'institution') {
+        // For institution plan, find users who are institution users
+        query.isInstitutionUser = true;
+        query.institutionId = { $exists: true, $ne: null };
+      } else {
+        // For other plans (free, pro, lifetime), exclude institution users
+        // Institution users should only show up when filtering for 'institution'
+        query.$and = [
+          { 'subscription.plan': filters.plan },
+          {
+            $or: [
+              { isInstitutionUser: { $ne: true } },
+              { isInstitutionUser: { $exists: false } },
+              { institutionId: { $exists: false } },
+              { institutionId: null }
+            ]
+          }
+        ];
+      }
     }
 
     // Status filter
@@ -171,8 +222,36 @@ const getUsers = async (filters = {}, page = 1, limit = 50) => {
       User.countDocuments(query)
     ]);
 
+    // Get effective plans for institution users
+    const usersWithEffectivePlans = await Promise.all(
+      users.map(async (user) => {
+        let subscription = user.subscription;
+        if (user.isInstitutionUser && user.institutionId) {
+          try {
+            // Convert lean object back to Mongoose document for getEffectivePlan
+            const userDoc = await User.findById(user._id);
+            if (userDoc) {
+              const effectivePlan = await getEffectivePlan(userDoc);
+              subscription = {
+                ...user.subscription,
+                plan: effectivePlan.plan,
+                status: effectivePlan.status,
+                endDate: effectivePlan.endDate
+              };
+            }
+          } catch (error) {
+            Logger.error(`Error getting effective plan for user ${user._id}`, error);
+          }
+        }
+        return {
+          ...user,
+          subscription
+        };
+      })
+    );
+
     return {
-      users,
+      users: usersWithEffectivePlans,
       pagination: {
         page,
         limit,
@@ -199,6 +278,25 @@ const getUserById = async (userId) => {
       throw new Error('User not found');
     }
 
+    // Get effective plan for institution users
+    let subscription = user.subscription;
+    if (user.isInstitutionUser && user.institutionId) {
+      try {
+        const userDoc = await User.findById(userId);
+        if (userDoc) {
+          const effectivePlan = await getEffectivePlan(userDoc);
+          subscription = {
+            ...user.subscription,
+            plan: effectivePlan.plan,
+            status: effectivePlan.status,
+            endDate: effectivePlan.endDate
+          };
+        }
+      } catch (error) {
+        Logger.error(`Error getting effective plan for user ${userId}`, error);
+      }
+    }
+
     // Get user's presentations
     const presentations = await Presentation.find({ userId: userId })
       .select('title isLive accessCode createdAt')
@@ -214,7 +312,10 @@ const getUserById = async (userId) => {
       .lean();
 
     return {
-      user,
+      user: {
+        ...user,
+        subscription
+      },
       presentations,
       payments
     };
@@ -309,11 +410,37 @@ const getInstitutionById = async (institutionId) => {
       throw new Error('Institution not found');
     }
 
-    // Get institution users
-    const users = await User.find({ institutionId: institutionId })
-      .select('email displayName subscription createdAt')
+    // Get institution users with effective plans
+    const usersRaw = await User.find({ institutionId: institutionId })
+      .select('email displayName subscription createdAt isInstitutionUser')
       .sort({ createdAt: -1 })
       .lean();
+
+    const users = await Promise.all(
+      usersRaw.map(async (user) => {
+        let subscription = user.subscription;
+        if (user.isInstitutionUser && user.institutionId) {
+          try {
+            const userDoc = await User.findById(user._id);
+            if (userDoc) {
+              const effectivePlan = await getEffectivePlan(userDoc);
+              subscription = {
+                ...user.subscription,
+                plan: effectivePlan.plan,
+                status: effectivePlan.status,
+                endDate: effectivePlan.endDate
+              };
+            }
+          } catch (error) {
+            Logger.error(`Error getting effective plan for user ${user._id}`, error);
+          }
+        }
+        return {
+          ...user,
+          subscription
+        };
+      })
+    );
 
     // Get institution payments
     const payments = await Payment.find({ institutionId: institutionId })

@@ -996,6 +996,14 @@
     "footer_rights_reserved": "© 2025 इन्व्होरा. सर्व हक्क राखीव.",
     "back": "मागे"
   },
+  "support_widget": {
+    "need_help": "मदत हवी आहे?",
+    "get_in_touch": "आमच्या समर्थन संघाशी संपर्क साधा",
+    "email_support": "ईमेल समर्थन",
+    "contact_form": "संपर्क फॉर्म",
+    "send_message": "आम्हाला एक संदेश पाठवा",
+    "support_request": "समर्थन विनंती"
+  },
   "testimonials": {
     "back": "मागे",
     "page_title": "प्रशंसापत्रे",

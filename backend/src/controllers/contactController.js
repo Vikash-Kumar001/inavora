@@ -1,6 +1,7 @@
 const { Resend } = require('resend');
 const { validationResult } = require('express-validator');
 const Logger = require('../utils/logger');
+const settingsService = require('../services/settingsService');
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
@@ -44,52 +45,56 @@ exports.submitContact = async (req, res) => {
       </div>
     `;
 
-    // Send email to support
-    try {
-      await resend.emails.send({
-        from: process.env.RESEND_FROM_EMAIL || 'Inavora <noreply@inavora.com>',
-        to: process.env.SUPPORT_EMAIL || 'support@inavora.com',
-        replyTo: userEmail,
-        subject: `[Contact Form] ${subject}`,
-        html: emailContent
-      });
-
-      // Send confirmation email to user
+    // Get support email from platform settings
+    const platformSettings = await settingsService.getPlatformSettings();
+    const supportEmail = platformSettings.supportEmail;
+    const areNotificationsEnabled = await settingsService.areEmailNotificationsEnabled();
+    
+    // Send email to support (only if notifications are enabled)
+    if (areNotificationsEnabled) {
       try {
         await resend.emails.send({
           from: process.env.RESEND_FROM_EMAIL || 'Inavora <noreply@inavora.com>',
-          to: userEmail,
-          subject: 'We received your message - Inavora Support',
-          html: `
-            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-              <h2 style="color: #3b82f6;">Thank you for contacting us!</h2>
-              <p>Hi ${name},</p>
-              <p>We've received your message and our support team will get back to you within 24-48 hours.</p>
-              <div style="background: #f3f4f6; padding: 20px; border-radius: 8px; margin: 20px 0;">
-                <p><strong>Your Message:</strong></p>
-                <p style="white-space: pre-wrap; background: white; padding: 15px; border-radius: 4px;">${message}</p>
-              </div>
-              <p>If you have any urgent questions, please call us at +91 9043411110 or email us directly at support@inavora.com</p>
-              <p>Best regards,<br>The Inavora Team</p>
-            </div>
-          `
+          to: supportEmail,
+          replyTo: userEmail,
+          subject: `[Contact Form] ${subject}`,
+          html: emailContent
         });
       } catch (emailError) {
-        Logger.error('Error sending confirmation email', emailError);
-        // Don't fail the request if confirmation email fails
+        Logger.error('Error sending contact email', emailError);
+        // Continue even if email fails
       }
+    }
 
-      res.status(200).json({
-        success: true,
-        message: 'Your message has been sent successfully. We will get back to you within 24-48 hours.'
+    // Send confirmation email to user
+    try {
+      await resend.emails.send({
+        from: process.env.RESEND_FROM_EMAIL || 'Inavora <noreply@inavora.com>',
+        to: userEmail,
+        subject: 'We received your message - Inavora Support',
+        html: `
+          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+            <h2 style="color: #3b82f6;">Thank you for contacting us!</h2>
+            <p>Hi ${name},</p>
+            <p>We've received your message and our support team will get back to you within 24-48 hours.</p>
+            <div style="background: #f3f4f6; padding: 20px; border-radius: 8px; margin: 20px 0;">
+              <p><strong>Your Message:</strong></p>
+              <p style="white-space: pre-wrap; background: white; padding: 15px; border-radius: 4px;">${message}</p>
+            </div>
+            <p>If you have any urgent questions, please call us at ${platformSettings.supportPhone} or email us directly at ${platformSettings.supportEmail}</p>
+            <p>Best regards,<br>The ${platformSettings.siteName} Team</p>
+          </div>
+        `
       });
     } catch (emailError) {
-      Logger.error('Error sending contact email', emailError);
-      res.status(500).json({
-        success: false,
-        message: 'Failed to send message. Please try again or contact us directly at support@inavora.com'
-      });
+      Logger.error('Error sending confirmation email', emailError);
+      // Don't fail the request if confirmation email fails
     }
+
+    res.status(200).json({
+      success: true,
+      message: 'Your message has been sent successfully. We will get back to you within 24-48 hours.'
+    });
   } catch (error) {
     Logger.error('Error in contact form submission', error);
     res.status(500).json({

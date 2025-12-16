@@ -996,6 +996,14 @@
     "footer_rights_reserved": "© 2025 Inavora. Tous droits réservés.",
     "back": "Retour"
   },
+  "support_widget": {
+    "need_help": "Besoin d'aide ?",
+    "get_in_touch": "Contactez notre équipe de support",
+    "email_support": "Support par e-mail",
+    "contact_form": "Formulaire de contact",
+    "send_message": "Envoyez-nous un message",
+    "support_request": "Demande de support"
+  },
   "testimonials": {
     "back": "Retour",
     "page_title": "Témoignages",

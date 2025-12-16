@@ -1,15 +1,12 @@
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, User, Mail, Building, Lock, Save, Eye, EyeOff } from 'lucide-react';
+import { X, User, Mail, Building, Lock, Eye, EyeOff } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useState, useEffect } from 'react';
 
 const ProfileModal = ({ isOpen, onClose, institution, onUpdateProfile, onChangePassword, loading }) => {
     const { t } = useTranslation();
     const [activeTab, setActiveTab] = useState('profile');
-    const [profileData, setProfileData] = useState({
-        adminName: institution?.adminName || '',
-        adminEmail: institution?.adminEmail || ''
-    });
+    // Profile data is now read-only, no need for state
     const [passwordData, setPasswordData] = useState({
         currentPassword: '',
         newPassword: '',
@@ -35,30 +32,7 @@ const ProfileModal = ({ isOpen, onClose, institution, onUpdateProfile, onChangeP
         }
     }, [isOpen]);
 
-    // Update profile data when institution changes
-    useEffect(() => {
-        if (institution) {
-            setProfileData({
-                adminName: institution.adminName || '',
-                adminEmail: institution.adminEmail || ''
-            });
-        }
-    }, [institution]);
-
-    const handleProfileChange = (field, value) => {
-        setProfileData(prev => ({
-            ...prev,
-            [field]: value
-        }));
-        // Clear error for this field
-        if (errors[field]) {
-            setErrors(prev => {
-                const newErrors = { ...prev };
-                delete newErrors[field];
-                return newErrors;
-            });
-        }
-    };
+    // Profile fields are read-only, no need for change handlers
 
     const handlePasswordChange = (field, value) => {
         setPasswordData(prev => ({
@@ -76,23 +50,10 @@ const ProfileModal = ({ isOpen, onClose, institution, onUpdateProfile, onChangeP
     };
 
     const validateProfile = () => {
-        const newErrors = {};
-        
-        if (!profileData.adminName.trim()) {
-            newErrors.adminName = t('institution_admin.name_required') || 'Name is required';
-        }
-        
-        if (!profileData.adminEmail.trim()) {
-            newErrors.adminEmail = t('institution_admin.email_required') || 'Email is required';
-        } else {
-            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-            if (!emailRegex.test(profileData.adminEmail)) {
-                newErrors.adminEmail = t('institution_admin.invalid_email') || 'Invalid email format';
-            }
-        }
-
-        setErrors(newErrors);
-        return Object.keys(newErrors).length === 0;
+        // No validation needed since all fields are read-only
+        // This function is kept for consistency but will always return true
+        setErrors({});
+        return true;
     };
 
     const validatePassword = () => {
@@ -120,26 +81,44 @@ const ProfileModal = ({ isOpen, onClose, institution, onUpdateProfile, onChangeP
 
     const handleProfileSubmit = async (e) => {
         e.preventDefault();
-        if (!validateProfile()) return;
-
-        await onUpdateProfile(profileData);
+        // Since all fields are read-only, no need to submit
+        // This form submission is disabled
+        return;
     };
 
     const handlePasswordSubmit = async (e) => {
         e.preventDefault();
         if (!validatePassword()) return;
 
-        await onChangePassword({
-            currentPassword: passwordData.currentPassword,
-            newPassword: passwordData.newPassword
-        });
+        try {
+            await onChangePassword({
+                currentPassword: passwordData.currentPassword,
+                newPassword: passwordData.newPassword
+            });
 
-        // Reset password form on success
-        setPasswordData({
-            currentPassword: '',
-            newPassword: '',
-            confirmPassword: ''
-        });
+            // Reset password form on success
+            setPasswordData({
+                currentPassword: '',
+                newPassword: '',
+                confirmPassword: ''
+            });
+            setErrors({});
+            
+            // Success toast is shown by the parent component
+        } catch (error) {
+            // Error toast is shown by the parent component
+            // Set specific field errors for better UX
+            const errorMessage = error.response?.data?.message || error.response?.data?.error || error.message || 'An error occurred';
+            
+            if (errorMessage.toLowerCase().includes('current password') || errorMessage.toLowerCase().includes('incorrect')) {
+                setErrors({ currentPassword: errorMessage });
+            } else if (errorMessage.toLowerCase().includes('new password') || errorMessage.toLowerCase().includes('at least')) {
+                setErrors({ newPassword: errorMessage });
+            } else {
+                // Generic error - could be validation or server error
+                setErrors({ newPassword: errorMessage });
+            }
+        }
     };
 
     const handleClose = () => {
@@ -228,12 +207,9 @@ const ProfileModal = ({ isOpen, onClose, institution, onUpdateProfile, onChangeP
                                             disabled
                                             className="w-full px-4 py-2 bg-white/5 border border-white/10 rounded-lg text-gray-400 cursor-not-allowed"
                                         />
-                                        <p className="text-xs text-gray-500 mt-1">
-                                            {t('institution_admin.institution_name_readonly') || 'Institution name cannot be changed'}
-                                        </p>
                                     </div>
 
-                                    {/* Admin Name */}
+                                    {/* Admin Name (Read-only) */}
                                     <div>
                                         <label className="block text-sm font-medium text-white mb-2 flex items-center gap-2">
                                             <User className="w-4 h-4 text-teal-400" />
@@ -241,36 +217,10 @@ const ProfileModal = ({ isOpen, onClose, institution, onUpdateProfile, onChangeP
                                         </label>
                                         <input
                                             type="text"
-                                            value={profileData.adminName}
-                                            onChange={(e) => handleProfileChange('adminName', e.target.value)}
-                                            className={`w-full px-4 py-2 bg-white/5 border rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-teal-500 ${
-                                                errors.adminName ? 'border-red-500' : 'border-white/10'
-                                            }`}
-                                            placeholder={t('institution_admin.admin_name_placeholder') || 'Enter your name'}
+                                            value={institution?.adminName || ''}
+                                            disabled
+                                            className="w-full px-4 py-2 bg-white/5 border border-white/10 rounded-lg text-gray-400 cursor-not-allowed"
                                         />
-                                        {errors.adminName && (
-                                            <p className="text-xs text-red-400 mt-1">{errors.adminName}</p>
-                                        )}
-                                    </div>
-
-                                    {/* Admin Email */}
-                                    <div>
-                                        <label className="block text-sm font-medium text-white mb-2 flex items-center gap-2">
-                                            <Mail className="w-4 h-4 text-teal-400" />
-                                            {t('institution_admin.admin_email') || 'Admin Email'}
-                                        </label>
-                                        <input
-                                            type="email"
-                                            value={profileData.adminEmail}
-                                            onChange={(e) => handleProfileChange('adminEmail', e.target.value)}
-                                            className={`w-full px-4 py-2 bg-white/5 border rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-teal-500 ${
-                                                errors.adminEmail ? 'border-red-500' : 'border-white/10'
-                                            }`}
-                                            placeholder={t('institution_admin.admin_email_placeholder') || 'Enter your email'}
-                                        />
-                                        {errors.adminEmail && (
-                                            <p className="text-xs text-red-400 mt-1">{errors.adminEmail}</p>
-                                        )}
                                     </div>
 
                                     {/* Institution Email (Read-only) */}
@@ -285,21 +235,9 @@ const ProfileModal = ({ isOpen, onClose, institution, onUpdateProfile, onChangeP
                                             disabled
                                             className="w-full px-4 py-2 bg-white/5 border border-white/10 rounded-lg text-gray-400 cursor-not-allowed"
                                         />
-                                        <p className="text-xs text-gray-500 mt-1">
-                                            {t('institution_admin.institution_email_readonly') || 'Institution email cannot be changed'}
-                                        </p>
                                     </div>
 
-                                    <div className="flex justify-end pt-4 border-t border-white/10">
-                                        <button
-                                            type="submit"
-                                            disabled={loading}
-                                            className="flex items-center gap-2 px-6 py-3 bg-teal-500 hover:bg-teal-600 text-white font-medium rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                                        >
-                                            <Save className="w-4 h-4" />
-                                            {loading ? (t('institution_admin.saving') || 'Saving...') : (t('institution_admin.save_profile') || 'Save Profile')}
-                                        </button>
-                                    </div>
+                                    {/* No save button needed since all fields are read-only */}
                                 </form>
                             )}
 

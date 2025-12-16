@@ -38,10 +38,19 @@ api.interceptors.request.use(
   }
 );
 
-// Handle token expiration
+// Handle token expiration and maintenance mode
 api.interceptors.response.use(
   (response) => response,
   (error) => {
+    // Check if the error is due to maintenance mode
+    if (error.response?.status === 503 && error.response?.data?.maintenance) {
+      // Redirect to maintenance page
+      if (window.location.pathname !== '/maintenance') {
+        window.location.href = '/maintenance';
+      }
+      return Promise.reject(error);
+    }
+
     if (error.response?.status === 401) {
       // Check if it's a super admin route
       const isSuperAdminRoute = error.config?.url?.includes('/super-admin') || 

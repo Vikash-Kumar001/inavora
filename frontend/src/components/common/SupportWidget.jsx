@@ -1,37 +1,30 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { HelpCircle, X, Mail, MessageSquare, Phone, ExternalLink } from 'lucide-react';
+import { HelpCircle, X, Mail, MessageSquare, ExternalLink } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 
 const SupportWidget = () => {
   const [isOpen, setIsOpen] = useState(false);
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   const supportOptions = [
     {
       icon: Mail,
-      title: 'Email Support',
+      title: t('support_widget.email_support'),
       description: 'support@inavora.com',
       action: () => {
-        window.location.href = 'mailto:support@inavora.com?subject=Support Request';
+        window.location.href = `mailto:support@inavora.com?subject=${encodeURIComponent(t('support_widget.support_request'))}`;
         setIsOpen(false);
       }
     },
     {
       icon: MessageSquare,
-      title: 'Contact Form',
-      description: 'Send us a message',
+      title: t('support_widget.contact_form'),
+      description: t('support_widget.send_message'),
       action: () => {
         navigate('/contact');
-        setIsOpen(false);
-      }
-    },
-    {
-      icon: Phone,
-      title: 'Call Us',
-      description: '+91 9043411110',
-      action: () => {
-        window.location.href = 'tel:+919043411110';
         setIsOpen(false);
       }
     }
@@ -47,7 +40,7 @@ const SupportWidget = () => {
         whileTap={{ scale: 0.9 }}
         onClick={() => setIsOpen(true)}
         className="fixed bottom-8 right-8 z-50 w-14 h-14 rounded-full bg-gradient-to-r from-blue-600 to-teal-500 text-white shadow-lg hover:shadow-teal-500/25 transition-all flex items-center justify-center group"
-        title="Need Help?"
+        title={t('support_widget.need_help')}
       >
         <HelpCircle className="w-6 h-6" />
       </motion.button>
@@ -70,7 +63,7 @@ const SupportWidget = () => {
               className="fixed bottom-24 right-8 z-50 w-80 bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-2xl"
             >
               <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-bold">Need Help?</h3>
+                <h3 className="text-lg font-bold">{t('support_widget.need_help')}</h3>
                 <button
                   onClick={() => setIsOpen(false)}
                   className="p-1 hover:bg-slate-800 rounded-lg transition-colors"
@@ -79,7 +72,7 @@ const SupportWidget = () => {
                 </button>
               </div>
               <p className="text-sm text-slate-400 mb-4">
-                Get in touch with our support team
+                {t('support_widget.get_in_touch')}
               </p>
               <div className="space-y-2">
                 {supportOptions.map((option, index) => {

@@ -9,13 +9,13 @@ import { motion } from 'framer-motion';
 const PresentationsList = () => {
   const [presentations, setPresentations] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [pagination, setPagination] = useState({ page: 1, limit: 25, total: 0, pages: 1 });
+  const [pagination, setPagination] = useState({ page: 1, limit: 15, total: 0, pages: 1 });
   const [filters, setFilters] = useState({});
   const [selectedPresentation, setSelectedPresentation] = useState(null);
 
   useEffect(() => {
     fetchPresentations();
-  }, [pagination.page, filters]);
+  }, [pagination.page, pagination.limit, filters]);
 
   const fetchPresentations = async () => {
     try {
@@ -184,6 +184,7 @@ const PresentationsList = () => {
         onLimitChange={handleLimitChange}
         renderRow={renderRow}
         emptyMessage="No presentations found"
+        limitOptions={[10, 15, 25, 50, 100]}
       />
 
       {/* Presentation Detail Modal */}

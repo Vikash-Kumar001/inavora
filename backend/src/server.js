@@ -122,6 +122,10 @@ app.set('io', io);
 // Health check endpoints (before other routes, no rate limiting)
 app.use('/health', healthRoutes);
 
+// Maintenance status endpoint (public, before maintenance check)
+const maintenanceRoutes = require('./routes/maintenanceRoutes');
+app.use('/api/maintenance', maintenanceRoutes);
+
 // Swagger API documentation (only in development)
 if (process.env.NODE_ENV !== 'production') {
   setupSwagger(app);
@@ -142,16 +146,18 @@ app.use('/api/password-reset', passwordResetRoutes);
 if (process.env.NODE_ENV !== 'production') {
   app.use('/api', testEmailRoutes);
 }
-app.use('/api/payments', paymentRoutes);
-app.use('/api/presentations', presentationRoutes);
-app.use('/api/upload', uploadRoutes);
-app.use('/api/careers', careersRoutes);
-app.use('/api/job-postings', jobPostingRoutes);
+// Apply maintenance mode check to protected routes
+const { checkMaintenanceMode } = require('./middleware/maintenanceMode');
+app.use('/api/payments', checkMaintenanceMode, paymentRoutes);
+app.use('/api/presentations', checkMaintenanceMode, presentationRoutes);
+app.use('/api/upload', checkMaintenanceMode, uploadRoutes);
+app.use('/api/careers', checkMaintenanceMode, careersRoutes);
+app.use('/api/job-postings', checkMaintenanceMode, jobPostingRoutes);
 app.use('/api/super-admin', superAdminRoutes);
-app.use('/api/institution-admin', institutionAdminRoutes);
-app.use('/api/institution/register', institutionRegistrationRoutes);
-app.use('/api/testimonials', testimonialRoutes);
-app.use('/api/contact', contactRoutes);
+app.use('/api/institution-admin', checkMaintenanceMode, institutionAdminRoutes);
+app.use('/api/institution/register', checkMaintenanceMode, institutionRegistrationRoutes);
+app.use('/api/testimonials', checkMaintenanceMode, testimonialRoutes);
+app.use('/api/contact', checkMaintenanceMode, contactRoutes);
 
 app.use(notFound);
 app.use(errorHandler);

@@ -162,6 +162,16 @@ const verifyToken = asyncHandler(async (req, res, next) => {
         exportEnabled: true,
         watermarkEnabled: false,
         analyticsEnabled: true
+      },
+      securitySettings: req.institution.securitySettings || {
+        twoFactorEnabled: false,
+        passwordMinLength: 8,
+        passwordRequireUppercase: true,
+        passwordRequireLowercase: true,
+        passwordRequireNumbers: true,
+        passwordRequireSpecialChars: false,
+        sessionTimeout: 30,
+        requireEmailVerification: true
       }
     }
   });
@@ -1550,6 +1560,37 @@ const updateSecuritySettings = asyncHandler(async (req, res, next) => {
 });
 
 /**
+ * Get Payment History
+ * @route GET /api/institution-admin/payments
+ * @access Private (Institution Admin)
+ */
+const getPaymentHistory = asyncHandler(async (req, res, next) => {
+  const institutionId = req.institutionId;
+  const Payment = require('../models/Payment');
+
+  const payments = await Payment.find({ institutionId })
+    .sort({ createdAt: -1 })
+    .select('-razorpaySignature')
+    .lean();
+
+  res.status(200).json({
+    success: true,
+    payments: payments.map(payment => ({
+      id: payment._id,
+      amount: payment.amount,
+      currency: payment.currency || 'INR',
+      plan: payment.plan,
+      status: payment.status,
+      orderId: payment.razorpayOrderId,
+      paymentId: payment.razorpayPaymentId,
+      createdAt: payment.createdAt,
+      updatedAt: payment.updatedAt,
+      metadata: payment.metadata || {}
+    }))
+  });
+});
+
+/**
  * Validate Users Before Payment - Check which users already exist
  * @route POST /api/institution-admin/users/validate-before-payment
  * @access Private (Institution Admin)
@@ -2393,6 +2434,7 @@ module.exports = {
   createSubscriptionRenewalOrder,
   verifySubscriptionRenewal,
   updateProfile,
-  changePassword
+  changePassword,
+  getPaymentHistory
 };
 

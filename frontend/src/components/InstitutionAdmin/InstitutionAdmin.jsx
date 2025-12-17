@@ -371,8 +371,18 @@ const InstitutionAdmin = () => {
                             securitySettings={securitySettings}
                             setSecuritySettings={setSecuritySettings}
                             loading={loading}
-                            onUpdateSettings={handleUpdateSettings}
-                            onUpdateSecuritySettings={handleUpdateSecuritySettings}
+                            onUpdateSettings={async (e) => {
+                                await handleUpdateSettings(e);
+                                if (refreshInstitution) {
+                                    await refreshInstitution();
+                                }
+                            }}
+                            onUpdateSecuritySettings={async (e) => {
+                                await handleUpdateSecuritySettings(e);
+                                if (refreshInstitution) {
+                                    await refreshInstitution();
+                                }
+                            }}
                             institution={institution}
                         />
                     )}

@@ -1,7 +1,7 @@
 // eslint-disable-next-line
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import { Menu, X, Mail, Send, Phone, MapPin, Clock, ArrowLeft } from 'lucide-react';
+import { Menu, X, Mail, Send, MapPin, Clock, ArrowLeft } from 'lucide-react';
 import { useState } from 'react';
 import toast from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
@@ -143,18 +143,6 @@ const Contact = () => {
                                     <h3 className="text-lg font-bold mb-2">{t('contact.email_us_title')}</h3>
                                     <p className="text-gray-300 font-medium mb-1">{t('contact.email_us_address')}</p>
                                     <p className="text-gray-500 text-sm">{t('contact.email_us_hours')}</p>
-                                </div>
-                            </div>
-
-                            {/* Call Us */}
-                            <div className="bg-white/5 p-6 rounded-2xl border border-white/10 backdrop-blur-sm hover:bg-white/10 transition-colors group flex gap-5 items-center justify-start">
-                                <div className="p-3 rounded-xl bg-purple-500/10 text-purple-400 w-fit mb-4 group-hover:bg-purple-500/20 transition-colors">
-                                    <Phone className="w-6 h-6" />
-                                </div>
-                                <div> 
-                                  <h3 className="text-lg font-bold mb-2">{t('contact.call_us_title')}</h3>
-                                    <p className="text-gray-300 font-medium mb-1">+91 9043411110</p>
-                                  <p className="text-gray-500 text-sm">{t('contact.call_us_hours')}</p>
                                 </div>
                             </div>
 
@@ -302,31 +290,6 @@ const Contact = () => {
                         </form>
                     </motion.div>
                 </div>
-
-                {/* Map Section */}
-                <motion.section
-                    initial={{ opacity: 0, y: 40 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true }}
-                    className="max-w-6xl mx-auto"
-                >
-                    <div className=" mb-12">
-                        <h2 className="text-3xl font-bold mb-4">{t('contact.our_location_title')}</h2>
-                        <p className="text-gray-400">{t('contact.our_location_description')}</p>
-                    </div>
-
-                    <div className="w-full h-[500px] rounded-3xl overflow-hidden border border-white/10 shadow-2xl relative">
-                        {/* Google Maps Embed */}
-                        <iframe
-                            src="https://www.google.com/maps/embed?pb=!1m14!1m8!1m3!1d3887.6915142244197!2d80.24390100000001!3d12.991572!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3a525d7d6641728d%3A0xddfdb15c6538d927!2sIIT%20Madras%20Research%20Park!5e0!3m2!1sen!2sin!4v1764340748350!5m2!1sen!2sin"
-                            width="100%"
-                            height="100%"
-                            allowFullScreen=""
-                            loading="lazy"
-                            title="Office Location"
-                        ></iframe>
-                    </div>
-                </motion.section>
             </main>
 
             <footer className="border-t border-white/10 bg-[#0f172a] pt-16 pb-8">

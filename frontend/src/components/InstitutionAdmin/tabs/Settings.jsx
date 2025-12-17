@@ -34,27 +34,33 @@ const Settings = ({
 
     // Initialize settings from institution when available
     useEffect(() => {
-        if (institution?.settings) {
-            setSettings({
-                aiFeaturesEnabled: institution.settings.aiFeaturesEnabled ?? true,
-                exportEnabled: institution.settings.exportEnabled ?? true,
-                watermarkEnabled: institution.settings.watermarkEnabled ?? false,
-                analyticsEnabled: institution.settings.analyticsEnabled ?? true
-            });
+        if (institution) {
+            // Initialize general settings
+            if (institution.settings) {
+                setSettings(prev => ({
+                    ...prev,
+                    aiFeaturesEnabled: institution.settings.aiFeaturesEnabled ?? true,
+                    exportEnabled: institution.settings.exportEnabled ?? true,
+                    watermarkEnabled: institution.settings.watermarkEnabled ?? false,
+                    analyticsEnabled: institution.settings.analyticsEnabled ?? true
+                }));
+            }
+            // Initialize security settings
+            if (institution.securitySettings) {
+                setSecuritySettings(prev => ({
+                    ...prev,
+                    twoFactorEnabled: institution.securitySettings.twoFactorEnabled ?? false,
+                    passwordMinLength: institution.securitySettings.passwordMinLength ?? 8,
+                    passwordRequireUppercase: institution.securitySettings.passwordRequireUppercase ?? true,
+                    passwordRequireLowercase: institution.securitySettings.passwordRequireLowercase ?? true,
+                    passwordRequireNumbers: institution.securitySettings.passwordRequireNumbers ?? true,
+                    passwordRequireSpecialChars: institution.securitySettings.passwordRequireSpecialChars ?? false,
+                    sessionTimeout: institution.securitySettings.sessionTimeout ?? 30,
+                    requireEmailVerification: institution.securitySettings.requireEmailVerification ?? true
+                }));
+            }
         }
-        if (institution?.securitySettings) {
-            setSecuritySettings({
-                twoFactorEnabled: institution.securitySettings.twoFactorEnabled ?? false,
-                passwordMinLength: institution.securitySettings.passwordMinLength ?? 8,
-                passwordRequireUppercase: institution.securitySettings.passwordRequireUppercase ?? true,
-                passwordRequireLowercase: institution.securitySettings.passwordRequireLowercase ?? true,
-                passwordRequireNumbers: institution.securitySettings.passwordRequireNumbers ?? true,
-                passwordRequireSpecialChars: institution.securitySettings.passwordRequireSpecialChars ?? false,
-                sessionTimeout: institution.securitySettings.sessionTimeout ?? 30,
-                requireEmailVerification: institution.securitySettings.requireEmailVerification ?? true
-            });
-        }
-    }, [institution, setSettings, setSecuritySettings]);
+    }, [institution]);
 
     const handleSettingChange = (key, value) => {
         setSettings(prev => ({
@@ -184,7 +190,7 @@ const Settings = ({
                     <form onSubmit={handleGeneralSettingsSubmit}>
                         <div className="space-y-4 mb-6">
                             <ToggleSwitch
-                                enabled={settings.aiFeaturesEnabled}
+                                enabled={settings?.aiFeaturesEnabled ?? true}
                                 onChange={(value) => handleSettingChange('aiFeaturesEnabled', value)}
                                 label={t('institution_admin.ai_features')}
                                 description={t('institution_admin.ai_features_desc')}
@@ -192,7 +198,7 @@ const Settings = ({
                             />
 
                             <ToggleSwitch
-                                enabled={settings.exportEnabled}
+                                enabled={settings?.exportEnabled ?? true}
                                 onChange={(value) => handleSettingChange('exportEnabled', value)}
                                 label={t('institution_admin.export_results')}
                                 description={t('institution_admin.export_results_desc')}
@@ -200,7 +206,7 @@ const Settings = ({
                             />
 
                             <ToggleSwitch
-                                enabled={settings.watermarkEnabled}
+                                enabled={settings?.watermarkEnabled ?? false}
                                 onChange={(value) => handleSettingChange('watermarkEnabled', value)}
                                 label={t('institution_admin.watermark')}
                                 description={t('institution_admin.watermark_desc')}
@@ -208,7 +214,7 @@ const Settings = ({
                             />
 
                             <ToggleSwitch
-                                enabled={settings.analyticsEnabled}
+                                enabled={settings?.analyticsEnabled ?? true}
                                 onChange={(value) => handleSettingChange('analyticsEnabled', value)}
                                 label={t('institution_admin.advanced_analytics')}
                                 description={t('institution_admin.advanced_analytics_desc')}
@@ -265,7 +271,7 @@ const Settings = ({
                             </div>
                         </div>
                         <ToggleSwitch
-                            enabled={securitySettings.twoFactorEnabled}
+                            enabled={securitySettings?.twoFactorEnabled ?? false}
                             onChange={(value) => handleSecuritySettingChange('twoFactorEnabled', value)}
                             label={t('institution_admin.enable_2fa') || 'Enable Two-Factor Authentication'}
                             description={t('institution_admin.enable_2fa_desc') || 'Require users to use two-factor authentication for enhanced security'}
@@ -298,8 +304,12 @@ const Settings = ({
                                         type="number"
                                         min="6"
                                         max="32"
-                                        value={securitySettings.passwordMinLength}
-                                        onChange={(e) => handleSecuritySettingChange('passwordMinLength', parseInt(e.target.value))}
+                                        value={securitySettings.passwordMinLength || 8}
+                                        onChange={(e) => {
+                                            const value = parseInt(e.target.value) || 8;
+                                            const clampedValue = Math.min(Math.max(value, 6), 32);
+                                            handleSecuritySettingChange('passwordMinLength', clampedValue);
+                                        }}
                                         className="w-full px-4 py-2 bg-white/5 border border-white/10 rounded-lg text-white focus:outline-none"
                                         onFocus={(e) => {
                                             e.target.style.borderColor = secondaryColor;
@@ -308,35 +318,44 @@ const Settings = ({
                                         onBlur={(e) => {
                                             e.target.style.borderColor = 'rgba(255, 255, 255, 0.1)';
                                             e.target.style.boxShadow = 'none';
+                                            // Ensure value is within bounds on blur
+                                            const value = parseInt(e.target.value) || 8;
+                                            const clampedValue = Math.min(Math.max(value, 6), 32);
+                                            if (value !== clampedValue) {
+                                                handleSecuritySettingChange('passwordMinLength', clampedValue);
+                                            }
                                         }}
                                     />
+                                    <p className="text-xs text-gray-400 mt-1">
+                                        {t('institution_admin.min_password_length_desc') || 'Minimum length between 6 and 32 characters'}
+                                    </p>
                                 </div>
 
                                 {/* Password Requirements */}
                                 <div className="space-y-3">
                                     <ToggleSwitch
-                                        enabled={securitySettings.passwordRequireUppercase}
+                                        enabled={securitySettings?.passwordRequireUppercase ?? true}
                                         onChange={(value) => handleSecuritySettingChange('passwordRequireUppercase', value)}
                                         label={t('institution_admin.require_uppercase')}
                                         description={t('institution_admin.require_uppercase_desc') || 'Passwords must contain at least one uppercase letter'}
                                     />
 
                                     <ToggleSwitch
-                                        enabled={securitySettings.passwordRequireLowercase}
+                                        enabled={securitySettings?.passwordRequireLowercase ?? true}
                                         onChange={(value) => handleSecuritySettingChange('passwordRequireLowercase', value)}
                                         label={t('institution_admin.require_lowercase')}
                                         description={t('institution_admin.require_lowercase_desc') || 'Passwords must contain at least one lowercase letter'}
                                     />
 
                                     <ToggleSwitch
-                                        enabled={securitySettings.passwordRequireNumbers}
+                                        enabled={securitySettings?.passwordRequireNumbers ?? true}
                                         onChange={(value) => handleSecuritySettingChange('passwordRequireNumbers', value)}
                                         label={t('institution_admin.require_numbers')}
                                         description={t('institution_admin.require_numbers_desc') || 'Passwords must contain at least one number'}
                                     />
 
                                     <ToggleSwitch
-                                        enabled={securitySettings.passwordRequireSpecialChars}
+                                        enabled={securitySettings?.passwordRequireSpecialChars ?? false}
                                         onChange={(value) => handleSecuritySettingChange('passwordRequireSpecialChars', value)}
                                         label={t('institution_admin.require_special_chars')}
                                         description={t('institution_admin.require_special_chars_desc') || 'Passwords must contain at least one special character (!@#$%^&*)'}
@@ -370,8 +389,12 @@ const Settings = ({
                                     min="5"
                                     max="480"
                                     step="5"
-                                    value={securitySettings.sessionTimeout}
-                                    onChange={(e) => handleSecuritySettingChange('sessionTimeout', parseInt(e.target.value))}
+                                    value={securitySettings.sessionTimeout || 30}
+                                    onChange={(e) => {
+                                        const value = parseInt(e.target.value) || 30;
+                                        const clampedValue = Math.min(Math.max(value, 5), 480);
+                                        handleSecuritySettingChange('sessionTimeout', clampedValue);
+                                    }}
                                     className="w-32 px-4 py-2 bg-white/5 border border-white/10 rounded-lg text-white focus:outline-none"
                                     onFocus={(e) => {
                                         e.target.style.borderColor = secondaryColor;
@@ -380,15 +403,24 @@ const Settings = ({
                                     onBlur={(e) => {
                                         e.target.style.borderColor = 'rgba(255, 255, 255, 0.1)';
                                         e.target.style.boxShadow = 'none';
+                                        // Ensure value is within bounds on blur
+                                        const value = parseInt(e.target.value) || 30;
+                                        const clampedValue = Math.min(Math.max(value, 5), 480);
+                                        if (value !== clampedValue) {
+                                            handleSecuritySettingChange('sessionTimeout', clampedValue);
+                                        }
                                     }}
                                 />
                                 <span className="text-gray-400">
-                                    {securitySettings.sessionTimeout === 1 
+                                    {(securitySettings.sessionTimeout || 30) === 1 
                                         ? t('institution_admin.minute') || 'minute'
                                         : t('institution_admin.minutes') || 'minutes'
                                     }
                                 </span>
                             </div>
+                            <p className="text-xs text-gray-400 mt-1">
+                                {t('institution_admin.session_timeout_range') || 'Range: 5 to 480 minutes'}
+                            </p>
                         </div>
                     </div>
 
@@ -408,7 +440,7 @@ const Settings = ({
                             </div>
                         </div>
                         <ToggleSwitch
-                            enabled={securitySettings.requireEmailVerification}
+                            enabled={securitySettings?.requireEmailVerification ?? true}
                             onChange={(value) => handleSecuritySettingChange('requireEmailVerification', value)}
                             label={t('institution_admin.enable_email_verification') || 'Require Email Verification'}
                             description={t('institution_admin.enable_email_verification_desc') || 'Users must verify their email address before accessing the platform'}

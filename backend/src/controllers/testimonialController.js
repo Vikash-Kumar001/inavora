@@ -166,6 +166,13 @@ exports.getTestimonials = async (req, res) => {
     const avgRating = avgRatingResult[0]?.avgRating || 0;
     const totalCount = avgRatingResult[0]?.count || 0;
 
+    // Set cache-control headers to prevent caching
+    res.set({
+      'Cache-Control': 'no-cache, no-store, must-revalidate',
+      'Pragma': 'no-cache',
+      'Expires': '0'
+    });
+
     res.json({
       success: true,
       data: {

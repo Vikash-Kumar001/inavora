@@ -32,6 +32,7 @@ import { useAuth } from '../../context/AuthContext';
 import { useTranslation } from 'react-i18next';
 import TwoByTwoGridPresenterView from '../interactions/twoByTwoGrid/PresenterView';
 import PinOnImagePresenterView from '../interactions/pinOnImage/PresenterView';
+import InstructionPresenterView from '../interactions/instruction/presenter/PresenterView';
 import SlideCanvas from '../presentation/SlideCanvas';
 
 const PresentMode = () => {
@@ -159,14 +160,45 @@ const PresentMode = () => {
   }, [id]);
 
   useEffect(() => {
-    if (!socket || !currentUser) return;
+    if (!socket) return;
+
+    // Check if user is authenticated (either Firebase user or institution admin)
+    const hasInstitutionAdminToken = sessionStorage.getItem('institutionAdminToken');
+    if (!currentUser && !hasInstitutionAdminToken) {
+      // Wait a bit for auth to initialize, but don't wait forever
+      const timeout = setTimeout(() => {
+        if (!currentUser && !hasInstitutionAdminToken) {
+          console.error('No authentication found');
+          setIsLoading(false);
+          toast.error(t('toasts.presentation.failed_to_load') || 'Failed to load presentation');
+          navigate('/dashboard');
+        }
+      }, 2000);
+      return () => clearTimeout(timeout);
+    }
+
+    // Set a timeout to prevent infinite loading
+    const loadingTimeout = setTimeout(() => {
+      console.error('Presentation loading timeout');
+      setIsLoading(false);
+      toast.error(t('toasts.presentation.loading_timeout') || 'Loading timeout. Please try again.');
+    }, 10000); // 10 second timeout
 
     const initPresentation = async () => {
       try {
         const data = await presentationService.getPresentationById(id);
+        clearTimeout(loadingTimeout);
+        
         setPresentation(data.presentation);
         const loadedSlides = data.slides || [];
         setSlides(loadedSlides);
+
+        if (loadedSlides.length === 0) {
+          console.error('Presentation has no slides');
+          toast.error(t('toasts.presentation.no_slides') || 'Presentation has no slides');
+          setIsLoading(false);
+          return;
+        }
 
         const maxIndex = Math.max(0, loadedSlides.length - 1);
         const startIndex = Math.min(initialSlideIndex, maxIndex);
@@ -178,22 +210,43 @@ const PresentMode = () => {
           setSettings: setOpenEndedSettings,
         });
 
+        // Get userId - use currentUser id if available, otherwise use a fallback
+        const userId = currentUser?.id || (hasInstitutionAdminToken ? 'institution-admin' : null);
+        
+        // Get token for institution admin authentication
+        const token = hasInstitutionAdminToken ? sessionStorage.getItem('institutionAdminToken') : null;
+
         socket.emit('start-presentation', {
           presentationId: id,
-          userId: currentUser?.id,
+          userId: userId,
           startIndex,
+          ...(token && { token }), // Only include token if it exists
         });
 
         setIsLoading(false);
       } catch (error) {
+        clearTimeout(loadingTimeout);
         console.error('Failed to load presentation:', error);
-        toast.error(t('toasts.presentation.failed_to_load'));
-        navigate('/dashboard');
+        toast.error(t('toasts.presentation.failed_to_load') || 'Failed to load presentation');
+        setIsLoading(false);
+        // Don't navigate away immediately - let user see the error
+        setTimeout(() => {
+          const hasInstitutionAdminToken = sessionStorage.getItem('institutionAdminToken');
+          if (hasInstitutionAdminToken) {
+            navigate('/institution-admin');
+          } else {
+            navigate('/dashboard');
+          }
+        }, 2000);
       }
     };
 
     initPresentation();
-  }, [socket, id, currentUser, navigate, initialSlideIndex]);
+
+    return () => {
+      clearTimeout(loadingTimeout);
+    };
+  }, [socket, id, currentUser, navigate, initialSlideIndex, t]);
 
   const getSlideId = (slide) => {
     if (!slide) return null;
@@ -957,6 +1010,13 @@ const PresentMode = () => {
           <UploadPresenterView
             slide={slide}
             responses={openEndedResponses}
+          />
+        );
+      case 'instruction':
+        return (
+          <InstructionPresenterView
+            slide={slide}
+            presentation={presentation}
           />
         );
       default:

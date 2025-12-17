@@ -1,11 +1,11 @@
 import { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import api from '../../../config/api';
 import DataTable from '../common/DataTable';
 import FilterBar from '../common/FilterBar';
 import StatCard from '../common/StatCard';
 import toast from 'react-hot-toast';
-import { MessageSquare, CheckCircle, XCircle, Clock, Star, Download } from 'lucide-react';
+import { MessageSquare, CheckCircle, XCircle, Clock, Star, Download, Edit, X } from 'lucide-react';
 
 const TestimonialsPage = () => {
   const [testimonials, setTestimonials] = useState([]);
@@ -13,6 +13,16 @@ const TestimonialsPage = () => {
   const [loading, setLoading] = useState(true);
   const [pagination, setPagination] = useState({ page: 1, limit: 25, total: 0, pages: 1 });
   const [filters, setFilters] = useState({ status: '' });
+  const [editingTestimonial, setEditingTestimonial] = useState(null);
+  const [editFormData, setEditFormData] = useState({
+    name: '',
+    rating: 0,
+    testimonial: '',
+    role: '',
+    institution: '',
+    isFeatured: false
+  });
+  const [isUpdating, setIsUpdating] = useState(false);
 
   useEffect(() => {
     fetchTestimonials();
@@ -110,6 +120,51 @@ const TestimonialsPage = () => {
     }
   };
 
+  const handleEdit = (testimonial) => {
+    setEditingTestimonial(testimonial);
+    setEditFormData({
+      name: testimonial.name || '',
+      rating: testimonial.rating || 0,
+      testimonial: testimonial.testimonial || '',
+      role: testimonial.role || '',
+      institution: testimonial.institution || '',
+      isFeatured: testimonial.isFeatured || false
+    });
+  };
+
+  const handleUpdate = async (e) => {
+    e.preventDefault();
+    if (!editingTestimonial) return;
+
+    setIsUpdating(true);
+    try {
+      const response = await api.put(`/testimonials/${editingTestimonial._id}`, editFormData);
+      if (response.data.success) {
+        toast.success('Testimonial updated successfully');
+        setEditingTestimonial(null);
+        fetchTestimonials();
+        fetchStats();
+      }
+    } catch (error) {
+      console.error('Error updating testimonial:', error);
+      toast.error(error.response?.data?.message || 'Failed to update testimonial');
+    } finally {
+      setIsUpdating(false);
+    }
+  };
+
+  const handleCancelEdit = () => {
+    setEditingTestimonial(null);
+    setEditFormData({
+      name: '',
+      rating: 0,
+      testimonial: '',
+      role: '',
+      institution: '',
+      isFeatured: false
+    });
+  };
+
   const getStatusBadge = (status) => {
     switch (status) {
       case 'approved':
@@ -167,6 +222,13 @@ const TestimonialsPage = () => {
       </td>
       <td className="py-3 px-4">
         <div className="flex items-center gap-2">
+          <button
+            onClick={() => handleEdit(testimonial)}
+            className="p-2 hover:bg-blue-500/20 rounded-lg transition-colors text-blue-400"
+            title="Edit"
+          >
+            <Edit className="w-4 h-4" />
+          </button>
           {testimonial.status === 'pending' && (
             <>
               <button
@@ -282,6 +344,160 @@ const TestimonialsPage = () => {
         renderRow={renderRow}
         emptyMessage="No testimonials found"
       />
+
+      {/* Edit Modal */}
+      <AnimatePresence>
+        {editingTestimonial && (
+          <>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={handleCancelEdit}
+              className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm"
+            />
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9, y: 20 }}
+              className="fixed inset-0 z-50 flex items-center justify-center p-4"
+            >
+              <div
+                onClick={(e) => e.stopPropagation()}
+                className="bg-slate-900 border border-slate-800 rounded-2xl p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-2xl"
+              >
+                <div className="flex items-center justify-between mb-6">
+                  <h2 className="text-2xl font-bold text-white">Edit Testimonial</h2>
+                  <button
+                    onClick={handleCancelEdit}
+                    className="p-2 hover:bg-slate-800 rounded-lg transition-colors text-slate-400 hover:text-white"
+                  >
+                    <X className="w-5 h-5" />
+                  </button>
+                </div>
+
+                <form onSubmit={handleUpdate} className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-slate-300 mb-2">
+                      Name <span className="text-red-400">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      value={editFormData.name}
+                      onChange={(e) => setEditFormData({ ...editFormData, name: e.target.value })}
+                      className="w-full px-4 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+                      required
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-slate-300 mb-2">
+                      Rating <span className="text-red-400">*</span>
+                    </label>
+                    <div className="flex items-center gap-2">
+                      {[1, 2, 3, 4, 5].map((rating) => (
+                        <button
+                          key={rating}
+                          type="button"
+                          onClick={() => setEditFormData({ ...editFormData, rating })}
+                          className={`p-2 rounded-lg transition-colors ${
+                            editFormData.rating >= rating
+                              ? 'text-yellow-400'
+                              : 'text-slate-500 hover:text-slate-400'
+                          }`}
+                        >
+                          <Star
+                            className={`w-6 h-6 ${
+                              editFormData.rating >= rating ? 'fill-yellow-400' : ''
+                            }`}
+                          />
+                        </button>
+                      ))}
+                      <span className="ml-2 text-slate-400">{editFormData.rating}/5</span>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-slate-300 mb-2">
+                      Testimonial <span className="text-red-400">*</span>
+                    </label>
+                    <textarea
+                      value={editFormData.testimonial}
+                      onChange={(e) => setEditFormData({ ...editFormData, testimonial: e.target.value })}
+                      rows={5}
+                      className="w-full px-4 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none resize-none"
+                      required
+                      minLength={50}
+                      maxLength={500}
+                    />
+                    <p className="mt-1 text-xs text-slate-400">
+                      {editFormData.testimonial.length}/500 characters
+                    </p>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-slate-300 mb-2">
+                      Role (Optional)
+                    </label>
+                    <input
+                      type="text"
+                      value={editFormData.role}
+                      onChange={(e) => setEditFormData({ ...editFormData, role: e.target.value })}
+                      className="w-full px-4 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+                      placeholder="e.g., Student, Teacher, Business Professional"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-slate-300 mb-2">
+                      Institution (Optional)
+                    </label>
+                    <input
+                      type="text"
+                      value={editFormData.institution}
+                      onChange={(e) => setEditFormData({ ...editFormData, institution: e.target.value })}
+                      className="w-full px-4 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+                      placeholder="Your school, company, or organization"
+                    />
+                  </div>
+
+                  {editingTestimonial.status === 'approved' && (
+                    <div className="flex items-center gap-3">
+                      <input
+                        type="checkbox"
+                        id="isFeatured"
+                        checked={editFormData.isFeatured}
+                        onChange={(e) => setEditFormData({ ...editFormData, isFeatured: e.target.checked })}
+                        className="w-4 h-4 rounded bg-slate-800 border-slate-700 text-blue-500 focus:ring-2 focus:ring-blue-500"
+                      />
+                      <label htmlFor="isFeatured" className="text-sm font-medium text-slate-300">
+                        Featured Testimonial
+                      </label>
+                    </div>
+                  )}
+
+                  <div className="flex items-center gap-3 pt-4">
+                    <button
+                      type="submit"
+                      disabled={isUpdating}
+                      className="flex-1 px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-600/50 disabled:cursor-not-allowed text-white font-medium rounded-lg transition-colors"
+                    >
+                      {isUpdating ? 'Updating...' : 'Update Testimonial'}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={handleCancelEdit}
+                      className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 font-medium rounded-lg transition-colors"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
     </motion.div>
   );
 };

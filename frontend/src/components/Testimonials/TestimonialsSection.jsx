@@ -11,16 +11,14 @@ const TestimonialsSection = ({ featured = false, limit = 6 }) => {
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
 
-  useEffect(() => {
-    fetchTestimonials();
-  }, [featured, limit]);
-
   const fetchTestimonials = async () => {
     try {
       setLoading(true);
       const params = {
         limit,
-        ...(featured && { featured: 'true' })
+        ...(featured && { featured: 'true' }),
+        // Add cache-busting timestamp to prevent browser caching
+        _t: Date.now()
       };
       const response = await api.get('/testimonials', { params });
       
@@ -34,6 +32,24 @@ const TestimonialsSection = ({ featured = false, limit = 6 }) => {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    fetchTestimonials();
+    
+    // Refetch when page becomes visible (user switches back to tab)
+    const handleVisibilityChange = () => {
+      if (!document.hidden) {
+        fetchTestimonials();
+      }
+    };
+    
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [featured, limit]);
 
   const handleFormSuccess = () => {
     // Refresh testimonials after successful submission

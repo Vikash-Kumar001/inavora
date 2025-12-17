@@ -48,16 +48,6 @@ const HelpCenter = ({ institution }) => {
             answer: t('institution_admin.faq_custom_branding_answer')
         },
         {
-            id: 5,
-            question: t('institution_admin.faq_api_keys'),
-            answer: t('institution_admin.faq_api_keys_answer')
-        },
-        {
-            id: 6,
-            question: t('institution_admin.faq_webhooks'),
-            answer: t('institution_admin.faq_webhooks_answer')
-        },
-        {
             id: 7,
             question: t('institution_admin.faq_export_data'),
             answer: t('institution_admin.faq_export_data_answer')

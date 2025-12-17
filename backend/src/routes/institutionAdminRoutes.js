@@ -237,6 +237,13 @@ router.delete('/custom-reports/:reportId', verifyInstitutionAdmin, institutionAd
 router.put('/security-settings', verifyInstitutionAdmin, institutionAdminController.updateSecuritySettings);
 
 /**
+ * @route   GET /api/institution-admin/payments
+ * @desc    Get payment history for institution
+ * @access  Private (Institution Admin)
+ */
+router.get('/payments', verifyInstitutionAdmin, institutionAdminController.getPaymentHistory);
+
+/**
  * @route   PUT /api/institution-admin/profile
  * @desc    Update institution admin profile
  * @access  Private (Institution Admin)

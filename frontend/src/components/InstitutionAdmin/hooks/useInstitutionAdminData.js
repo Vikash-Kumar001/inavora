@@ -586,10 +586,14 @@ export const useInstitutionAdminData = ({ adminUserId, fetchStats }) => {
         try {
             const response = await api.put('/institution-admin/settings', settings);
             if (response.data.success) {
-                toast.success(t('institution_admin.settings_updated_success'));
+                toast.success(t('institution_admin.settings_updated_success') || 'Settings updated successfully');
+                // Update settings state with response data if provided
+                if (response.data.data?.settings) {
+                    setSettings(response.data.data.settings);
+                }
             }
         } catch (error) {
-            toast.error(translateError(error, t, 'institution_admin.update_settings_error'));
+            toast.error(translateError(error, t, 'institution_admin.update_settings_error') || 'Failed to update settings');
         } finally {
             setLoading(false);
         }
@@ -600,16 +604,28 @@ export const useInstitutionAdminData = ({ adminUserId, fetchStats }) => {
         if (e) e.preventDefault();
         setLoading(true);
         try {
+            // Validate security settings before submission
+            if (securitySettings.passwordMinLength < 6 || securitySettings.passwordMinLength > 32) {
+                toast.error(t('institution_admin.password_length_error') || 'Password length must be between 6 and 32 characters');
+                setLoading(false);
+                return;
+            }
+            if (securitySettings.sessionTimeout < 5 || securitySettings.sessionTimeout > 480) {
+                toast.error(t('institution_admin.session_timeout_error') || 'Session timeout must be between 5 and 480 minutes');
+                setLoading(false);
+                return;
+            }
+            
             const response = await api.put('/institution-admin/security-settings', securitySettings);
             if (response.data.success) {
-                toast.success(t('institution_admin.security_settings_updated'));
+                toast.success(t('institution_admin.security_settings_updated') || 'Security settings updated successfully');
                 // Update security settings state with response data if provided
                 if (response.data.securitySettings) {
                     setSecuritySettings(response.data.securitySettings);
                 }
             }
         } catch (error) {
-            toast.error(translateError(error, t, 'institution_admin.security_settings_error'));
+            toast.error(translateError(error, t, 'institution_admin.security_settings_error') || 'Failed to update security settings');
         } finally {
             setLoading(false);
         }

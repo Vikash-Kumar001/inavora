@@ -1,7 +1,10 @@
 const Presentation = require('../models/Presentation');
 const Slide = require('../models/Slide');
 const Response = require('../models/Response');
+const User = require('../models/User');
+const Institution = require('../models/Institution');
 const Logger = require('../utils/logger');
+const jwt = require('jsonwebtoken');
 const { getHandler } = require('../interactions');
 const {
   handleOpenEndedSubmission,
@@ -141,9 +144,76 @@ const setupSocketHandlers = (io, socket) => {
   });
 
   // Presenter starts presentation
-  socket.on('start-presentation', async ({ presentationId, userId, startIndex }) => {
+  socket.on('start-presentation', async ({ presentationId, userId, startIndex, token }) => {
     try {
-      const presentation = await Presentation.findOne({ _id: presentationId, userId });
+      let actualUserId = userId;
+      let presentation = null;
+
+      // Handle institution admin authentication
+      if (userId === 'institution-admin' && token) {
+        try {
+          const decoded = jwt.verify(token, process.env.JWT_SECRET);
+          
+          if (decoded.institutionAdmin && decoded.institutionId) {
+            const institution = await Institution.findById(decoded.institutionId);
+            
+            if (institution) {
+              // Find or create user record for institution admin
+              const adminEmail = institution.adminEmail?.toLowerCase().trim();
+              let adminUser = await User.findOne({ email: adminEmail });
+              
+              if (!adminUser) {
+                try {
+                  adminUser = new User({
+                    email: adminEmail,
+                    displayName: institution.adminName || adminEmail.split('@')[0],
+                    isInstitutionUser: true,
+                    institutionId: institution._id,
+                    subscription: {
+                      plan: 'institution',
+                      status: 'active'
+                    }
+                  });
+                  await adminUser.save();
+                } catch (saveError) {
+                  if (saveError.code === 11000) {
+                    adminUser = await User.findOne({ email: adminEmail });
+                  }
+                  if (!adminUser) {
+                    throw new Error('Failed to create admin user');
+                  }
+                }
+              }
+              
+              actualUserId = adminUser._id;
+              
+              // Find presentation - check if it belongs to admin user or any institution user
+              presentation = await Presentation.findOne({ _id: presentationId, userId: actualUserId });
+              
+              // If not found, check if it belongs to any institution user
+              if (!presentation) {
+                const institutionUsers = await User.find({ 
+                  institutionId: institution._id,
+                  isInstitutionUser: true 
+                }).select('_id').lean();
+                
+                const institutionUserIds = institutionUsers.map(u => u._id);
+                presentation = await Presentation.findOne({ 
+                  _id: presentationId, 
+                  userId: { $in: institutionUserIds }
+                });
+              }
+            }
+          }
+        } catch (tokenError) {
+          Logger.error('Institution admin token verification failed', tokenError);
+          socket.emit('error', { message: 'Authentication failed' });
+          return;
+        }
+      } else {
+        // Regular user authentication
+        presentation = await Presentation.findOne({ _id: presentationId, userId: actualUserId });
+      }
 
       if (!presentation) {
         socket.emit('error', { message: 'Presentation not found' });

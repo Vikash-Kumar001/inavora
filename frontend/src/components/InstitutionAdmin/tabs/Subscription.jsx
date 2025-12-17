@@ -13,7 +13,12 @@ import {
     RefreshCw,
     ArrowUp,
     Sparkles,
-    X
+    X,
+    Receipt,
+    DollarSign,
+    Building2,
+    Mail,
+    User
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import api from '../../../config/api';
@@ -30,6 +35,8 @@ const Subscription = ({ institution, stats, onRefresh }) => {
     const [selectedPlan, setSelectedPlan] = useState(null);
     const [customUserCount, setCustomUserCount] = useState(10);
     const [showUpgrade, setShowUpgrade] = useState(false);
+    const [payments, setPayments] = useState([]);
+    const [loadingPayments, setLoadingPayments] = useState(false);
 
     // Calculate subscription status
     const subscription = institution?.subscription;
@@ -70,6 +77,24 @@ const Subscription = ({ institution, stats, onRefresh }) => {
         };
         fetchPlans();
     }, [isExpired, showUpgrade]);
+
+    // Fetch payment history
+    useEffect(() => {
+        const fetchPayments = async () => {
+            setLoadingPayments(true);
+            try {
+                const response = await api.get('/institution-admin/payments');
+                if (response.data.success) {
+                    setPayments(response.data.payments || []);
+                }
+            } catch (error) {
+                console.error('Error fetching payments:', error);
+            } finally {
+                setLoadingPayments(false);
+            }
+        };
+        fetchPayments();
+    }, []);
 
     // Handle plan selection for renewal/upgrade
     const handleSelectPlan = (plan) => {
@@ -288,6 +313,108 @@ const Subscription = ({ institution, stats, onRefresh }) => {
                 <p className="text-gray-400">{t('institution_admin.subscription_description')}</p>
             </div>
 
+            <div className="space-y-6">
+                {/* Institution Information - Always Visible */}
+                <div className="bg-white/5 border border-white/10 rounded-xl p-6 backdrop-blur-sm">
+                    <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
+                        <Building2 className="w-5 h-5" style={{ color: secondaryColor }} />
+                        Institution Information
+                    </h3>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                        <div>
+                            <p className="text-gray-400 text-sm mb-1">Institution Name</p>
+                            <p className="text-white font-medium">{institution?.name || 'N/A'}</p>
+                        </div>
+                        <div>
+                            <p className="text-gray-400 text-sm mb-1">Institution Email</p>
+                            <div className="flex items-center gap-2">
+                                <Mail className="w-4 h-4 text-gray-400" />
+                                <p className="text-white">{institution?.email || 'N/A'}</p>
+                            </div>
+                        </div>
+                        <div>
+                            <p className="text-gray-400 text-sm mb-1">Admin Name</p>
+                            <div className="flex items-center gap-2">
+                                <User className="w-4 h-4 text-gray-400" />
+                                <p className="text-white">{institution?.adminName || 'N/A'}</p>
+                            </div>
+                        </div>
+                        <div>
+                            <p className="text-gray-400 text-sm mb-1">Admin Email</p>
+                            <p className="text-white">{institution?.adminEmail || 'N/A'}</p>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Payment History - Always Visible */}
+                <div className="bg-white/5 border border-white/10 rounded-xl p-6 backdrop-blur-sm">
+                    <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
+                        <Receipt className="w-5 h-5" style={{ color: secondaryColor }} />
+                        Payment History
+                    </h3>
+                    {loadingPayments ? (
+                        <div className="flex items-center justify-center py-8">
+                            <div 
+                                className="w-8 h-8 border-2 border-t-transparent rounded-full animate-spin"
+                                style={{ borderColor: `${secondaryColor} transparent transparent transparent` }}
+                            ></div>
+                        </div>
+                    ) : payments.length > 0 ? (
+                        <div className="space-y-3">
+                            {payments.map((payment) => (
+                                <div
+                                    key={payment.id}
+                                    className="flex items-center justify-between p-4 bg-black/20 rounded-lg border border-white/5 hover:bg-black/30 transition-colors"
+                                >
+                                    <div className="flex-1">
+                                        <div className="flex items-center gap-3 mb-2">
+                                            <DollarSign className="w-5 h-5" style={{ color: secondaryColor }} />
+                                            <p className="text-lg font-semibold text-white">
+                                                {new Intl.NumberFormat('en-IN', {
+                                                    style: 'currency',
+                                                    currency: payment.currency || 'INR'
+                                                }).format(payment.amount)}
+                                            </p>
+                                        </div>
+                                        <div className="flex items-center gap-4 text-sm text-gray-400">
+                                            <span className="capitalize">{payment.plan || 'institution'}</span>
+                                            <span>•</span>
+                                            <span>{new Date(payment.createdAt).toLocaleDateString('en-US', {
+                                                year: 'numeric',
+                                                month: 'long',
+                                                day: 'numeric',
+                                                hour: '2-digit',
+                                                minute: '2-digit'
+                                            })}</span>
+                                            {payment.orderId && (
+                                                <>
+                                                    <span>•</span>
+                                                    <span className="font-mono text-xs">Order: {payment.orderId.slice(-8)}</span>
+                                                </>
+                                            )}
+                                        </div>
+                                    </div>
+                                    <span className={`px-3 py-1 rounded-full text-sm font-medium ${
+                                        payment.status === 'captured' 
+                                            ? 'bg-green-500/20 text-green-400 border border-green-500/30' 
+                                            : payment.status === 'failed'
+                                            ? 'bg-red-500/20 text-red-400 border border-red-500/30'
+                                            : 'bg-yellow-500/20 text-yellow-400 border border-yellow-500/30'
+                                    }`}>
+                                        {payment.status === 'captured' && <CheckCircle className="w-3 h-3 inline mr-1" />}
+                                        {payment.status}
+                                    </span>
+                                </div>
+                            ))}
+                        </div>
+                    ) : (
+                        <div className="text-center py-8">
+                            <Receipt className="w-12 h-12 mx-auto mb-3 text-gray-500 opacity-50" />
+                            <p className="text-gray-400">No payment history found</p>
+                        </div>
+                    )}
+                </div>
+
             {subscription ? (
                 <div className="space-y-6">
                     {/* Plan Details */}
@@ -296,7 +423,7 @@ const Subscription = ({ institution, stats, onRefresh }) => {
                             <CreditCard className="w-5 h-5" style={{ color: secondaryColor }} />
                             {t('institution_admin.current_plan')}
                         </h3>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
                             <div>
                                 <p className="text-gray-400 text-sm mb-1">{t('institution_admin.plan')}</p>
                                 <div className="flex items-center gap-2">
@@ -765,31 +892,33 @@ const Subscription = ({ institution, stats, onRefresh }) => {
                         </div>
                     </div>
 
-                    {/* Usage Statistics - Show even without subscription */}
-                    {stats && (
-                        <div className="bg-white/5 border border-white/10 rounded-xl p-6 backdrop-blur-sm">
-                            <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
-                                <TrendingUp className="w-5 h-5" style={{ color: secondaryColor }} />
-                                {t('institution_admin.usage_statistics')}
-                            </h3>
-                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                                <div className="p-4 bg-black/20 rounded-lg">
-                                    <p className="text-gray-400 text-xs mb-1">{t('institution_admin.users_label')}</p>
-                                    <p className="text-2xl font-bold text-white">{stats?.totalUsers || 0}</p>
-                                </div>
-                                <div className="p-4 bg-black/20 rounded-lg">
-                                    <p className="text-gray-400 text-xs mb-1">{t('institution_admin.presentations_label')}</p>
-                                    <p className="text-2xl font-bold text-white">{stats?.totalPresentations || 0}</p>
-                                </div>
-                                <div className="p-4 bg-black/20 rounded-lg">
-                                    <p className="text-gray-400 text-xs mb-1">{t('institution_admin.total_responses_label_stats')}</p>
-                                    <p className="text-2xl font-bold text-white">{stats?.totalResponses || 0}</p>
-                                </div>
-                            </div>
-                        </div>
-                    )}
                 </div>
             )}
+
+                {/* Usage Statistics - Always Visible */}
+                {stats && (
+                    <div className="bg-white/5 border border-white/10 rounded-xl p-6 backdrop-blur-sm">
+                        <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
+                            <TrendingUp className="w-5 h-5" style={{ color: secondaryColor }} />
+                            {t('institution_admin.usage_statistics')}
+                        </h3>
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                            <div className="p-4 bg-black/20 rounded-lg">
+                                <p className="text-gray-400 text-xs mb-1">{t('institution_admin.users_label')}</p>
+                                <p className="text-2xl font-bold text-white">{stats?.totalUsers || 0}</p>
+                            </div>
+                            <div className="p-4 bg-black/20 rounded-lg">
+                                <p className="text-gray-400 text-xs mb-1">{t('institution_admin.presentations_label')}</p>
+                                <p className="text-2xl font-bold text-white">{stats?.totalPresentations || 0}</p>
+                            </div>
+                            <div className="p-4 bg-black/20 rounded-lg">
+                                <p className="text-gray-400 text-xs mb-1">{t('institution_admin.total_responses_label_stats')}</p>
+                                <p className="text-2xl font-bold text-white">{stats?.totalResponses || 0}</p>
+                            </div>
+                        </div>
+                    </div>
+                )}
+            </div>
         </motion.div>
     );
 };

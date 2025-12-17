@@ -1,35 +1,33 @@
-import { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
+import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { motion } from 'framer-motion'; // eslint-disable-line no-unused-vars
 import api from '../../config/api';
 import TestimonialCard from '../Testimonials/TestimonialCard';
 import TestimonialForm from '../Testimonials/TestimonialForm';
-import { Star, MessageSquare, Plus, ArrowLeft } from 'lucide-react';
+import { MessageSquare, Plus, ArrowLeft } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 const Testimonials = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const [testimonials, setTestimonials] = useState([]);
-  const [stats, setStats] = useState({ averageRating: 0, totalCount: 0 });
+  const [, setStats] = useState({ averageRating: 0, totalCount: 0 });
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
-  const [filters, setFilters] = useState({ rating: '', sort: 'newest' });
+  const [filters] = useState({ rating: '', sort: 'newest' });
   const [pagination, setPagination] = useState({ page: 1, limit: 12, total: 0, pages: 1 });
 
-  useEffect(() => {
-    fetchTestimonials();
-  }, [pagination.page, filters]);
-
-  const fetchTestimonials = async () => {
+  const fetchTestimonials = useCallback(async () => {
     try {
       setLoading(true);
       const params = {
         page: pagination.page,
         limit: pagination.limit,
         ...(filters.rating && { rating: filters.rating }),
-        ...(filters.sort && { sort: filters.sort })
+        ...(filters.sort && { sort: filters.sort }),
+        // Add cache-busting timestamp to prevent browser caching
+        _t: Date.now()
       };
       const response = await api.get('/testimonials', { params });
       
@@ -44,12 +42,25 @@ const Testimonials = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [pagination.page, pagination.limit, filters, t]);
 
-  const handleFilterChange = (newFilters) => {
-    setFilters(newFilters);
-    setPagination({ ...pagination, page: 1 });
-  };
+  useEffect(() => {
+    fetchTestimonials();
+    
+    // Refetch when page becomes visible (user switches back to tab)
+    const handleVisibilityChange = () => {
+      if (!document.hidden) {
+        fetchTestimonials();
+      }
+    };
+    
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, [fetchTestimonials]);
+
 
   const handlePageChange = (newPage) => {
     setPagination({ ...pagination, page: newPage });
@@ -95,28 +106,11 @@ const Testimonials = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
-            className="text-5xl font-bold mb-6 bg-gradient-to-r from-white to-slate-300 bg-clip-text text-transparent"
+            className="text-5xl font-bold mb-6 bg-gradient-to-r from-white to-slate-300 bg-clip-text text-transparent leading-tight"
           >
             {t('testimonials.page_title')}
           </motion.h1>
           
-          {stats.totalCount > 0 && (
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2 }}
-              className="flex items-center justify-center gap-4 text-slate-400 mb-8"
-            >
-              <div className="flex items-center gap-1">
-                <Star className="w-6 h-6 fill-yellow-400 text-yellow-400" />
-                <span className="text-2xl font-semibold text-white">
-                  {stats.averageRating.toFixed(1)}
-                </span>
-              </div>
-              <span>•</span>
-              <span className="text-lg">{stats.totalCount} {t('testimonials.reviews')}</span>
-            </motion.div>
-          )}
 
           <motion.button
             initial={{ opacity: 0, y: 20 }}
@@ -130,34 +124,6 @@ const Testimonials = () => {
           </motion.button>
         </div>
 
-        {/* Filters */}
-        {stats.totalCount > 0 && (
-          <div className="mb-8 flex flex-wrap items-center gap-4 justify-center">
-            <select
-              value={filters.rating}
-              onChange={(e) => handleFilterChange({ ...filters, rating: e.target.value })}
-              className="px-4 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
-            >
-              <option value="">{t('testimonials.all_ratings')}</option>
-              <option value="5">{t('testimonials.filter_5_stars')}</option>
-              <option value="4">{t('testimonials.filter_4_stars')}</option>
-              <option value="3">{t('testimonials.filter_3_stars')}</option>
-              <option value="2">{t('testimonials.filter_2_stars')}</option>
-              <option value="1">{t('testimonials.filter_1_star')}</option>
-            </select>
-
-            <select
-              value={filters.sort}
-              onChange={(e) => handleFilterChange({ ...filters, sort: e.target.value })}
-              className="px-4 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
-            >
-              <option value="newest">{t('testimonials.sort_newest')}</option>
-              <option value="oldest">{t('testimonials.sort_oldest')}</option>
-              <option value="highest">{t('testimonials.sort_highest')}</option>
-              <option value="lowest">{t('testimonials.sort_lowest')}</option>
-            </select>
-          </div>
-        )}
 
         {/* Testimonials Grid */}
         {loading ? (

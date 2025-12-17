@@ -4,9 +4,11 @@ import api from '../../config/api';
 import toast from 'react-hot-toast';
 import { Star, X, Send } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
+import { useTranslation } from 'react-i18next';
 
 const TestimonialForm = ({ onClose, onSuccess }) => {
   const { currentUser } = useAuth();
+  const { t } = useTranslation();
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -50,27 +52,27 @@ const TestimonialForm = ({ onClose, onSuccess }) => {
     const newErrors = {};
     
     if (!formData.name.trim()) {
-      newErrors.name = 'Name is required';
+      newErrors.name = t('testimonials.form.name_required');
     } else if (formData.name.trim().length < 2) {
-      newErrors.name = 'Name must be at least 2 characters';
+      newErrors.name = t('testimonials.form.name_min_length');
     }
 
     if (!formData.email.trim()) {
-      newErrors.email = 'Email is required';
+      newErrors.email = t('testimonials.form.email_required');
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
-      newErrors.email = 'Please enter a valid email';
+      newErrors.email = t('testimonials.form.email_invalid');
     }
 
     if (formData.rating === 0) {
-      newErrors.rating = 'Please select a rating';
+      newErrors.rating = t('testimonials.form.rating_required');
     }
 
     if (!formData.testimonial.trim()) {
-      newErrors.testimonial = 'Testimonial is required';
+      newErrors.testimonial = t('testimonials.form.testimonial_required');
     } else if (formData.testimonial.trim().length < 50) {
-      newErrors.testimonial = 'Testimonial must be at least 50 characters';
+      newErrors.testimonial = t('testimonials.form.testimonial_min_length');
     } else if (formData.testimonial.trim().length > 500) {
-      newErrors.testimonial = 'Testimonial must be less than 500 characters';
+      newErrors.testimonial = t('testimonials.form.testimonial_max_length');
     }
 
     setErrors(newErrors);
@@ -81,7 +83,7 @@ const TestimonialForm = ({ onClose, onSuccess }) => {
     e.preventDefault();
     
     if (!validate()) {
-      toast.error('Please fix the errors in the form');
+      toast.error(t('testimonials.form.validation_error'));
       return;
     }
 
@@ -90,7 +92,7 @@ const TestimonialForm = ({ onClose, onSuccess }) => {
       const response = await api.post('/testimonials', formData);
       
       if (response.data.success) {
-        toast.success('Thank you! Your testimonial has been submitted and will be reviewed.');
+        toast.success(t('testimonials.form.submit_success_message'));
         setFormData({
           name: '',
           email: '',
@@ -103,7 +105,7 @@ const TestimonialForm = ({ onClose, onSuccess }) => {
         if (onClose) onClose();
       }
     } catch (error) {
-      const errorMessage = error.response?.data?.message || 'Failed to submit testimonial. Please try again.';
+      const errorMessage = error.response?.data?.message || t('testimonials.form.submit_error');
       toast.error(errorMessage);
       
       // Set field-specific errors if provided
@@ -143,7 +145,7 @@ const TestimonialForm = ({ onClose, onSuccess }) => {
       >
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-2xl font-bold bg-gradient-to-r from-white to-slate-300 bg-clip-text text-transparent">
-            Share Your Experience
+            {t('testimonials.form.title')}
           </h2>
           {onClose && (
             <button
@@ -159,7 +161,7 @@ const TestimonialForm = ({ onClose, onSuccess }) => {
           {/* Rating */}
           <div>
             <label className="block text-sm font-medium text-slate-300 mb-3">
-              Rating <span className="text-red-400">*</span>
+              {t('testimonials.form.rating')} <span className="text-red-400">*</span>
             </label>
             <div className="flex items-center gap-2">
               {[1, 2, 3, 4, 5].map((star) => (
@@ -189,7 +191,7 @@ const TestimonialForm = ({ onClose, onSuccess }) => {
           {/* Name */}
           <div>
             <label className="block text-sm font-medium text-slate-300 mb-2">
-              Name <span className="text-red-400">*</span>
+              {t('testimonials.form.name')} <span className="text-red-400">*</span>
             </label>
             <input
               type="text"
@@ -199,7 +201,7 @@ const TestimonialForm = ({ onClose, onSuccess }) => {
               className={`w-full px-4 py-2 bg-slate-800 border rounded-lg text-white placeholder-slate-500 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none ${
                 errors.name ? 'border-red-500' : 'border-slate-700'
               }`}
-              placeholder="Your name"
+              placeholder={t('testimonials.form.name_placeholder')}
             />
             {errors.name && (
               <p className="text-red-400 text-sm mt-1">{errors.name}</p>
@@ -209,7 +211,7 @@ const TestimonialForm = ({ onClose, onSuccess }) => {
           {/* Email */}
           <div>
             <label className="block text-sm font-medium text-slate-300 mb-2">
-              Email <span className="text-red-400">*</span>
+              {t('testimonials.form.email')} <span className="text-red-400">*</span>
             </label>
             <input
               type="email"
@@ -219,7 +221,7 @@ const TestimonialForm = ({ onClose, onSuccess }) => {
               className={`w-full px-4 py-2 bg-slate-800 border rounded-lg text-white placeholder-slate-500 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none ${
                 errors.email ? 'border-red-500' : 'border-slate-700'
               }`}
-              placeholder="your.email@example.com"
+              placeholder={t('testimonials.form.email_placeholder')}
             />
             {errors.email && (
               <p className="text-red-400 text-sm mt-1">{errors.email}</p>
@@ -229,7 +231,7 @@ const TestimonialForm = ({ onClose, onSuccess }) => {
           {/* Role (Optional) */}
           <div>
             <label className="block text-sm font-medium text-slate-300 mb-2">
-              Role (Optional)
+              {t('testimonials.form.role')}
             </label>
             <input
               type="text"
@@ -237,14 +239,14 @@ const TestimonialForm = ({ onClose, onSuccess }) => {
               value={formData.role}
               onChange={handleChange}
               className="w-full px-4 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
-              placeholder="e.g., Student, Teacher, Business Professional"
+              placeholder={t('testimonials.form.role_placeholder')}
             />
           </div>
 
           {/* Institution (Optional) */}
           <div>
             <label className="block text-sm font-medium text-slate-300 mb-2">
-              Institution (Optional)
+              {t('testimonials.form.institution')}
             </label>
             <input
               type="text"
@@ -252,14 +254,14 @@ const TestimonialForm = ({ onClose, onSuccess }) => {
               value={formData.institution}
               onChange={handleChange}
               className="w-full px-4 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
-              placeholder="Your school, company, or organization"
+              placeholder={t('testimonials.form.institution_placeholder')}
             />
           </div>
 
           {/* Testimonial */}
           <div>
             <label className="block text-sm font-medium text-slate-300 mb-2">
-              Your Testimonial <span className="text-red-400">*</span>
+              {t('testimonials.form.testimonial')} <span className="text-red-400">*</span>
             </label>
             <textarea
               name="testimonial"
@@ -269,14 +271,14 @@ const TestimonialForm = ({ onClose, onSuccess }) => {
               className={`w-full px-4 py-2 bg-slate-800 border rounded-lg text-white placeholder-slate-500 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none resize-none ${
                 errors.testimonial ? 'border-red-500' : 'border-slate-700'
               }`}
-              placeholder="Share your experience with Inavora... (50-500 characters)"
+              placeholder={t('testimonials.form.testimonial_placeholder')}
             />
             <div className="flex items-center justify-between mt-1">
               {errors.testimonial ? (
                 <p className="text-red-400 text-sm">{errors.testimonial}</p>
               ) : (
                 <p className="text-slate-500 text-sm">
-                  Minimum 50 characters required
+                  {t('testimonials.form.testimonial_min_hint')}
                 </p>
               )}
               <p className={`text-sm ${
@@ -295,7 +297,7 @@ const TestimonialForm = ({ onClose, onSuccess }) => {
                 onClick={onClose}
                 className="flex-1 px-4 py-3 bg-slate-800 text-white rounded-lg hover:bg-slate-700 transition-colors"
               >
-                Cancel
+                {t('testimonials.form.cancel')}
               </button>
             )}
             <button
@@ -306,12 +308,12 @@ const TestimonialForm = ({ onClose, onSuccess }) => {
               {loading ? (
                 <>
                   <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                  Submitting...
+                  {t('testimonials.form.submitting')}
                 </>
               ) : (
                 <>
                   <Send className="w-5 h-5" />
-                  Submit Testimonial
+                  {t('testimonials.form.submit')}
                 </>
               )}
             </button>

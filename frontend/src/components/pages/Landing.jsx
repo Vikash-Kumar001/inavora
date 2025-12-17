@@ -17,7 +17,6 @@ import {
   X,
   Check,
   Mail,
-  Phone,
   MapPin,
   User,
   ChevronDown,
@@ -29,6 +28,7 @@ import toast from 'react-hot-toast';
 import { motion, AnimatePresence, useScroll, useTransform } from 'framer-motion';
 import { JoinPresentationBtn, JoinPresentationDialog } from '../common/JoinPresentationDialog';
 import LanguageSelector from '../common/LanguageSelector/LanguageSelector';
+import TestimonialsSection from '../Testimonials/TestimonialsSection';
 
 export default function Landing() {
   const navigate = useNavigate();
@@ -1075,6 +1075,9 @@ export default function Landing() {
             </div>
           </div>
         </section>
+
+        {/* Testimonials Section */}
+        <TestimonialsSection featured={true} limit={6} />
       </main>
 
       {/* Scroll to Top Button */}
@@ -1146,18 +1149,6 @@ export default function Landing() {
                     <a href="mailto:support@inavora.com" className="text-white font-medium hover:text-teal-400 transition-colors">
                       support@inavora.com
                     </a>
-                  </div>
-                </div>
-
-                <div className="flex items-start gap-4">
-                  <div className="w-10 h-10 rounded-full bg-purple-500/10 flex items-center justify-center shrink-0 text-teal-400">
-                    <Phone className="w-5 h-5" />
-                  </div>
-                  <div>
-                    <p className="text-sm text-gray-400 mb-1">{t('footer.phone')}</p>
-                    <p className="text-white font-medium">
-                      +91 9043411110
-                    </p>
                   </div>
                 </div>
 

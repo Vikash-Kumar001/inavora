@@ -63,7 +63,7 @@ const SlideBar = ({ slides, currentSlideIndex, onSlideSelect, onDeleteSlide, onN
             </div>
             <div className="flex-1 flex flex-col gap-0.5 justify-center">
               {options.slice(0, 3).map((opt, idx) => (
-                <div key={idx} className="h-1.5 bg-[#2A2A2A] rounded-sm flex items-center px-1">
+                <div key={opt.id || opt.text || `mc-opt-${idx}`} className="h-1.5 bg-[#2A2A2A] rounded-sm flex items-center px-1">
                   <div className="h-0.5 bg-[#4CAF50] rounded-sm" style={{ width: `${(idx + 1) * 30}%` }}></div>
                 </div>
               ))}
@@ -141,7 +141,7 @@ const SlideBar = ({ slides, currentSlideIndex, onSlideSelect, onDeleteSlide, onN
             </div>
             <div className="flex-1 flex flex-col gap-0.5 justify-center">
               {statements.slice(0, 2).map((stmt, idx) => (
-                <div key={idx} className="flex items-center gap-1">
+                <div key={stmt.id || stmt.text || `stmt-${idx}`} className="flex items-center gap-1">
                   <div className="w-1 h-1 rounded-full bg-[#388E3C] flex-shrink-0"></div>
                   <div className="flex-1 h-0.5 bg-[#303030] rounded-sm"></div>
                 </div>
@@ -351,7 +351,7 @@ const SlideBar = ({ slides, currentSlideIndex, onSlideSelect, onDeleteSlide, onN
             </div>
             <div className="flex-1 flex flex-col gap-0.5 justify-center">
               {options.slice(0, 3).map((opt, idx) => (
-                <div key={idx} className="h-1.5 bg-[#2A2A2A] rounded-sm flex items-center px-1">
+                <div key={opt.id || opt.text || `pick-opt-${idx}`} className="h-1.5 bg-[#2A2A2A] rounded-sm flex items-center px-1">
                   <div className="h-0.5 bg-[#4CAF50] rounded-sm" style={{ width: `${(idx + 1) * 30}%` }}></div>
                 </div>
               ))}

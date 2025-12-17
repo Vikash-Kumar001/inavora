@@ -412,12 +412,12 @@ const Careers = () => {
                                                 >
                                                     {isExpanded ? (
                                                         <>
-                                                            Show Less
+                                                            {t('careers.show_less')}
                                                             <ChevronRight className="w-4 h-4 transform rotate-90 transition-transform duration-200" />
                                                         </>
                                                     ) : (
                                                         <>
-                                                            Show More
+                                                            {t('careers.show_more')}
                                                             <ChevronRight className="w-4 h-4 transition-transform duration-200 group-hover:translate-x-1" />
                                                         </>
                                                     )}
@@ -576,7 +576,7 @@ const Careers = () => {
                                     {/* Modal Header - Fixed */}
                                     <div className="flex items-start sm:items-center justify-between mb-4 sm:mb-6 pb-3 sm:pb-4 border-b border-white/10 flex-shrink-0 gap-3">
                                         <div className="flex-1 min-w-0">
-                                            <h2 className="text-xl sm:text-2xl font-bold text-white break-words">Apply for {selectedPosition || 'Position'}</h2>
+                                            <h2 className="text-xl sm:text-2xl font-bold text-white break-words">{t('careers.apply_for', { position: selectedPosition || t('careers.position') })}</h2>
                                             <p className="text-gray-400 text-xs sm:text-sm mt-1 hidden sm:block">{t('careers.apply_description')}</p>
                                         </div>
                                         <button
@@ -594,61 +594,61 @@ const Careers = () => {
                                     <div className="flex-1 overflow-y-auto pr-1 sm:pr-2 space-y-4 sm:space-y-6 custom-scrollbar min-h-0">
                                     {/* Personal Information */}
                                     <div className="bg-white/5 border border-white/10 rounded-lg sm:rounded-xl p-4 sm:p-5">
-                                        <h3 className="text-base sm:text-lg font-semibold text-white mb-3 sm:mb-4 pb-2 border-b border-white/10">Personal Information</h3>
+                                        <h3 className="text-base sm:text-lg font-semibold text-white mb-3 sm:mb-4 pb-2 border-b border-white/10">{t('careers.personal_information')}</h3>
                                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                                             <div>
-                                                <label className="block text-sm font-medium text-gray-300 mb-2">First Name *</label>
+                                                <label className="block text-sm font-medium text-gray-300 mb-2">{t('careers.first_name')} *</label>
                                                 <input
                                                     type="text"
                                                     required
                                                     value={formData.firstName}
                                                     onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
                                                     className="w-full px-3 sm:px-4 py-2 sm:py-2.5 bg-black/30 border border-white/10 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent outline-none text-white placeholder-gray-500 transition-all text-sm sm:text-base"
-                                                    placeholder="John"
+                                                    placeholder={t('careers.first_name_placeholder')}
                                                 />
                                             </div>
                                             <div>
-                                                <label className="block text-sm font-medium text-gray-300 mb-2">Last Name *</label>
+                                                <label className="block text-sm font-medium text-gray-300 mb-2">{t('careers.last_name')} *</label>
                                                 <input
                                                     type="text"
                                                     required
                                                     value={formData.lastName}
                                                     onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
                                                     className="w-full px-3 sm:px-4 py-2 sm:py-2.5 bg-black/30 border border-white/10 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent outline-none text-white placeholder-gray-500 transition-all text-sm sm:text-base"
-                                                    placeholder="Doe"
+                                                    placeholder={t('careers.last_name_placeholder')}
                                                 />
                                             </div>
                                             <div>
-                                                <label className="block text-sm font-medium text-gray-300 mb-2">Email Address *</label>
+                                                <label className="block text-sm font-medium text-gray-300 mb-2">{t('careers.email_address')} *</label>
                                                 <input
                                                     type="email"
                                                     required
                                                     value={formData.email}
                                                     onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                                                     className="w-full px-3 sm:px-4 py-2 sm:py-2.5 bg-black/30 border border-white/10 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent outline-none text-white placeholder-gray-500 transition-all text-sm sm:text-base"
-                                                    placeholder="john.doe@example.com"
+                                                    placeholder={t('careers.email_placeholder')}
                                                 />
                                             </div>
                                             <div>
-                                                <label className="block text-sm font-medium text-gray-300 mb-2">Phone Number *</label>
+                                                <label className="block text-sm font-medium text-gray-300 mb-2">{t('careers.phone_number')} *</label>
                                                 <input
                                                     type="tel"
                                                     required
                                                     value={formData.phone}
                                                     onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                                                     className="w-full px-3 sm:px-4 py-2 sm:py-2.5 bg-black/30 border border-white/10 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent outline-none text-white placeholder-gray-500 transition-all text-sm sm:text-base"
-                                                    placeholder="+1 234 567 8900"
+                                                    placeholder={t('careers.phone_placeholder')}
                                                 />
                                             </div>
                                             <div className="sm:col-span-2">
-                                                <label className="block text-sm font-medium text-gray-300 mb-2">Location *</label>
+                                                <label className="block text-sm font-medium text-gray-300 mb-2">{t('careers.location')} *</label>
                                                 <input
                                                     type="text"
                                                     required
                                                     value={formData.location}
                                                     onChange={(e) => setFormData({ ...formData, location: e.target.value })}
                                                     className="w-full px-3 sm:px-4 py-2 sm:py-2.5 bg-black/30 border border-white/10 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent outline-none text-white placeholder-gray-500 transition-all text-sm sm:text-base"
-                                                    placeholder="City, Country"
+                                                    placeholder={t('careers.location_placeholder')}
                                                 />
                                             </div>
                                         </div>
@@ -656,42 +656,42 @@ const Careers = () => {
 
                                     {/* Professional Links */}
                                     <div className="bg-white/5 border border-white/10 rounded-lg sm:rounded-xl p-4 sm:p-5">
-                                        <h3 className="text-base sm:text-lg font-semibold text-white mb-3 sm:mb-4 pb-2 border-b border-white/10">Professional Links</h3>
+                                        <h3 className="text-base sm:text-lg font-semibold text-white mb-3 sm:mb-4 pb-2 border-b border-white/10">{t('careers.professional_links')}</h3>
                                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
                                             <div>
                                                 <label className="text-sm font-medium text-gray-300 mb-2 flex items-center gap-2">
-                                                    <LinkIcon className="w-4 h-4" /> LinkedIn
+                                                    <LinkIcon className="w-4 h-4" /> {t('careers.linkedin')}
                                                 </label>
                                                 <input
                                                     type="url"
                                                     value={formData.linkedinUrl}
                                                     onChange={(e) => setFormData({ ...formData, linkedinUrl: e.target.value })}
                                                     className="w-full px-3 sm:px-4 py-2 sm:py-2.5 bg-black/30 border border-white/10 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent outline-none text-white placeholder-gray-500 transition-all text-sm sm:text-base"
-                                                    placeholder="https://linkedin.com/in/..."
+                                                    placeholder={t('careers.linkedin_placeholder')}
                                                 />
                                             </div>
                                             <div>
                                                 <label className="text-sm font-medium text-gray-300 mb-2 flex items-center gap-2">
-                                                    <LinkIcon className="w-4 h-4" /> Portfolio
+                                                    <LinkIcon className="w-4 h-4" /> {t('careers.portfolio')}
                                                 </label>
                                                 <input
                                                     type="url"
                                                     value={formData.portfolioUrl}
                                                     onChange={(e) => setFormData({ ...formData, portfolioUrl: e.target.value })}
                                                     className="w-full px-3 sm:px-4 py-2 sm:py-2.5 bg-black/30 border border-white/10 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent outline-none text-white placeholder-gray-500 transition-all text-sm sm:text-base"
-                                                    placeholder="https://yourportfolio.com"
+                                                    placeholder={t('careers.portfolio_placeholder')}
                                                 />
                                             </div>
                                             <div>
                                                 <label className="text-sm font-medium text-gray-300 mb-2 flex items-center gap-2">
-                                                    <LinkIcon className="w-4 h-4" /> GitHub
+                                                    <LinkIcon className="w-4 h-4" /> {t('careers.github')}
                                                 </label>
                                                 <input
                                                     type="url"
                                                     value={formData.githubUrl}
                                                     onChange={(e) => setFormData({ ...formData, githubUrl: e.target.value })}
                                                     className="w-full px-3 sm:px-4 py-2 sm:py-2.5 bg-black/30 border border-white/10 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent outline-none text-white placeholder-gray-500 transition-all text-sm sm:text-base"
-                                                    placeholder="https://github.com/..."
+                                                    placeholder={t('careers.github_placeholder')}
                                                 />
                                             </div>
                                         </div>
@@ -699,53 +699,53 @@ const Careers = () => {
 
                                     {/* Position Details */}
                                     <div className="bg-white/5 border border-white/10 rounded-lg sm:rounded-xl p-4 sm:p-5">
-                                        <h3 className="text-base sm:text-lg font-semibold text-white mb-3 sm:mb-4 pb-2 border-b border-white/10">Position Details</h3>
+                                        <h3 className="text-base sm:text-lg font-semibold text-white mb-3 sm:mb-4 pb-2 border-b border-white/10">{t('careers.position_details')}</h3>
                                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                                             <div>
-                                                <label className="block text-sm font-medium text-gray-300 mb-2">Position *</label>
+                                                <label className="block text-sm font-medium text-gray-300 mb-2">{t('careers.position')} *</label>
                                                 <input
                                                     type="text"
                                                     required
                                                     value={formData.position}
                                                     onChange={(e) => setFormData({ ...formData, position: e.target.value })}
                                                     className="w-full px-3 sm:px-4 py-2 sm:py-2.5 bg-black/30 border border-white/10 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent outline-none text-white placeholder-gray-500 transition-all text-sm sm:text-base"
-                                                    placeholder="Video Creator/Editor"
+                                                    placeholder={t('careers.position_placeholder')}
                                                 />
                                             </div>
                                             <div>
-                                                <label className="block text-sm font-medium text-gray-300 mb-2">Department *</label>
+                                                <label className="block text-sm font-medium text-gray-300 mb-2">{t('careers.department')} *</label>
                                                 <input
                                                     type="text"
                                                     required
                                                     value={formData.department}
                                                     onChange={(e) => setFormData({ ...formData, department: e.target.value })}
                                                     className="w-full px-3 sm:px-4 py-2 sm:py-2.5 bg-black/30 border border-white/10 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent outline-none text-white placeholder-gray-500 transition-all text-sm sm:text-base"
-                                                    placeholder="Creative Content"
+                                                    placeholder={t('careers.department_placeholder')}
                                                 />
                                             </div>
                                             <div>
-                                                <label className="block text-sm font-medium text-gray-300 mb-2">Expected Salary</label>
+                                                <label className="block text-sm font-medium text-gray-300 mb-2">{t('careers.expected_salary')}</label>
                                                 <input
                                                     type="text"
                                                     value={formData.expectedSalary}
                                                     onChange={(e) => setFormData({ ...formData, expectedSalary: e.target.value })}
                                                     className="w-full px-3 sm:px-4 py-2 sm:py-2.5 bg-black/30 border border-white/10 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent outline-none text-white placeholder-gray-500 transition-all text-sm sm:text-base"
-                                                    placeholder="₹10,00,000 - ₹15,00,000"
+                                                    placeholder={t('careers.expected_salary_placeholder')}
                                                 />
                                             </div>
                                             <div>
-                                                <label className="block text-sm font-medium text-gray-300 mb-2">Availability *</label>
+                                                <label className="block text-sm font-medium text-gray-300 mb-2">{t('careers.availability')} *</label>
                                                 <select
                                                     required
                                                     value={formData.availability}
                                                     onChange={(e) => setFormData({ ...formData, availability: e.target.value })}
                                                     className="w-full px-4 py-2.5 bg-black/30 border border-white/10 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent outline-none text-white transition-all"
                                                 >
-                                                    <option value="immediate">Immediate</option>
-                                                    <option value="2 weeks">2 Weeks</option>
-                                                    <option value="1 month">1 Month</option>
-                                                    <option value="2 months">2 Months</option>
-                                                    <option value="3+ months">3+ Months</option>
+                                                    <option value="immediate">{t('careers.availability_immediate')}</option>
+                                                    <option value="2 weeks">{t('careers.availability_2_weeks')}</option>
+                                                    <option value="1 month">{t('careers.availability_1_month')}</option>
+                                                    <option value="2 months">{t('careers.availability_2_months')}</option>
+                                                    <option value="3+ months">{t('careers.availability_3_months')}</option>
                                                 </select>
                                             </div>
                                         </div>
@@ -753,7 +753,7 @@ const Careers = () => {
 
                                     {/* Resume Upload */}
                                     <div className="bg-white/5 border border-white/10 rounded-lg sm:rounded-xl p-4 sm:p-5">
-                                        <h3 className="text-base sm:text-lg font-semibold text-white mb-3 sm:mb-4 pb-2 border-b border-white/10">Resume/CV *</h3>
+                                        <h3 className="text-base sm:text-lg font-semibold text-white mb-3 sm:mb-4 pb-2 border-b border-white/10">{t('careers.resume_cv')} *</h3>
                                         <div className="border-2 border-dashed border-white/20 rounded-lg p-4 sm:p-6 text-center hover:border-teal-500/50 transition-colors">
                                             <input
                                                 type="file"
@@ -774,8 +774,8 @@ const Careers = () => {
                                                 ) : (
                                                     <div>
                                                         <Upload className="w-10 h-10 sm:w-12 sm:h-12 mx-auto mb-2 sm:mb-3 text-gray-400" />
-                                                        <p className="text-gray-300 mb-1 text-sm sm:text-base">Click to upload or drag and drop</p>
-                                                        <p className="text-gray-500 text-xs sm:text-sm">PDF, DOC, DOCX (Max 5MB)</p>
+                                                        <p className="text-gray-300 mb-1 text-sm sm:text-base">{t('careers.upload_instructions')}</p>
+                                                        <p className="text-gray-500 text-xs sm:text-sm">{t('careers.upload_formats')}</p>
                                                     </div>
                                                 )}
                                             </label>
@@ -784,38 +784,38 @@ const Careers = () => {
 
                                     {/* Cover Letter */}
                                     <div className="bg-white/5 border border-white/10 rounded-lg sm:rounded-xl p-4 sm:p-5">
-                                        <h3 className="text-base sm:text-lg font-semibold text-white mb-3 sm:mb-4 pb-2 border-b border-white/10">Cover Letter *</h3>
+                                        <h3 className="text-base sm:text-lg font-semibold text-white mb-3 sm:mb-4 pb-2 border-b border-white/10">{t('careers.cover_letter')} *</h3>
                                         <textarea
                                             required
                                             rows={5}
                                             value={formData.coverLetter}
                                             onChange={(e) => setFormData({ ...formData, coverLetter: e.target.value })}
                                             className="w-full px-3 sm:px-4 py-2 sm:py-3 bg-black/30 border border-white/10 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent outline-none text-white placeholder-gray-500 transition-all resize-none custom-scrollbar text-sm sm:text-base"
-                                            placeholder="Tell us why you're interested in this position and what makes you a great fit..."
+                                            placeholder={t('careers.cover_letter_placeholder')}
                                         />
                                     </div>
 
                                     {/* Why Inavora */}
                                     <div className="bg-white/5 border border-white/10 rounded-lg sm:rounded-xl p-4 sm:p-5">
-                                        <h3 className="text-base sm:text-lg font-semibold text-white mb-3 sm:mb-4 pb-2 border-b border-white/10">Why do you want to join Inavora?</h3>
+                                        <h3 className="text-base sm:text-lg font-semibold text-white mb-3 sm:mb-4 pb-2 border-b border-white/10">{t('careers.why_inavora')}</h3>
                                         <textarea
                                             rows={4}
                                             value={formData.whyInavora}
                                             onChange={(e) => setFormData({ ...formData, whyInavora: e.target.value })}
                                             className="w-full px-3 sm:px-4 py-2 sm:py-3 bg-black/30 border border-white/10 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent outline-none text-white placeholder-gray-500 transition-all resize-none custom-scrollbar text-sm sm:text-base"
-                                            placeholder="What excites you about working at Inavora?"
+                                            placeholder={t('careers.why_inavora_placeholder')}
                                         />
                                     </div>
 
                                     {/* Additional Info */}
                                     <div className="bg-white/5 border border-white/10 rounded-lg sm:rounded-xl p-4 sm:p-5">
-                                        <h3 className="text-base sm:text-lg font-semibold text-white mb-3 sm:mb-4 pb-2 border-b border-white/10">Additional Information</h3>
+                                        <h3 className="text-base sm:text-lg font-semibold text-white mb-3 sm:mb-4 pb-2 border-b border-white/10">{t('careers.additional_information')}</h3>
                                         <textarea
                                             rows={3}
                                             value={formData.additionalInfo}
                                             onChange={(e) => setFormData({ ...formData, additionalInfo: e.target.value })}
                                             className="w-full px-3 sm:px-4 py-2 sm:py-3 bg-black/30 border border-white/10 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent outline-none text-white placeholder-gray-500 transition-all resize-none custom-scrollbar text-sm sm:text-base"
-                                            placeholder="Anything else you'd like us to know?"
+                                            placeholder={t('careers.additional_information_placeholder')}
                                         />
                                     </div>
                                     </div>
@@ -839,14 +839,14 @@ const Careers = () => {
                                                 {isSubmitting ? (
                                                     <>
                                                         <div className="w-4 h-4 sm:w-5 sm:h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                                                        <span className="hidden sm:inline">Submitting...</span>
-                                                        <span className="sm:hidden">Submitting</span>
+                                                        <span className="hidden sm:inline">{t('careers.submitting')}</span>
+                                                        <span className="sm:hidden">{t('careers.submitting_short')}</span>
                                                     </>
                                                 ) : (
                                                     <>
                                                         <Send className="w-4 h-4 sm:w-5 sm:h-5" />
                                                         <span className="hidden sm:inline">{t('careers.submit_application')}</span>
-                                                        <span className="sm:hidden">Submit</span>
+                                                        <span className="sm:hidden">{t('careers.submit')}</span>
                                                     </>
                                                 )}
                                             </button>

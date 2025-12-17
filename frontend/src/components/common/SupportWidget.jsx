@@ -13,7 +13,7 @@ const SupportWidget = () => {
     {
       icon: Mail,
       title: t('support_widget.email_support'),
-      description: 'support@inavora.com',
+      description: t('support_widget.email_address'),
       action: () => {
         window.location.href = `mailto:support@inavora.com?subject=${encodeURIComponent(t('support_widget.support_request'))}`;
         setIsOpen(false);

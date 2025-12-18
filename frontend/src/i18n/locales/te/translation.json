@@ -1055,9 +1055,12 @@
     "pick_the_answer": "సమాధానాన్ని ఎంచుకోండి",
     "type_your_answer": "మీ సమాధానం టైప్ చేయండి",
     "bring_your_slides_in": "మీ స్లైడ్‌లను తీసుకురావడండి",
-    "import_from_miro": "మైరో నుండి ఇంపోర్ట్ చేయండి",
-    "import_powerpoint": "పవర్ పాయింట్ ఇంపోర్ట్ చేయండి",
-    "import_from_google_slides": "గూగుల్ స్లైడ్‌ల నుండి ఇంపోర్ట్ చేయండి",
+    "miro_brand": "మైరో",
+    "powerpoint_brand": "పవర్ పాయింట్",
+    "google_slides_brand": "గూగుల్ స్లైడ్‌లు",
+    "import_from_miro": "{{miroBrand}} నుండి ఇంపోర్ట్ చేయండి",
+    "import_powerpoint": "{{powerpointBrand}} ఇంపోర్ట్ చేయండి",
+    "import_from_google_slides": "{{googleSlidesBrand}} నుండి ఇంపోర్ట్ చేయండి",
     "upload_presentation": "ప్రదర్శనను అప్‌లోడ్ చేయండి"
   },
   "toasts": {

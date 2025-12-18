@@ -1060,9 +1060,12 @@
     "pick_the_answer": "उत्तर चुनें",
     "type_your_answer": "अपना उत्तर टाइप करें",
     "bring_your_slides_in": "अपने स्लाइड्स लाएं",
-    "import_from_miro": "माइरो से आयात करें",
-    "import_powerpoint": "पॉवरपॉइंट आयात करें",
-    "import_from_google_slides": "गूगल स्लाइड्स से आयात करें",
+    "miro_brand": "माइरो",
+    "powerpoint_brand": "पॉवरपॉइंट",
+    "google_slides_brand": "गूगल स्लाइड्स",
+    "import_from_miro": "{{miroBrand}} से आयात करें",
+    "import_powerpoint": "{{powerpointBrand}} आयात करें",
+    "import_from_google_slides": "{{googleSlidesBrand}} से आयात करें",
     "upload_presentation": "प्रस्तुति अपलोड करें"
   },
   "confirm_dialog": {

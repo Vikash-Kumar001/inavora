@@ -1620,9 +1620,12 @@
     "pick_the_answer": "选择答案",
     "type_your_answer": "输入您的答案",
     "bring_your_slides_in": "导入您的幻灯片",
-    "import_from_miro": "从Miro导入",
-    "import_powerpoint": "导入PowerPoint",
-    "import_from_google_slides": "从Google幻灯片导入",
+    "miro_brand": "米罗",
+    "powerpoint_brand": "幻灯片",
+    "google_slides_brand": "谷歌幻灯片",
+    "import_from_miro": "从{{miroBrand}}导入",
+    "import_powerpoint": "导入{{powerpointBrand}}",
+    "import_from_google_slides": "从{{googleSlidesBrand}}导入",
     "upload_presentation": "上传演示文稿"
   },
   "toasts": {

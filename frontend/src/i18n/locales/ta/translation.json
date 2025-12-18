@@ -1208,9 +1208,12 @@
     "pick_the_answer": "பதிலைத் தேர்ந்தெடுக்கவும்",
     "type_your_answer": "உங்கள் பதிலை தட்டச்சு செய்யவும்",
     "bring_your_slides_in": "உங்கள் வழங்கல்களைக் கொண்டுவாருங்கள்",
-    "import_from_miro": "மிரோவிலிருந்து இறக்குமதி செய்யவும்",
-    "import_powerpoint": "பவர்பாயிண்டை இறக்குமதி செய்யவும்",
-    "import_from_google_slides": "கூகிள் வழங்கல்களிலிருந்து இறக்குமதி செய்யவும்",
+    "miro_brand": "மிரோ",
+    "powerpoint_brand": "பவர்பாயிண்ட்",
+    "google_slides_brand": "கூகிள் வழங்கல்கள்",
+    "import_from_miro": "{{miroBrand}}விலிருந்து இறக்குமதி செய்யவும்",
+    "import_powerpoint": "{{powerpointBrand}}ஐ இறக்குமதி செய்யவும்",
+    "import_from_google_slides": "{{googleSlidesBrand}}லிருந்து இறக்குமதி செய்யவும்",
     "upload_presentation": "வழங்கலை பதிவேற்றுங்கள்"
   },
   "toasts": {

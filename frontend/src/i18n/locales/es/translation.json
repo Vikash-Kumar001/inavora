@@ -1590,9 +1590,12 @@
     "pick_the_answer": "Elige la Respuesta",
     "type_your_answer": "Escribe tu Respuesta",
     "bring_your_slides_in": "Trae tus Diapositivas",
-    "import_from_miro": "Importar desde Miro",
-    "import_powerpoint": "Importar PowerPoint",
-    "import_from_google_slides": "Importar desde Google Slides",
+    "miro_brand": "Miro",
+    "powerpoint_brand": "PowerPoint",
+    "google_slides_brand": "Google Slides",
+    "import_from_miro": "Importar desde {{miroBrand}}",
+    "import_powerpoint": "Importar {{powerpointBrand}}",
+    "import_from_google_slides": "Importar desde {{googleSlidesBrand}}",
     "upload_presentation": "Subir Presentación"
   },
   "toasts": {

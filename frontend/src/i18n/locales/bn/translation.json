@@ -1047,9 +1047,12 @@
     "pick_the_answer": "উত্তরটি নির্বাচন করুন",
     "type_your_answer": "আপনার উত্তর টাইপ করুন",
     "bring_your_slides_in": "আপনার স্লাইডগুলি আনুন",
-    "import_from_miro": "মিরো থেকে আমদানি করুন",
-    "import_powerpoint": "পাওয়ারপয়েন্ট আমদানি করুন",
-    "import_from_google_slides": "গুগল স্লাইডস থেকে আমদানি করুন",
+    "miro_brand": "মিরো",
+    "powerpoint_brand": "পাওয়ারপয়েন্ট",
+    "google_slides_brand": "গুগল স্লাইডস",
+    "import_from_miro": "{{miroBrand}} থেকে আমদানি করুন",
+    "import_powerpoint": "{{powerpointBrand}} আমদানি করুন",
+    "import_from_google_slides": "{{googleSlidesBrand}} থেকে আমদানি করুন",
     "upload_presentation": "উপস্থাপনা আপলোড করুন"
   },
   "institution_admin": {

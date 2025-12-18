@@ -62,19 +62,19 @@ const NewSlideDropdown = ({ onSelectType, onClose, isHorizontal = false, user })
       items: [
         { 
           type: 'miro', 
-          label: t('new_slide_dropdown.import_from_miro'), 
+          label: t('new_slide_dropdown.import_from_miro', { miroBrand: t('new_slide_dropdown.miro_brand') }),
           icon: Palette, 
           color: 'text-purple-500'
         },
         { 
           type: 'powerpoint', 
-          label: t('new_slide_dropdown.import_powerpoint'), 
+          label: t('new_slide_dropdown.import_powerpoint', { powerpointBrand: t('new_slide_dropdown.powerpoint_brand') }),
           icon: FileText, 
           color: 'text-green-500'
         },
         { 
           type: 'google_slides', 
-          label: t('new_slide_dropdown.import_from_google_slides'), 
+          label: t('new_slide_dropdown.import_from_google_slides', { googleSlidesBrand: t('new_slide_dropdown.google_slides_brand') }),
           icon: Monitor, 
           color: 'text-blue-500'
         },

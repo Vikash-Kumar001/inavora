@@ -1187,9 +1187,12 @@
     "pick_the_answer": "اختر الإجابة",
     "type_your_answer": "اكتب إجابتك",
     "bring_your_slides_in": "أحضر شرائحك",
-    "import_from_miro": "استيراد من Miro",
-    "import_powerpoint": "استيراد PowerPoint",
-    "import_from_google_slides": "استيراد من Google Slides",
+    "miro_brand": "ميرو",
+    "powerpoint_brand": "باوربوينت",
+    "google_slides_brand": "شرائح جوجل",
+    "import_from_miro": "استيراد من {{miroBrand}}",
+    "import_powerpoint": "استيراد {{powerpointBrand}}",
+    "import_from_google_slides": "استيراد من {{googleSlidesBrand}}",
     "upload_presentation": "رفع العرض التقديمي"
   },
   "slide_canvas": {

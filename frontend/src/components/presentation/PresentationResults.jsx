@@ -7,6 +7,7 @@ import { formatSlideDataForExport, exportAllSlidesToPDF } from '../../utils/expo
 import toast from 'react-hot-toast';
 import * as XLSX from 'xlsx';
 import { useAuth } from '../../context/AuthContext';
+import { useTranslation } from 'react-i18next';
 
 // Import new Result Components
 import MCQResult from '../interactions/Results/MCQResult';
@@ -33,6 +34,7 @@ import ImageResult from '../interactions/Results/ImageResult';
 import VideoResult from '../interactions/Results/VideoResult';
 
 const PresentationResults = ({ slides, presentationId }) => {
+    const { t } = useTranslation();
     const { currentUser } = useAuth();
     const [results, setResults] = useState(null);
     const [presentation, setPresentation] = useState(null);
@@ -102,7 +104,7 @@ const PresentationResults = ({ slides, presentationId }) => {
                 setPresentation(presentationData.presentation);
             } catch (err) {
                 console.error('Failed to fetch data:', err);
-                setError('Failed to load results. Please try again.');
+                setError(t('presentation_results.failed_to_load'));
             } finally {
                 setIsLoading(false);
             }
@@ -202,7 +204,7 @@ const PresentationResults = ({ slides, presentationId }) => {
 
     const handleExportData = async (format) => {
         if (!presentationId || !slides || slides.length === 0) {
-            toast.error('No presentation or slides available');
+            toast.error(t('presentation_results.no_presentation_available'));
             return;
         }
         
@@ -237,13 +239,13 @@ const PresentationResults = ({ slides, presentationId }) => {
             }
             
             if (allSlideData.length === 0) {
-                toast.error('No data available to export');
+                toast.error(t('presentation_results.no_data_to_export'));
                 setIsExporting(false);
                 return;
             }
             
             // Generate filename
-            const sanitizedTitle = (presentation?.title || 'Presentation').replace(/[^a-z0-9]/gi, '_').toLowerCase();
+            const sanitizedTitle = (presentation?.title || t('presentation_results.default_title')).replace(/[^a-z0-9]/gi, '_').toLowerCase();
             const dateStr = new Date().toISOString().split('T')[0];
             const filename = `${sanitizedTitle}_results_${dateStr}`;
             
@@ -255,10 +257,10 @@ const PresentationResults = ({ slides, presentationId }) => {
                 exportAllSlidesToExcel(allSlideData, filename);
             }
             
-            toast.success(`Exported ${allSlideData.length} slide(s) as ${format.toUpperCase()}`);
+            toast.success(t('presentation_results.exported_success', { count: allSlideData.length, format: format.toUpperCase() }));
         } catch (error) {
             console.error('Export error:', error);
-            toast.error('Failed to export results');
+            toast.error(t('presentation_results.export_failed'));
         } finally {
             setIsExporting(false);
         }
@@ -266,22 +268,22 @@ const PresentationResults = ({ slides, presentationId }) => {
     
     // Export all slides to CSV
     const exportAllSlidesToCSV = (allSlideData, filename) => {
-        let csvContent = `"${presentation?.title || 'Presentation Results'}"\n`;
-        csvContent += `"Exported: ${new Date().toLocaleString()}"\n`;
-        csvContent += `"Total Slides: ${allSlideData.length}"\n\n`;
+        let csvContent = `"${presentation?.title || t('presentation_results.default_title')}"\n`;
+        csvContent += `"${t('presentation_results.exported')}: ${new Date().toLocaleString()}"\n`;
+        csvContent += `"${t('presentation_results.total_slides')}: ${allSlideData.length}"\n\n`;
         
         allSlideData.forEach(({ slide, formattedData, slideIndex }) => {
             const { question, timestamp, summary, detailed, metadata } = formattedData;
             
             csvContent += `"${'='.repeat(80)}"\n`;
-            csvContent += `"Slide ${slideIndex + 1}: ${question}"\n`;
-            csvContent += `"Type: ${formattedData.slideType}"\n`;
-            csvContent += `"Total Responses: ${metadata.totalResponses}"\n`;
+            csvContent += `"${t('presentation_results.slide_number', { number: slideIndex + 1 })}: ${question}"\n`;
+            csvContent += `"${t('presentation_results.type')}: ${formattedData.slideType}"\n`;
+            csvContent += `"${t('presentation_results.total_responses')}: ${metadata.totalResponses}"\n`;
             csvContent += `"${'='.repeat(80)}"\n\n`;
             
             // Summary section
             if (summary.length > 0) {
-                csvContent += '"SUMMARY"\n';
+                csvContent += `"${t('presentation_results.summary').toUpperCase()}"\n`;
                 const summaryHeaders = Object.keys(summary[0]);
                 csvContent += summaryHeaders.map(h => `"${h}"`).join(',') + '\n';
                 summary.forEach(row => {
@@ -292,7 +294,7 @@ const PresentationResults = ({ slides, presentationId }) => {
             
             // Detailed section
             if (detailed.length > 0) {
-                csvContent += '"DETAILED RESPONSES"\n';
+                csvContent += `"${t('presentation_results.detailed_responses').toUpperCase()}"\n`;
                 const detailedHeaders = Object.keys(detailed[0]);
                 csvContent += detailedHeaders.map(h => `"${h}"`).join(',') + '\n';
                 detailed.forEach(row => {
@@ -322,11 +324,11 @@ const PresentationResults = ({ slides, presentationId }) => {
         
         // Overview sheet
         const overviewData = [
-            ['Presentation Title', presentation?.title || 'Untitled Presentation'],
-            ['Exported', new Date().toLocaleString()],
-            ['Total Slides', allSlideData.length],
+            [t('presentation_results.presentation_title'), presentation?.title || t('presentation_results.untitled_presentation')],
+            [t('presentation_results.exported'), new Date().toLocaleString()],
+            [t('presentation_results.total_slides'), allSlideData.length],
             [''],
-            ['Slide', 'Question', 'Type', 'Total Responses']
+            [t('presentation_results.slide'), t('presentation_results.question'), t('presentation_results.type'), t('presentation_results.total_responses')]
         ];
         
         allSlideData.forEach(({ slide, formattedData, slideIndex }) => {
@@ -348,15 +350,15 @@ const PresentationResults = ({ slides, presentationId }) => {
             
             // Metadata
             const metadataData = [
-                ['Question', question],
-                ['Type', formattedData.slideType],
-                ['Total Responses', metadata.totalResponses],
+                [t('presentation_results.question'), question],
+                [t('presentation_results.type'), formattedData.slideType],
+                [t('presentation_results.total_responses'), metadata.totalResponses],
                 ['']
             ];
             
             // Summary
             if (summary.length > 0) {
-                metadataData.push(['SUMMARY']);
+                metadataData.push([t('presentation_results.summary').toUpperCase()]);
                 const summaryHeaders = Object.keys(summary[0]);
                 metadataData.push(summaryHeaders);
                 summary.forEach(row => {
@@ -367,7 +369,7 @@ const PresentationResults = ({ slides, presentationId }) => {
             
             // Detailed
             if (detailed.length > 0) {
-                metadataData.push(['DETAILED RESPONSES']);
+                metadataData.push([t('presentation_results.detailed_responses').toUpperCase()]);
                 const detailedHeaders = Object.keys(detailed[0]);
                 metadataData.push(detailedHeaders);
                 detailed.forEach(row => {
@@ -384,7 +386,7 @@ const PresentationResults = ({ slides, presentationId }) => {
 
     const handleExportToPDF = async () => {
         if (!presentationId || !slides || slides.length === 0) {
-            toast.error('No presentation or slides available');
+            toast.error(t('presentation_results.no_presentation_available'));
             return;
         }
         
@@ -473,23 +475,23 @@ const PresentationResults = ({ slides, presentationId }) => {
             }
             
             if (allSlideData.length === 0) {
-                toast.error('No data available to export');
+                toast.error(t('presentation_results.no_data_to_export'));
                 setIsExporting(false);
                 return;
             }
             
             // Generate filename
-            const sanitizedTitle = (presentation?.title || 'Presentation').replace(/[^a-z0-9]/gi, '_').toLowerCase();
+            const sanitizedTitle = (presentation?.title || t('presentation_results.default_title')).replace(/[^a-z0-9]/gi, '_').toLowerCase();
             const dateStr = new Date().toISOString().split('T')[0];
             const filename = `${sanitizedTitle}_results_${dateStr}`;
             
             // Export all slides to PDF (now async to handle QR code generation)
-            await exportAllSlidesToPDF(allSlideData, presentation?.title || 'Presentation Results', filename);
+            await exportAllSlidesToPDF(allSlideData, presentation?.title || t('presentation_results.default_title'), filename);
             
-            toast.success(`Exported ${allSlideData.length} slide(s) as PDF`);
+            toast.success(t('presentation_results.exported_pdf_success', { count: allSlideData.length }));
         } catch (error) {
             console.error('PDF export error:', error);
-            toast.error('Failed to export PDF');
+            toast.error(t('presentation_results.export_pdf_failed'));
         } finally {
             setIsExporting(false);
         }
@@ -522,7 +524,7 @@ const PresentationResults = ({ slides, presentationId }) => {
             <div className="flex-1 bg-[#1A1A1A] p-4 sm:p-6 md:p-8 overflow-y-auto">
                 <div className="max-w-5xl mx-auto h-full flex items-center justify-center">
                     <div className="text-center p-4 text-[#B0B0B0] text-sm sm:text-base">
-                        No slides in this presentation.
+                        {t('presentation_results.no_slides')}
                     </div>
                 </div>
             </div>
@@ -585,8 +587,8 @@ const PresentationResults = ({ slides, presentationId }) => {
             default:
                 return (
                     <div className="text-center text-[#B0B0B0] py-6 sm:py-8 bg-[#1F1F1F] rounded-xl border border-[#2A2A2A]">
-                        <p className="mb-2 font-medium text-[#E0E0E0] text-sm sm:text-base">{typeof slide.question === 'string' ? slide.question : (slide.question?.text || 'Untitled Slide')}</p>
-                        <p className="text-xs sm:text-sm text-[#6C6C6C]">Results visualization coming soon for {slide.type}.</p>
+                        <p className="mb-2 font-medium text-[#E0E0E0] text-sm sm:text-base">{typeof slide.question === 'string' ? slide.question : (slide.question?.text || t('presentation_results.untitled_slide'))}</p>
+                        <p className="text-xs sm:text-sm text-[#6C6C6C]">{t('presentation_results.visualization_coming_soon', { type: slide.type })}</p>
                     </div>
                 );
         }
@@ -598,8 +600,8 @@ const PresentationResults = ({ slides, presentationId }) => {
                 <div className="mb-4 sm:mb-6 md:mb-8">
                     <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                         <div>
-                            <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-[#E0E0E0] mb-1 sm:mb-2">Presentation Results</h2>
-                            <p className="text-sm sm:text-base text-[#B0B0B0]">Overview of all responses collected</p>
+                            <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-[#E0E0E0] mb-1 sm:mb-2">{t('presentation_results.title')}</h2>
+                            <p className="text-sm sm:text-base text-[#B0B0B0]">{t('presentation_results.subtitle')}</p>
                         </div>
                         {canExport && (
                             <div className="flex gap-2">
@@ -609,7 +611,7 @@ const PresentationResults = ({ slides, presentationId }) => {
                                         className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-500 to-teal-500 hover:from-blue-600 hover:to-teal-600 text-white rounded-lg transition-all font-medium disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap shadow-lg hover:shadow-xl"
                                     >
                                         <Download className="w-4 h-4" />
-                                        {isExporting ? 'Exporting...' : 'Export'}
+                                        {isExporting ? t('presentation_results.exporting') : t('presentation_results.export')}
                                     </button>
                                     <div className="absolute right-0 top-full mt-1 w-48 bg-[#1e293b] border border-white/10 rounded-lg shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-10">
                                         <button
@@ -617,21 +619,21 @@ const PresentationResults = ({ slides, presentationId }) => {
                                             disabled={isExporting}
                                             className="w-full text-left px-4 py-2 hover:bg-white/5 text-sm text-white disabled:opacity-50"
                                         >
-                                            Export as PDF
+                                            {t('presentation_results.export_pdf')}
                                         </button>
                                         <button
                                             onClick={() => handleExportData('csv')}
                                             disabled={isExporting}
                                             className="w-full text-left px-4 py-2 hover:bg-white/5 text-sm text-white disabled:opacity-50"
                                         >
-                                            Export as CSV
+                                            {t('presentation_results.export_csv')}
                                         </button>
                                         <button
                                             onClick={() => handleExportData('excel')}
                                             disabled={isExporting}
                                             className="w-full text-left px-4 py-2 hover:bg-white/5 text-sm text-white disabled:opacity-50"
                                         >
-                                            Export as Excel
+                                            {t('presentation_results.export_excel')}
                                         </button>
                                     </div>
                                 </div>
@@ -644,7 +646,7 @@ const PresentationResults = ({ slides, presentationId }) => {
                     {slides.map((slide, index) => (
                         <div key={slide.id || slide._id || index} className="w-full mb-6 sm:mb-8 pdf-slide">
                             <h3 className="text-xl font-semibold text-[#E0E0E0] mb-4 pdf-slide-title">
-                                Slide {index + 1}: {typeof slide.question === 'string' ? slide.question : (slide.question?.text || slide.type.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase()))}
+                                {t('presentation_results.slide_number', { number: index + 1 })}: {typeof slide.question === 'string' ? slide.question : (slide.question?.text || slide.type.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase()))}
                             </h3>
                             {renderSlideResult(slide)}
                         </div>

@@ -1,29 +1,31 @@
 // eslint-disable-next-line
 import { motion } from 'framer-motion';
 import { BarChart2, MessageSquare, Type, ListOrdered, Target, Grid, MapPin, Trophy, Hash, PieChart } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
-const getTypeConfig = (type) => {
+const getTypeConfig = (type, t) => {
     switch (type) {
-        case 'multiple_choice': return { label: 'Multiple Choice', icon: BarChart2, color: 'text-[#2196F3]', bg: 'bg-[#2196F3]/10' };
-        case 'word_cloud': return { label: 'Word Cloud', icon: MessageSquare, color: 'text-[#9C27B0]', bg: 'bg-[#9C27B0]/10' };
-        case 'open_ended': return { label: 'Open Ended', icon: Type, color: 'text-[#4CAF50]', bg: 'bg-[#4CAF50]/10' };
-        case 'scales': return { label: 'Scales', icon: Target, color: 'text-[#FF9800]', bg: 'bg-[#FF9800]/10' };
-        case 'ranking': return { label: 'Ranking', icon: ListOrdered, color: 'text-[#FFEB3B]', bg: 'bg-[#FFEB3B]/10' };
-        case 'hundred_points': return { label: '100 Points', icon: PieChart, color: 'text-[#E91E63]', bg: 'bg-[#E91E63]/10' };
-        case '2x2_grid': return { label: '2x2 Grid', icon: Grid, color: 'text-[#00BCD4]', bg: 'bg-[#00BCD4]/10' };
-        case 'pin_on_image': return { label: 'Pin on Image', icon: MapPin, color: 'text-[#F44336]', bg: 'bg-[#F44336]/10' };
-        case 'quiz': return { label: 'Quiz', icon: Trophy, color: 'text-[#3F51B5]', bg: 'bg-[#3F51B5]/10' };
-        case 'guess_number': return { label: 'Guess Number', icon: Hash, color: 'text-[#009688]', bg: 'bg-[#009688]/10' };
-        case 'qna': return { label: 'Q&A', icon: MessageSquare, color: 'text-[#4CAF50]', bg: 'bg-[#4CAF50]/10' };
-        case 'leaderboard': return { label: 'Leaderboard', icon: Trophy, color: 'text-[#FFC107]', bg: 'bg-[#FFC107]/10' };
-        case 'pick_answer': return { label: 'Pick Answer', icon: BarChart2, color: 'text-[#2196F3]', bg: 'bg-[#2196F3]/10' };
-        case 'type_answer': return { label: 'Type Answer', icon: Type, color: 'text-[#4CAF50]', bg: 'bg-[#4CAF50]/10' };
-        default: return { label: 'Slide', icon: BarChart2, color: 'text-[#B0B0B0]', bg: 'bg-[#B0B0B0]/10' };
+        case 'multiple_choice': return { label: t('presentation_results.slide_types.multiple_choice'), icon: BarChart2, color: 'text-[#2196F3]', bg: 'bg-[#2196F3]/10' };
+        case 'word_cloud': return { label: t('presentation_results.slide_types.word_cloud'), icon: MessageSquare, color: 'text-[#9C27B0]', bg: 'bg-[#9C27B0]/10' };
+        case 'open_ended': return { label: t('presentation_results.slide_types.open_ended'), icon: Type, color: 'text-[#4CAF50]', bg: 'bg-[#4CAF50]/10' };
+        case 'scales': return { label: t('presentation_results.slide_types.scales'), icon: Target, color: 'text-[#FF9800]', bg: 'bg-[#FF9800]/10' };
+        case 'ranking': return { label: t('presentation_results.slide_types.ranking'), icon: ListOrdered, color: 'text-[#FFEB3B]', bg: 'bg-[#FFEB3B]/10' };
+        case 'hundred_points': return { label: t('presentation_results.slide_types.hundred_points'), icon: PieChart, color: 'text-[#E91E63]', bg: 'bg-[#E91E63]/10' };
+        case '2x2_grid': return { label: t('presentation_results.slide_types.grid'), icon: Grid, color: 'text-[#00BCD4]', bg: 'bg-[#00BCD4]/10' };
+        case 'pin_on_image': return { label: t('presentation_results.slide_types.pin_on_image'), icon: MapPin, color: 'text-[#F44336]', bg: 'bg-[#F44336]/10' };
+        case 'quiz': return { label: t('presentation_results.slide_types.quiz'), icon: Trophy, color: 'text-[#3F51B5]', bg: 'bg-[#3F51B5]/10' };
+        case 'guess_number': return { label: t('presentation_results.slide_types.guess_number'), icon: Hash, color: 'text-[#009688]', bg: 'bg-[#009688]/10' };
+        case 'qna': return { label: t('presentation_results.slide_types.qna'), icon: MessageSquare, color: 'text-[#4CAF50]', bg: 'bg-[#4CAF50]/10' };
+        case 'leaderboard': return { label: t('presentation_results.slide_types.leaderboard'), icon: Trophy, color: 'text-[#FFC107]', bg: 'bg-[#FFC107]/10' };
+        case 'pick_answer': return { label: t('presentation_results.slide_types.pick_answer'), icon: BarChart2, color: 'text-[#2196F3]', bg: 'bg-[#2196F3]/10' };
+        case 'type_answer': return { label: t('presentation_results.slide_types.type_answer'), icon: Type, color: 'text-[#4CAF50]', bg: 'bg-[#4CAF50]/10' };
+        default: return { label: t('presentation_results.slide_types.slide'), icon: BarChart2, color: 'text-[#B0B0B0]', bg: 'bg-[#B0B0B0]/10' };
     }
 };
 
 const ResultCard = ({ slide, totalResponses, children, qnaProp }) => {
-    const { label, icon: Icon, color, bg } = getTypeConfig(slide?.type);
+    const { t } = useTranslation();
+    const { label, icon: Icon, color, bg } = getTypeConfig(slide?.type, t);
     
 
     return (
@@ -45,14 +47,14 @@ const ResultCard = ({ slide, totalResponses, children, qnaProp }) => {
                 </div>
                 <div className="flex items-center gap-2 text-[#B0B0B0] text-sm">
                     <span className="font-semibold text-[#E0E0E0]">{totalResponses || 0}</span>
-                    <span>responses</span>
+                    <span>{t('presentation_results.responses')}</span>
                 </div>
             </div>
 
             {/* Question/Title */}
             <div className={`px-8 py-6 ${qnaProp && 'flex items-center justify-between gap-2'}`}>
                 <h3 className="text-2xl font-semibold text-[#E0E0E0] leading-tight">
-                    {slide?.question || 'Untitled Slide'}
+                    {slide?.question || t('presentation_results.untitled_slide')}
                 </h3>
                 {qnaProp && 
                 <div className="flex justify-center">
@@ -66,7 +68,7 @@ const ResultCard = ({ slide, totalResponses, children, qnaProp }) => {
                                     : 'text-[#B0B0B0] hover:text-[#E0E0E0]'
                                     }`}
                             >
-                                {f.charAt(0).toUpperCase() + f.slice(1)}
+                                {t(`presentation_results.filters.${f}`)}
                             </button>
                         ))}
                     </div>

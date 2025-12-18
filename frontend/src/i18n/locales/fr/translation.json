@@ -171,7 +171,13 @@
       "upload_success": "Vidéo téléchargée avec succès",
       "upload_failed": "Échec du téléchargement de la vidéo",
       "video_load_error": "Échec du chargement de la vidéo",
-      "video_not_supported": "Votre navigateur ne prend pas en charge la balise vidéo"
+      "video_not_supported": "Votre navigateur ne prend pas en charge la balise vidéo",
+      "video_content": "Contenu Vidéo",
+      "video_url": "URL de la Vidéo",
+      "participant_responses": "Réponses des Participants",
+      "anonymous": "Anonyme",
+      "no_response_content": "Aucun contenu de réponse",
+      "no_video": "Aucune vidéo disponible"
     },
     "mcq": {
       "question_label": "Question",
@@ -251,7 +257,8 @@
       "default_title": "Classez les éléments suivants...",
       "preview_prompt": "Ajoutez des éléments à droite pour prévisualiser la demande de classement.",
       "drag_handles_message": "Les poignées de glissement apparaîtront dans la vue du participant.",
-      "instruction": "Les participants feront glisser les éléments pour les organiser dans l'ordre souhaité avant de soumettre."
+      "instruction": "Les participants feront glisser les éléments pour les organiser dans l'ordre souhaité avant de soumettre.",
+      "points": "points"
     },
     "scales": {
       "question_label": "Question",
@@ -276,6 +283,7 @@
       "selected_value": "Sélectionné: {{value}}",
       "select_value": "Sélectionnez une valeur",
       "rate_statement": "Évaluer la déclaration {{number}}: {{label}}",
+      "overall_score": "Score Global",
       "rate_label": "Évaluer: {{label}}",
       "select_value_aria": "Sélectionner la valeur {{value}}",
       "response_submitted": "Réponse soumise",
@@ -362,6 +370,15 @@
       "view_board": "Voir le tableau",
       "default_title": "Interaction avec le tableau Miro",
       "board_title": "Tableau Miro",
+      "miro_board": "Tableau Miro",
+      "board_embedded": "Tableau Miro intégré",
+      "board_interaction": "Les participants peuvent interagir avec le tableau",
+      "total_interactions": "Total des Interactions",
+      "board_type": "Miro",
+      "board_type_label": "Type de Tableau",
+      "interaction_mode": "Interactif",
+      "interaction_mode_label": "Mode d'Interaction",
+      "question_instruction": "Question/Instruction",
       "participant_interaction": "Les participants peuvent interagir avec le tableau Miro",
       "live_collaboration": "Collaboration en direct",
       "redirect_message": "Les participants seront redirigés vers le tableau Miro dans un nouvel onglet"
@@ -369,11 +386,20 @@
     "google_slides": {
       "question_label": "Question/Instruction",
       "question_placeholder": "Saisissez votre question ou instruction pour les participants...",
+      "question_instruction": "Question/Instruction",
       "url_label": "URL de Google Slides",
       "url_placeholder": "https://docs.google.com/presentation/d/...",
       "url_description": "Collez l'URL complète de votre présentation Google Slides",
       "preview_title": "Aperçu",
-      "default_title": "Présentation Google Slides"
+      "default_title": "Présentation Google Slides",
+      "presentation": "Présentation Google Slides",
+      "presentation_title": "Présentation Google Slides",
+      "presentation_description": "Les participants peuvent voir la présentation",
+      "views": "Vues",
+      "platform": "Google Slides",
+      "platform_label": "Plateforme",
+      "access_method": "Web",
+      "access_method_label": "Méthode d'Accès"
     },
     "powerpoint": {
       "question_label": "Question/Instruction",
@@ -399,6 +425,14 @@
       "view_presentation": "Voir la présentation",
       "default_title": "Présentation PowerPoint",
       "presentation_title": "Présentation PowerPoint",
+      "presentation": "Présentation PowerPoint",
+      "presentation_description": "Les participants peuvent voir la présentation",
+      "question_instruction": "Question/Instruction",
+      "views": "Vues",
+      "file_type": "PowerPoint",
+      "file_type_label": "Type de Fichier",
+      "content_type": "Présentation",
+      "content_type_label": "Type de Contenu",
       "participant_view": "Les participants peuvent voir la présentation",
       "live_presentation": "Présentation en direct",
       "redirect_message": "Les participants seront redirigés pour voir la présentation PowerPoint"
@@ -408,6 +442,7 @@
       "non_editable_description": "Cette diapositive d'instructions a un contenu fixe et ne peut pas être modifiée.",
       "instructions_title": "Instructions",
       "default_title": "Instructions",
+      "join_description": "Rejoignez via le site Web ou scannez le code QR",
       "instructions_description": "Cette diapositive affiche des instructions fixes pour que les participants rejoignent votre présentation :",
       "instruction_item_1": "Accès au site web avec le code de présentation",
       "instruction_item_2": "Option de numérisation du code QR",
@@ -544,7 +579,8 @@
       "default_title": "Attribuez 100 points à vos fonctionnalités préférées...",
       "preview_prompt": "Ajoutez des éléments à droite pour prévisualiser l'attribution de 100 points.",
       "add_items": "Ajouter des éléments",
-      "pts": "pts"
+      "pts": "pts",
+      "avg_points": "points moyens"
     },
     "two_by_two_grid": {
       "question_label": "Question",
@@ -568,6 +604,10 @@
       "preview_prompt": "Ajoutez des éléments à droite pour prévisualiser",
       "horizontal_axis_default": "Horizontal",
       "vertical_axis_default": "Vertical"
+    },
+    "grid": {
+      "response": "réponse",
+      "responses": "réponses"
     },
     "pin_on_image": {
       "question_label": "Question",
@@ -613,7 +653,15 @@
       "view_presentation": "Voir la présentation",
       "keynote_presentation": "Présentation Keynote",
       "uploaded_file": "Fichier téléchargé",
-      "view_file": "Voir le fichier"
+      "view_file": "Voir le fichier",
+      "question_instruction": "Question/Instruction",
+      "no_file_name": "Aucun nom de fichier",
+      "uploaded_presentation_file": "Fichier de Présentation Téléchargé",
+      "views": "Vues",
+      "source": "Télécharger",
+      "source_label": "Source",
+      "content_type": "Présentation",
+      "content_type_label": "Type de Contenu"
     }
   },
   "presentation": {
@@ -621,6 +669,7 @@
     "not_found": "Présentation introuvable",
     "back_to_dashboard": "Retour au tableau de bord",
     "untitled": "Sans titre",
+    "untitled_presentation": "Présentation sans titre",
     "slide_singular": "diapositive",
     "slide_plural": "diapositives",
     "saving": "Enregistrement...",
@@ -664,6 +713,60 @@
     "join_link_description": "Partagez ce lien directement avec les participants",
     "welcome": "Bienvenue",
     "live": "En direct"
+  },
+  "presentation_results": {
+    "title": "Résultats de la Présentation",
+    "subtitle": "Aperçu de toutes les réponses collectées",
+    "export": "Exporter",
+    "exporting": "Exportation...",
+    "export_pdf": "Exporter en PDF",
+    "export_csv": "Exporter en CSV",
+    "export_excel": "Exporter en Excel",
+    "no_presentation_available": "Aucune présentation ou diapositive disponible",
+    "no_data_to_export": "Aucune donnée disponible à exporter",
+    "no_slides": "Aucune diapositive dans cette présentation.",
+    "failed_to_load": "Échec du chargement des résultats. Veuillez réessayer.",
+    "exported_success": "{{count}} diapositive(s) exportée(s) en {{format}}",
+    "export_failed": "Échec de l'exportation des résultats",
+    "exported_pdf_success": "{{count}} diapositive(s) exportée(s) en PDF",
+    "export_pdf_failed": "Échec de l'exportation PDF",
+    "slide_number": "Diapositive {{number}}",
+    "untitled_slide": "Diapositive sans titre",
+    "visualization_coming_soon": "La visualisation des résultats arrive bientôt pour {{type}}.",
+    "default_title": "Présentation",
+    "untitled_presentation": "Présentation sans titre",
+    "exported": "Exporté",
+    "total_slides": "Total des Diapositives",
+    "type": "Type",
+    "total_responses": "Total des Réponses",
+    "summary": "Résumé",
+    "detailed_responses": "Réponses Détaillées",
+    "presentation_title": "Titre de la Présentation",
+    "question": "Question",
+    "slide": "Diapositive",
+    "responses": "réponses",
+    "filters": {
+      "all": "Toutes",
+      "answered": "Répondues",
+      "unanswered": "Sans réponse"
+    },
+    "slide_types": {
+      "multiple_choice": "Choix Multiple",
+      "word_cloud": "Nuage de Mots",
+      "open_ended": "Réponse Ouverte",
+      "scales": "Échelles",
+      "ranking": "Classement",
+      "hundred_points": "100 Points",
+      "grid": "Grille 2x2",
+      "pin_on_image": "Épingler sur Image",
+      "quiz": "Quiz",
+      "guess_number": "Deviner le Nombre",
+      "qna": "Questions et Réponses",
+      "leaderboard": "Classement",
+      "pick_answer": "Choisir la Réponse",
+      "type_answer": "Taper la Réponse",
+      "slide": "Diapositive"
+    }
   },
   "dashboard": {
     "free_plan_limit_title": "Limite du Plan Gratuit Atteinte",

@@ -161,9 +161,52 @@ export default function Presentation() {
         setIsDirty(false);
 
         // Check if there's a draft in localStorage
+        // Only show draft dialog if there are actual unsaved changes
         const draft = presentationService.getDraftFromLocalStorage(presentationId);
         if (draft) {
-          setDraftDialog({ open: true, draft });
+          const draftSlides = draft.slides || [];
+          const savedSlides = orderedSlides;
+          
+          // Check if draft has unsaved changes by comparing with saved state
+          const hasUnsavedChanges = (() => {
+            // If all slides are saved (all have _id), check if draft has any unsaved slides
+            const allSlidesSaved = savedSlides.every(slide => slide._id);
+            
+            if (allSlidesSaved) {
+              // All current slides are saved, check if draft has unsaved slides
+              const draftHasUnsavedSlides = draftSlides.some(slide => !slide._id);
+              
+              // If draft has unsaved slides but all current slides are saved, there are unsaved changes
+              if (draftHasUnsavedSlides) {
+                return true;
+              }
+              
+              // If slide counts differ, there might be unsaved changes
+              if (draftSlides.length !== savedSlides.length) {
+                return true;
+              }
+              
+              // If title changed, there are unsaved changes
+              if (draft.presentation?.title !== data.presentation?.title) {
+                return true;
+              }
+              
+              // All slides are saved and draft matches saved state, no unsaved changes
+              return false;
+            }
+            
+            // If not all slides are saved, there might be unsaved changes
+            // Show dialog to let user decide
+            return true;
+          })();
+          
+          // Only show draft dialog if there are actual unsaved changes
+          if (hasUnsavedChanges) {
+            setDraftDialog({ open: true, draft });
+          } else {
+            // Draft matches saved state (all slides saved), clear it silently
+            presentationService.clearDraftFromLocalStorage(presentationId);
+          }
         }
       }
     } catch (error) {
@@ -191,7 +234,7 @@ export default function Presentation() {
   const createNewPresentation = async () => {
     try {
       setIsLoading(true);
-      const response = await presentationService.createPresentation('Untitled presentation');
+      const response = await presentationService.createPresentation(t('presentation.untitled_presentation'));
 
       setPresentation(response.presentation);
       setSkipDraftSave(true);
@@ -891,7 +934,7 @@ export default function Presentation() {
         question: t('slide_editors.instruction.instructions_title'),
         content: {
           website: 'www.inavora.com',
-          description: 'Join via website or scan QR code'
+          description: t('slide_editors.instruction.join_description')
         }
       })
     };
@@ -1029,7 +1072,13 @@ export default function Presentation() {
       return;
     }
 
-    setExitDialog({ open: true, isProcessing: false });
+    // Only show exit dialog if there are unsaved changes
+    if (isDirty) {
+      setExitDialog({ open: true, isProcessing: false });
+    } else {
+      // No unsaved changes, navigate directly
+      navigateToDashboard();
+    }
   };
 
   const handleConfirmExit = async () => {

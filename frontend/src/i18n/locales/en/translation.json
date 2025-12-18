@@ -177,7 +177,13 @@
       "upload_success": "Video uploaded successfully",
       "upload_failed": "Failed to upload video",
       "video_load_error": "Failed to load video",
-      "video_not_supported": "Your browser does not support the video tag"
+      "video_not_supported": "Your browser does not support the video tag",
+      "video_content": "Video Content",
+      "video_url": "Video URL",
+      "participant_responses": "Participant Responses",
+      "anonymous": "Anonymous",
+      "no_response_content": "No response content",
+      "no_video": "No video available"
     },
     "mcq": {
       "question_label": "Question",
@@ -261,6 +267,7 @@
       "default_title": "Rank the following...",
       "preview_prompt": "Add items on the right to preview the ranking prompt.",
       "drag_handles_message": "Drag handles will appear on participant view.",
+      "points": "points",
       "instruction": "Participants will drag items to arrange their preferred order before submitting."
     },
     "scales": {
@@ -288,6 +295,7 @@
       "selected_value": "Selected: {{value}}",
       "select_value": "Select a value",
       "rate_statement": "Rate statement {{number}}: {{label}}",
+      "overall_score": "Overall Score",
       "rate_label": "Rate: {{label}}",
       "select_value_aria": "Select value {{value}}",
       "response_submitted": "Response submitted",
@@ -366,6 +374,7 @@
     "miro": {
       "question_label": "Question/Instruction",
       "question_placeholder": "Enter your question or instruction for participants...",
+      "question_instruction": "Question/Instruction",
       "url_label": "Miro Board URL",
       "url_placeholder": "https://miro.com/app/board/...",
       "url_description": "Paste the full URL of your Miro board",
@@ -374,6 +383,14 @@
       "view_board": "View Board",
       "default_title": "Miro Board Interaction",
       "board_title": "Miro Board",
+      "miro_board": "Miro Board",
+      "board_embedded": "Miro board embedded",
+      "board_interaction": "Participants can interact with the board",
+      "total_interactions": "Total Interactions",
+      "board_type": "Miro",
+      "board_type_label": "Board Type",
+      "interaction_mode": "Interactive",
+      "interaction_mode_label": "Interaction Mode",
       "participant_interaction": "Participants can interact with the Miro board",
       "live_collaboration": "Live Collaboration",
       "redirect_message": "Participants will be redirected to the Miro board in a new tab"
@@ -381,11 +398,20 @@
     "google_slides": {
       "question_label": "Question/Instruction",
       "question_placeholder": "Enter your question or instruction for participants...",
+      "question_instruction": "Question/Instruction",
       "url_label": "Google Slides URL",
       "url_placeholder": "https://docs.google.com/presentation/d/...",
       "url_description": "Paste the full URL of your Google Slides presentation",
       "preview_title": "Preview",
-      "default_title": "Google Slides Presentation"
+      "default_title": "Google Slides Presentation",
+      "presentation": "Google Slides Presentation",
+      "presentation_title": "Google Slides Presentation",
+      "presentation_description": "Participants can view the presentation",
+      "views": "Views",
+      "platform": "Google Slides",
+      "platform_label": "Platform",
+      "access_method": "Web",
+      "access_method_label": "Access Method"
     },
     "powerpoint": {
       "question_label": "Question/Instruction",
@@ -411,6 +437,14 @@
       "view_presentation": "View Presentation",
       "default_title": "PowerPoint Presentation",
       "presentation_title": "PowerPoint Presentation",
+      "presentation": "PowerPoint Presentation",
+      "presentation_description": "Participants can view the presentation",
+      "question_instruction": "Question/Instruction",
+      "views": "Views",
+      "file_type": "PowerPoint",
+      "file_type_label": "File Type",
+      "content_type": "Presentation",
+      "content_type_label": "Content Type",
       "participant_view": "Participants can view the presentation",
       "live_presentation": "Live Presentation",
       "redirect_message": "Participants will be redirected to view the PowerPoint presentation"
@@ -420,6 +454,7 @@
       "non_editable_description": "This instruction slide has fixed content and cannot be edited.",
       "instructions_title": "Instructions",
       "default_title": "Instructions",
+      "join_description": "Join via website or scan QR code",
       "instructions_description": "This slide displays fixed instructions for participants to join your presentation:",
       "instruction_item_1": "Website access with presentation code",
       "instruction_item_2": "QR code scanning option",
@@ -563,7 +598,8 @@
       "default_title": "Allocate 100 points to your favorite features...",
       "preview_prompt": "Add items on the right to preview the 100 points allocation.",
       "add_items": "Add items",
-      "pts": "pts"
+      "pts": "pts",
+      "avg_points": "avg points"
     },
     "two_by_two_grid": {
       "question_label": "Question",
@@ -587,6 +623,10 @@
       "items_range": "Add between {{min}} and {{max}} items. Participants will position each item on the grid using two sliders (X and Y axis).",
       "default_title": "How do you feel about this?",
       "preview_prompt": "Add items on the right to preview"
+    },
+    "grid": {
+      "response": "response",
+      "responses": "responses"
     },
     "pin_on_image": {
       "question_label": "Question",
@@ -619,11 +659,14 @@
     "upload": {
       "question_label": "Question/Instruction",
       "question_placeholder": "Enter your question or instruction for participants...",
+      "question_instruction": "Question/Instruction",
       "file_label": "File",
       "choose_file": "Choose File",
       "no_file_chosen": "No file chosen",
+      "no_file_name": "No file name",
       "supported_formats": "Supported formats: .ppt, .pptx, .pdf, .key",
       "uploaded_file_title": "Uploaded File",
+      "uploaded_presentation_file": "Uploaded Presentation File",
       "view": "View",
       "preview_title": "Preview",
       "pdf_document": "PDF Document",
@@ -632,7 +675,12 @@
       "view_presentation": "View Presentation",
       "keynote_presentation": "Keynote Presentation",
       "uploaded_file": "Uploaded File",
-      "view_file": "View File"
+      "view_file": "View File",
+      "views": "Views",
+      "source": "Upload",
+      "source_label": "Source",
+      "content_type": "Presentation",
+      "content_type_label": "Content Type"
     }
   },
   "presentation": {
@@ -640,6 +688,7 @@
     "not_found": "Presentation not found",
     "back_to_dashboard": "Back to Dashboard",
     "untitled": "Untitled",
+    "untitled_presentation": "Untitled presentation",
     "slide_singular": "slide",
     "slide_plural": "slides",
     "saving": "Saving...",
@@ -689,6 +738,60 @@
     "kick_participant_title": "Kick Participant?",
     "kick_participant_description": "Are you sure you want to kick {{participant}} from the presentation?",
     "kick": "Kick"
+  },
+  "presentation_results": {
+    "title": "Presentation Results",
+    "subtitle": "Overview of all responses collected",
+    "export": "Export",
+    "exporting": "Exporting...",
+    "export_pdf": "Export as PDF",
+    "export_csv": "Export as CSV",
+    "export_excel": "Export as Excel",
+    "no_presentation_available": "No presentation or slides available",
+    "no_data_to_export": "No data available to export",
+    "no_slides": "No slides in this presentation.",
+    "failed_to_load": "Failed to load results. Please try again.",
+    "exported_success": "Exported {{count}} slide(s) as {{format}}",
+    "export_failed": "Failed to export results",
+    "exported_pdf_success": "Exported {{count}} slide(s) as PDF",
+    "export_pdf_failed": "Failed to export PDF",
+    "slide_number": "Slide {{number}}",
+    "untitled_slide": "Untitled Slide",
+    "visualization_coming_soon": "Results visualization coming soon for {{type}}.",
+    "default_title": "Presentation",
+    "untitled_presentation": "Untitled Presentation",
+    "exported": "Exported",
+    "total_slides": "Total Slides",
+    "type": "Type",
+    "total_responses": "Total Responses",
+    "summary": "Summary",
+    "detailed_responses": "Detailed Responses",
+    "presentation_title": "Presentation Title",
+    "question": "Question",
+    "slide": "Slide",
+    "responses": "responses",
+    "filters": {
+      "all": "All",
+      "answered": "Answered",
+      "unanswered": "Unanswered"
+    },
+    "slide_types": {
+      "multiple_choice": "Multiple Choice",
+      "word_cloud": "Word Cloud",
+      "open_ended": "Open Ended",
+      "scales": "Scales",
+      "ranking": "Ranking",
+      "hundred_points": "100 Points",
+      "grid": "2x2 Grid",
+      "pin_on_image": "Pin on Image",
+      "quiz": "Quiz",
+      "guess_number": "Guess Number",
+      "qna": "Q&A",
+      "leaderboard": "Leaderboard",
+      "pick_answer": "Pick Answer",
+      "type_answer": "Type Answer",
+      "slide": "Slide"
+    }
   },
   "dashboard": {
     "dashboard": "Dashboard",

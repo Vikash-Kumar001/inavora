@@ -124,9 +124,21 @@ export const getDraftFromLocalStorage = (presentationId) => {
   }
 };
 
-export const clearDraftFromLocalStorage = () => {
+export const clearDraftFromLocalStorage = (presentationId = null) => {
   try {
-    localStorage.removeItem(STORAGE_KEY);
+    // If presentationId is provided, only clear if it matches
+    if (presentationId) {
+      const draft = localStorage.getItem(STORAGE_KEY);
+      if (draft) {
+        const parsed = JSON.parse(draft);
+        if (parsed.presentationId === presentationId) {
+          localStorage.removeItem(STORAGE_KEY);
+        }
+      }
+    } else {
+      // Clear all drafts
+      localStorage.removeItem(STORAGE_KEY);
+    }
   } catch (error) {
     console.error('Clear localStorage error:', error);
   }

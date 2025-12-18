@@ -170,7 +170,13 @@
       "upload_success": "ভিডিও সফলভাবে আপলোড হয়েছে",
       "upload_failed": "ভিডিও আপলোড করতে ব্যর্থ",
       "video_load_error": "ভিডিও লোড করতে ব্যর্থ",
-      "video_not_supported": "আপনার ব্রাউজার ভিডিও ট্যাগ সমর্থন করে না"
+      "video_not_supported": "আপনার ব্রাউজার ভিডিও ট্যাগ সমর্থন করে না",
+      "video_content": "ভিডিও কন্টেন্ট",
+      "video_url": "ভিডিও URL",
+      "participant_responses": "অংশগ্রহণকারী প্রতিক্রিয়া",
+      "anonymous": "অজ্ঞাতনামা",
+      "no_response_content": "কোন প্রতিক্রিয়া কন্টেন্ট নেই",
+      "no_video": "কোন ভিডিও উপলব্ধ নেই"
     },
     "mcq": {
       "question_label": "প্রশ্ন",
@@ -251,7 +257,8 @@
       "default_title": "নিম্নলিখিতগুলি র্যাঙ্ক করুন...",
       "preview_prompt": "র্যাঙ্কিং প্রম্পটের প্রিভিউ পেতে ডানদিকে আইটেম যোগ করুন।",
       "drag_handles_message": "ড্র্যাগ হ্যান্ডলগুলি অংশগ্রহণকারী ভিউতে প্রদর্শিত হবে।",
-      "instruction": "অংশগ্রহণকারীরা জমা দেওয়ার আগে তাদের পছন্দের ক্রমে আইটেমগুলি সাজাবে।"
+      "instruction": "অংশগ্রহণকারীরা জমা দেওয়ার আগে তাদের পছন্দের ক্রমে আইটেমগুলি সাজাবে।",
+      "points": "পয়েন্ট"
     },
     "scales": {
       "question_label": "প্রশ্ন",
@@ -276,6 +283,7 @@
       "selected_value": "নির্বাচিত: {{value}}",
       "select_value": "একটি মান নির্বাচন করুন",
       "rate_statement": "বিবৃতি {{number}} রেট করুন: {{label}}",
+      "overall_score": "সামগ্রিক স্কোর",
       "rate_label": "রেট করুন: {{label}}",
       "select_value_aria": "মান {{value}} নির্বাচন করুন",
       "response_submitted": "প্রতিক্রিয়া জমা দেওয়া হয়েছে",
@@ -362,6 +370,15 @@
       "view_board": "বোর্ড দেখুন",
       "default_title": "মিরো বোর্ড ইন্টারঅ্যাকশন",
       "board_title": "মিরো বোর্ড",
+      "miro_board": "মিরো বোর্ড",
+      "board_embedded": "মিরো বোর্ড এমবেড করা হয়েছে",
+      "board_interaction": "অংশগ্রহণকারীরা বোর্ডের সাথে ইন্টারঅ্যাক্ট করতে পারেন",
+      "total_interactions": "মোট ইন্টারঅ্যাকশন",
+      "board_type": "মিরো",
+      "board_type_label": "বোর্ড প্রকার",
+      "interaction_mode": "ইন্টারঅ্যাক্টিভ",
+      "interaction_mode_label": "ইন্টারঅ্যাকশন মোড",
+      "question_instruction": "প্রশ্ন/নির্দেশ",
       "participant_interaction": "অংশগ্রহণকারীরা মিরো বোর্ডের সাথে ইন্টারঅ্যাক্ট করতে পারেন",
       "live_collaboration": "লাইভ সহযোগিতা",
       "redirect_message": "অংশগ্রহণকারীদের একটি নতুন ট্যাবে মিরো বোর্ডে পুনর্নির্দেশিত করা হবে"
@@ -369,11 +386,20 @@
     "google_slides": {
       "question_label": "প্রশ্ন/নির্দেশ",
       "question_placeholder": "অংশগ্রহণকারীদের জন্য আপনার প্রশ্ন বা নির্দেশ লিখুন...",
+      "question_instruction": "প্রশ্ন/নির্দেশ",
       "url_label": "গুগল স্লাইডস URL",
       "url_placeholder": "https://docs.google.com/presentation/d/...",
       "url_description": "আপনার গুগল স্লাইডস উপস্থাপনার পূর্ণ URL পেস্ট করুন",
       "preview_title": "প্রিভিউ",
-      "default_title": "গুগল স্লাইডস উপস্থাপনা"
+      "default_title": "গুগল স্লাইডস উপস্থাপনা",
+      "presentation": "গুগল স্লাইডস উপস্থাপনা",
+      "presentation_title": "গুগল স্লাইডস উপস্থাপনা",
+      "presentation_description": "অংশগ্রহণকারীরা উপস্থাপনা দেখতে পারেন",
+      "views": "ভিউ",
+      "platform": "গুগল স্লাইডস",
+      "platform_label": "প্ল্যাটফর্ম",
+      "access_method": "ওয়েব",
+      "access_method_label": "অ্যাক্সেস পদ্ধতি"
     },
     "powerpoint": {
       "question_label": "প্রশ্ন/নির্দেশ",
@@ -408,6 +434,7 @@
       "non_editable_description": "এই নির্দেশ স্লাইডের স্থির সামগ্রী রয়েছে এবং এটি সম্পাদনা করা যাবে না।",
       "instructions_title": "নির্দেশ",
       "default_title": "নির্দেশ",
+      "join_description": "ওয়েবসাইটের মাধ্যমে যোগ দিন বা QR কোড স্ক্যান করুন",
       "instructions_description": "এই স্লাইডটি আপনার উপস্থাপনায় যোগ দিতে অংশগ্রহণকারীদের জন্য স্থির নির্দেশ প্রদর্শন করে:",
       "instruction_item_1": "উপস্থাপনা কোড সহ ওয়েবসাইট অ্যাক্সেস",
       "instruction_item_2": "QR কোড স্ক্যানিং বিকল্প",
@@ -544,7 +571,8 @@
       "default_title": "আপনার প্রিয় বৈশিষ্ট্যগুলিতে 100 পয়েন্ট বরাদ্দ করুন...",
       "preview_prompt": "100 পয়েন্ট বরাদ্দের প্রিভিউ পেতে ডানদিকে আইটেম যোগ করুন।",
       "add_items": "আইটেম যোগ করুন",
-      "pts": "পয়েন্ট"
+      "pts": "পয়েন্ট",
+      "avg_points": "গড় পয়েন্ট"
     },
     "two_by_two_grid": {
       "question_label": "প্রশ্ন",
@@ -568,6 +596,10 @@
       "preview_prompt": "প্রিভিউ করার জন্য ডানদিকে আইটেম যোগ করুন",
       "horizontal_axis_default": "অনুভূমিক",
       "vertical_axis_default": "উল্লম্ব"
+    },
+    "grid": {
+      "response": "প্রতিক্রিয়া",
+      "responses": "প্রতিক্রিয়াগুলি"
     },
     "pin_on_image": {
       "question_label": "প্রশ্ন",
@@ -600,11 +632,14 @@
     "upload": {
       "question_label": "প্রশ্ন/নির্দেশ",
       "question_placeholder": "অংশগ্রহণকারীদের জন্য আপনার প্রশ্ন বা নির্দেশ লিখুন...",
+      "question_instruction": "প্রশ্ন/নির্দেশ",
       "file_label": "ফাইল",
       "choose_file": "ফাইল নির্বাচন করুন",
       "no_file_chosen": "কোন ফাইল নির্বাচিত হয়নি",
+      "no_file_name": "কোন ফাইল নাম নেই",
       "supported_formats": "সমর্থিত ফরম্যাট: .ppt, .pptx, .pdf, .key",
       "uploaded_file_title": "আপলোড করা ফাইল",
+      "uploaded_presentation_file": "আপলোড করা উপস্থাপনা ফাইল",
       "view": "দেখুন",
       "preview_title": "প্রিভিউ",
       "pdf_document": "পিডিএফ নথি",
@@ -613,13 +648,19 @@
       "view_presentation": "উপস্থাপনা দেখুন",
       "keynote_presentation": "কীনোট উপস্থাপনা",
       "uploaded_file": "আপলোড করা ফাইল",
-      "view_file": "ফাইল দেখুন"
+      "view_file": "ফাইল দেখুন",
+      "views": "ভিউ",
+      "source": "আপলোড",
+      "source_label": "উৎস",
+      "content_type": "উপস্থাপনা",
+      "content_type_label": "কন্টেন্ট প্রকার"
     }
   },  "presentation": {
     "loading": "উপস্থাপনা লোড হচ্ছে...",
     "not_found": "উপস্থাপনা পাওয়া যায়নি",
     "back_to_dashboard": "ড্যাশবোর্ডে ফিরে যান",
     "untitled": "শিরোনামহীন",
+    "untitled_presentation": "শিরোনামহীন উপস্থাপনা",
     "slide_singular": "স্লাইড",
     "slide_plural": "স্লাইডগুলি",
     "saving": "সংরক্ষণ করা হচ্ছে...",
@@ -660,6 +701,60 @@
     "or": "অথবা",
     "join_link": "যোগদানের লিঙ্ক",
     "join_link_description": "এই লিঙ্কটি সরাসরি অংশগ্রহণকারীদের সাথে শেয়ার করুন"
+  },
+  "presentation_results": {
+    "title": "উপস্থাপনা ফলাফল",
+    "subtitle": "সংগৃহীত সমস্ত প্রতিক্রিয়ার ওভারভিউ",
+    "export": "রপ্তানি",
+    "exporting": "রপ্তানি করা হচ্ছে...",
+    "export_pdf": "PDF হিসাবে রপ্তানি করুন",
+    "export_csv": "CSV হিসাবে রপ্তানি করুন",
+    "export_excel": "Excel হিসাবে রপ্তানি করুন",
+    "no_presentation_available": "কোন উপস্থাপনা বা স্লাইড উপলব্ধ নেই",
+    "no_data_to_export": "রপ্তানি করার জন্য কোন ডেটা উপলব্ধ নেই",
+    "no_slides": "এই উপস্থাপনায় কোন স্লাইড নেই।",
+    "failed_to_load": "ফলাফল লোড করতে ব্যর্থ। অনুগ্রহ করে আবার চেষ্টা করুন।",
+    "exported_success": "{{count}} স্লাইড(গুলি) {{format}} হিসাবে রপ্তানি করা হয়েছে",
+    "export_failed": "ফলাফল রপ্তানি করতে ব্যর্থ",
+    "exported_pdf_success": "{{count}} স্লাইড(গুলি) PDF হিসাবে রপ্তানি করা হয়েছে",
+    "export_pdf_failed": "PDF রপ্তানি করতে ব্যর্থ",
+    "slide_number": "স্লাইড {{number}}",
+    "untitled_slide": "শিরোনামহীন স্লাইড",
+    "visualization_coming_soon": "{{type}} এর জন্য ফলাফল ভিজ্যুয়ালাইজেশন শীঘ্রই আসছে।",
+    "default_title": "উপস্থাপনা",
+    "untitled_presentation": "শিরোনামহীন উপস্থাপনা",
+    "exported": "রপ্তানি করা হয়েছে",
+    "total_slides": "মোট স্লাইড",
+    "type": "ধরন",
+    "total_responses": "মোট প্রতিক্রিয়া",
+    "summary": "সারসংক্ষেপ",
+    "detailed_responses": "বিস্তারিত প্রতিক্রিয়া",
+    "presentation_title": "উপস্থাপনা শিরোনাম",
+    "question": "প্রশ্ন",
+    "slide": "স্লাইড",
+    "responses": "প্রতিক্রিয়া",
+    "filters": {
+      "all": "সব",
+      "answered": "উত্তর দেওয়া হয়েছে",
+      "unanswered": "উত্তর দেওয়া হয়নি"
+    },
+    "slide_types": {
+      "multiple_choice": "বহু নির্বাচন",
+      "word_cloud": "শব্দ মেঘ",
+      "open_ended": "খোলা শেষ",
+      "scales": "স্কেল",
+      "ranking": "র‍্যাঙ্কিং",
+      "hundred_points": "100 পয়েন্ট",
+      "grid": "2x2 গ্রিড",
+      "pin_on_image": "ছবিতে পিন",
+      "quiz": "কুইজ",
+      "guess_number": "সংখ্যা অনুমান করুন",
+      "qna": "প্রশ্ন ও উত্তর",
+      "leaderboard": "লিডারবোর্ড",
+      "pick_answer": "উত্তর বেছে নিন",
+      "type_answer": "উত্তর টাইপ করুন",
+      "slide": "স্লাইড"
+    }
   },
   "dashboard": {
     "dashboard": "ড্যাশবোর্ড",

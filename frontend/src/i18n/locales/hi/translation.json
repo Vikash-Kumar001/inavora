@@ -136,7 +136,13 @@
       "upload_success": "वीडियो सफलतापूर्वक अपलोड किया गया",
       "upload_failed": "वीडियो अपलोड करने में विफल",
       "video_load_error": "वीडियो लोड करने में विफल",
-      "video_not_supported": "आपका ब्राउज़र वीडियो टैग का समर्थन नहीं करता है"
+      "video_not_supported": "आपका ब्राउज़र वीडियो टैग का समर्थन नहीं करता है",
+      "video_content": "वीडियो सामग्री",
+      "video_url": "वीडियो URL",
+      "participant_responses": "प्रतिभागी प्रतिक्रियाएं",
+      "anonymous": "अनाम",
+      "no_response_content": "कोई प्रतिक्रिया सामग्री नहीं",
+      "no_video": "कोई वीडियो उपलब्ध नहीं"
     },
     "mcq": {
       "question_label": "प्रश्न",
@@ -219,7 +225,8 @@
       "default_title": "निम्नलिखित को रैंक करें...",
       "preview_prompt": "रैंकिंग प्रॉम्प्ट का पूर्वावलोकन करने के लिए दाईं ओर आइटम जोड़ें।",
       "drag_handles_message": "प्रतिभागी दृश्य पर ड्रैग हैंडल दिखाई देंगे।",
-      "instruction": "प्रतिभागी जमा करने से पहले अपनी पसंदीदा व्यवस्था के लिए आइटम को खींचेंगे।"
+      "instruction": "प्रतिभागी जमा करने से पहले अपनी पसंदीदा व्यवस्था के लिए आइटम को खींचेंगे।",
+      "points": "अंक"
     },
     "scales": {
       "question_label": "प्रश्न",
@@ -246,6 +253,7 @@
       "selected_value": "चयनित: {{value}}",
       "select_value": "एक मान चुनें",
       "rate_statement": "कथन {{number}} रेट करें: {{label}}",
+      "overall_score": "समग्र स्कोर",
       "rate_label": "रेट करें: {{label}}",
       "select_value_aria": "मान {{value}} चुनें",
       "response_submitted": "प्रतिक्रिया जमा की गई",
@@ -321,6 +329,7 @@
     "miro": {
       "question_label": "प्रश्न/निर्देश",
       "question_placeholder": "प्रतिभागियों के लिए अपना प्रश्न या निर्देश दर्ज करें...",
+      "question_instruction": "प्रश्न/निर्देश",
       "url_label": "माइरो बोर्ड URL",
       "url_placeholder": "https://miro.com/app/board/...",
       "url_description": "अपने माइरो बोर्ड का पूर्ण URL चिपकाएं",
@@ -329,6 +338,14 @@
       "view_board": "बोर्ड देखें",
       "default_title": "माइरो बोर्ड इंटरैक्शन",
       "board_title": "माइरो बोर्ड",
+      "miro_board": "माइरो बोर्ड",
+      "board_embedded": "माइरो बोर्ड एम्बेडेड",
+      "board_interaction": "प्रतिभागी बोर्ड के साथ इंटरैक्ट कर सकते हैं",
+      "total_interactions": "कुल इंटरैक्शन",
+      "board_type": "माइरो",
+      "board_type_label": "बोर्ड प्रकार",
+      "interaction_mode": "इंटरैक्टिव",
+      "interaction_mode_label": "इंटरैक्शन मोड",
       "participant_interaction": "प्रतिभागी माइरो बोर्ड के साथ इंटरैक्ट कर सकते हैं",
       "live_collaboration": "लाइव सहयोग",
       "redirect_message": "प्रतिभागियों को एक नए टैब में माइरो बोर्ड पर पुनः निर्देशित किया जाएगा"
@@ -336,11 +353,20 @@
     "google_slides": {
       "question_label": "प्रश्न/निर्देश",
       "question_placeholder": "प्रतिभागियों के लिए अपना प्रश्न या निर्देश दर्ज करें...",
+      "question_instruction": "प्रश्न/निर्देश",
       "url_label": "गूगल स्लाइड्स URL",
       "url_placeholder": "https://docs.google.com/presentation/d/...",
       "url_description": "अपने गूगल स्लाइड्स प्रस्तुति का पूर्ण URL चिपकाएं",
       "preview_title": "पूर्वावलोकन",
-      "default_title": "गूगल स्लाइड्स प्रस्तुति"
+      "default_title": "गूगल स्लाइड्स प्रस्तुति",
+      "presentation": "गूगल स्लाइड्स प्रस्तुति",
+      "presentation_title": "गूगल स्लाइड्स प्रस्तुति",
+      "presentation_description": "प्रतिभागी प्रस्तुति देख सकते हैं",
+      "views": "व्यूज़",
+      "platform": "गूगल स्लाइड्स",
+      "platform_label": "प्लेटफ़ॉर्म",
+      "access_method": "वेब",
+      "access_method_label": "एक्सेस विधि"
     },
     "powerpoint": {
       "question_label": "प्रश्न/निर्देश",
@@ -366,6 +392,14 @@
       "view_presentation": "प्रस्तुति देखें",
       "default_title": "पॉवरपॉइंट प्रस्तुति",
       "presentation_title": "पॉवरपॉइंट प्रस्तुति",
+      "presentation": "पॉवरपॉइंट प्रस्तुति",
+      "presentation_description": "प्रतिभागी प्रस्तुति देख सकते हैं",
+      "question_instruction": "प्रश्न/निर्देश",
+      "views": "व्यूज़",
+      "file_type": "पॉवरपॉइंट",
+      "file_type_label": "फ़ाइल प्रकार",
+      "content_type": "प्रस्तुति",
+      "content_type_label": "सामग्री प्रकार",
       "participant_view": "प्रतिभागी प्रस्तुति देख सकते हैं",
       "live_presentation": "लाइव प्रस्तुति",
       "redirect_message": "प्रतिभागियों को पॉवरपॉइंट प्रस्तुति देखने के लिए पुनः निर्देशित किया जाएगा"
@@ -375,6 +409,7 @@
       "non_editable_description": "इस निर्देश स्लाइड में निश्चित सामग्री है और इसे संपादित नहीं किया जा सकता।",
       "instructions_title": "निर्देश",
       "default_title": "निर्देश",
+      "join_description": "वेबसाइट के माध्यम से जुड़ें या QR कोड स्कैन करें",
       "instructions_description": "यह स्लाइड प्रतिभागियों के लिए आपकी प्रस्तुति में शामिल होने के लिए निश्चित निर्देश प्रदर्शित करता है:",
       "instruction_item_1": "प्रस्तुति कोड के साथ वेबसाइट एक्सेस",
       "instruction_item_2": "QR कोड स्कैनिंग विकल्प",
@@ -511,7 +546,8 @@
       "default_title": "अपनी पसंदीदा सुविधाओं को 100 अंक आवंटित करें...",
       "preview_prompt": "100 अंक आवंटन का पूर्वावलोकन करने के लिए दाईं ओर आइटम जोड़ें।",
       "add_items": "आइटम जोड़ें",
-      "pts": "अंक"
+      "pts": "अंक",
+      "avg_points": "औसत अंक"
     },
     "two_by_two_grid": {
       "question_label": "प्रश्न",
@@ -535,6 +571,10 @@
       "preview_prompt": "पूर्वावलोकन के लिए दाईं ओर आइटम जोड़ें",
       "horizontal_axis_default": "क्षैतिज",
       "vertical_axis_default": "ऊर्ध्वाधर"
+    },
+    "grid": {
+      "response": "प्रतिक्रिया",
+      "responses": "प्रतिक्रियाएं"
     },
     "pin_on_image": {
       "question_label": "प्रश्न",
@@ -567,11 +607,14 @@
     "upload": {
       "question_label": "प्रश्न/निर्देश",
       "question_placeholder": "प्रतिभागियों के लिए अपना प्रश्न या निर्देश दर्ज करें...",
+      "question_instruction": "प्रश्न/निर्देश",
       "file_label": "फ़ाइल",
       "choose_file": "फ़ाइल चुनें",
       "no_file_chosen": "कोई फ़ाइल नहीं चुनी गई",
+      "no_file_name": "कोई फ़ाइल नाम नहीं",
       "supported_formats": "समर्थित प्रारूप: .ppt, .pptx, .pdf, .key",
       "uploaded_file_title": "अपलोड की गई फ़ाइल",
+      "uploaded_presentation_file": "अपलोड की गई प्रस्तुति फ़ाइल",
       "view": "देखें",
       "preview_title": "पूर्वावलोकन",
       "pdf_document": "पीडीएफ दस्तावेज़",
@@ -580,7 +623,12 @@
       "view_presentation": "प्रस्तुति देखें",
       "keynote_presentation": "कीनोट प्रस्तुति",
       "uploaded_file": "अपलोड की गई फ़ाइल",
-      "view_file": "फ़ाइल देखें"
+      "view_file": "फ़ाइल देखें",
+      "views": "व्यूज़",
+      "source": "अपलोड",
+      "source_label": "स्रोत",
+      "content_type": "प्रस्तुति",
+      "content_type_label": "सामग्री प्रकार"
     }
   },
   "presentation": {
@@ -588,6 +636,7 @@
     "not_found": "प्रस्तुति नहीं मिली",
     "back_to_dashboard": "डैशबोर्ड पर वापस जाएं",
     "untitled": "शीर्षकहीन",
+    "untitled_presentation": "शीर्षकहीन प्रस्तुति",
     "slide_singular": "स्लाइड",
     "slide_plural": "स्लाइड्स",
     "saving": "सहेजा जा रहा है...",
@@ -637,6 +686,60 @@
     "kick_participant_title": "प्रतिभागी को निकालें?",
     "kick_participant_description": "क्या आप वाकई {{participant}} को प्रस्तुति से निकालना चाहते हैं?",
     "kick": "निकालें"
+  },
+  "presentation_results": {
+    "title": "प्रस्तुति परिणाम",
+    "subtitle": "एकत्रित सभी प्रतिक्रियाओं का अवलोकन",
+    "export": "निर्यात करें",
+    "exporting": "निर्यात हो रहा है...",
+    "export_pdf": "PDF के रूप में निर्यात करें",
+    "export_csv": "CSV के रूप में निर्यात करें",
+    "export_excel": "Excel के रूप में निर्यात करें",
+    "no_presentation_available": "कोई प्रस्तुति या स्लाइड उपलब्ध नहीं",
+    "no_data_to_export": "निर्यात के लिए कोई डेटा उपलब्ध नहीं",
+    "no_slides": "इस प्रस्तुति में कोई स्लाइड नहीं है।",
+    "failed_to_load": "परिणाम लोड करने में विफल। कृपया पुनः प्रयास करें।",
+    "exported_success": "{{count}} स्लाइड(एस) {{format}} के रूप में निर्यात किया गया",
+    "export_failed": "परिणाम निर्यात करने में विफल",
+    "exported_pdf_success": "{{count}} स्लाइड(एस) PDF के रूप में निर्यात किया गया",
+    "export_pdf_failed": "PDF निर्यात करने में विफल",
+    "slide_number": "स्लाइड {{number}}",
+    "untitled_slide": "शीर्षकहीन स्लाइड",
+    "visualization_coming_soon": "{{type}} के लिए परिणाम विज़ुअलाइज़ेशन जल्द ही आ रहा है।",
+    "default_title": "प्रस्तुति",
+    "untitled_presentation": "शीर्षकहीन प्रस्तुति",
+    "exported": "निर्यात किया गया",
+    "total_slides": "कुल स्लाइड्स",
+    "type": "प्रकार",
+    "total_responses": "कुल प्रतिक्रियाएं",
+    "summary": "सारांश",
+    "detailed_responses": "विस्तृत प्रतिक्रियाएं",
+    "presentation_title": "प्रस्तुति शीर्षक",
+    "question": "प्रश्न",
+    "slide": "स्लाइड",
+    "responses": "प्रतिक्रियाएं",
+    "filters": {
+      "all": "सभी",
+      "answered": "उत्तर दिया",
+      "unanswered": "अनुत्तरित"
+    },
+    "slide_types": {
+      "multiple_choice": "बहुविकल्पी",
+      "word_cloud": "शब्द बादल",
+      "open_ended": "खुला अंत",
+      "scales": "स्केल",
+      "ranking": "रैंकिंग",
+      "hundred_points": "100 अंक",
+      "grid": "2x2 ग्रिड",
+      "pin_on_image": "छवि पर पिन",
+      "quiz": "क्विज़",
+      "guess_number": "संख्या का अनुमान",
+      "qna": "प्रश्न और उत्तर",
+      "leaderboard": "लीडरबोर्ड",
+      "pick_answer": "उत्तर चुनें",
+      "type_answer": "उत्तर टाइप करें",
+      "slide": "स्लाइड"
+    }
   },
   "dashboard": {
     "dashboard": "डैशबोर्ड",

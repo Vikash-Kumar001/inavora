@@ -171,7 +171,13 @@
       "upload_success": "व्हिडिओ यशस्वीरित्या अपलोड केली",
       "upload_failed": "व्हिडिओ अपलोड करण्यात अयशस्वी",
       "video_load_error": "व्हिडिओ लोड करण्यात अयशस्वी",
-      "video_not_supported": "आपला ब्राउझर व्हिडिओ टॅग समर्थन करत नाही"
+      "video_not_supported": "आपला ब्राउझर व्हिडिओ टॅग समर्थन करत नाही",
+      "video_content": "व्हिडिओ सामग्री",
+      "video_url": "व्हिडिओ URL",
+      "participant_responses": "सहभागी प्रतिक्रिया",
+      "anonymous": "अनामित",
+      "no_response_content": "प्रतिक्रिया सामग्री नाही",
+      "no_video": "व्हिडिओ उपलब्ध नाही"
     },
     "mcq": {
       "question_label": "प्रश्न",
@@ -252,7 +258,8 @@
       "default_title": "खालील गोष्टींची क्रमवारी लावा...",
       "preview_prompt": "क्रमवारी प्रॉम्प्टचे पूर्वावलोकन करण्यासाठी उजवीकडे घटक जोडा.",
       "drag_handles_message": "ड्रॅग हँडल सहभागी दृश्यात दिसतील.",
-      "instruction": "सहभागी सादर करण्यापूर्वी त्यांच्या पसंतीच्या क्रमाने घटक ओढतील."
+      "instruction": "सहभागी सादर करण्यापूर्वी त्यांच्या पसंतीच्या क्रमाने घटक ओढतील.",
+      "points": "गुण"
     },
     "scales": {
       "question_label": "प्रश्न",
@@ -277,6 +284,7 @@
       "selected_value": "निवडलेले: {{value}}",
       "select_value": "एक मूल्य निवडा",
       "rate_statement": "विधान {{number}} रेट करा: {{label}}",
+      "overall_score": "एकूण गुण",
       "rate_label": "रेट करा: {{label}}",
       "select_value_aria": "मूल्य {{value}} निवडा",
       "response_submitted": "प्रतिसाद सबमिट केला",
@@ -363,6 +371,15 @@
       "view_board": "बोर्ड पहा",
       "default_title": "मायरो बोर्ड इंटरॅक्शन",
       "board_title": "मायरो बोर्ड",
+      "miro_board": "मायरो बोर्ड",
+      "board_embedded": "मायरो बोर्ड एम्बेड केले",
+      "board_interaction": "सहभागी बोर्डसह इंटरॅक्ट करू शकतात",
+      "total_interactions": "एकूण इंटरॅक्शन",
+      "board_type": "मायरो",
+      "board_type_label": "बोर्ड प्रकार",
+      "interaction_mode": "इंटरॅक्टिव्ह",
+      "interaction_mode_label": "इंटरॅक्शन मोड",
+      "question_instruction": "प्रश्न/सूचना",
       "participant_interaction": "सहभागी मायरो बोर्डसह इंटरॅक्ट करू शकतात",
       "live_collaboration": "थेट सहयोग",
       "redirect_message": "सहभागींना नवीन टॅबमध्ये मायरो बोर्डवर पुनर्निर्देशित केले जाईल"
@@ -370,11 +387,20 @@
     "google_slides": {
       "question_label": "प्रश्न/सूचना",
       "question_placeholder": "सहभागींसाठी तुमचा प्रश्न किंवा सूचना प्रविष्ट करा...",
+      "question_instruction": "प्रश्न/सूचना",
       "url_label": "गुगल स्लाइड्स URL",
       "url_placeholder": "https://docs.google.com/presentation/d/...",
       "url_description": "तुमच्या गुगल स्लाइड्स प्रस्तुतीचा पूर्ण URL पेस्ट करा",
       "preview_title": "पूर्वावलोकन",
-      "default_title": "गुगल स्लाइड्स प्रस्तुती"
+      "default_title": "गुगल स्लाइड्स प्रस्तुती",
+      "presentation": "गुगल स्लाइड्स प्रस्तुती",
+      "presentation_title": "गुगल स्लाइड्स प्रस्तुती",
+      "presentation_description": "सहभागी प्रस्तुती पाहू शकतात",
+      "views": "दृश्ये",
+      "platform": "गुगल स्लाइड्स",
+      "platform_label": "प्लॅटफॉर्म",
+      "access_method": "वेब",
+      "access_method_label": "प्रवेश पद्धती"
     },
     "powerpoint": {
       "question_label": "प्रश्न/सूचना",
@@ -400,6 +426,14 @@
       "view_presentation": "प्रस्तुती पहा",
       "default_title": "पॉवरपॉइंट प्रस्तुती",
       "presentation_title": "पॉवरपॉइंट प्रस्तुती",
+      "presentation": "पॉवरपॉइंट प्रस्तुती",
+      "presentation_description": "सहभागी प्रस्तुती पाहू शकतात",
+      "question_instruction": "प्रश्न/सूचना",
+      "views": "दृश्ये",
+      "file_type": "पॉवरपॉइंट",
+      "file_type_label": "फाइल प्रकार",
+      "content_type": "प्रस्तुती",
+      "content_type_label": "सामग्री प्रकार",
       "participant_view": "सहभागी प्रस्तुती पाहू शकतात",
       "live_presentation": "थेट प्रस्तुती",
       "redirect_message": "सहभागींना पॉवरपॉइंट प्रस्तुती पाहण्यासाठी पुनर्निर्देशित केले जाईल"
@@ -409,6 +443,7 @@
       "non_editable_description": "या सूचना स्लाइडमध्ये निश्चित सामग्री आहे आणि ती संपादित केली जाऊ शकत नाही.",
       "instructions_title": "सूचना",
       "default_title": "सूचना",
+      "join_description": "वेबसाइटद्वारे सामील व्हा किंवा QR कोड स्कॅन करा",
       "instructions_description": "ही स्लाइड तुमच्या प्रस्तुतीत सामील होण्यासाठी सहभागींसाठी निश्चित सूचना दर्शविते:",
       "instruction_item_1": "प्रस्तुती कोडसह वेबसाइट प्रवेश",
       "instruction_item_2": "QR कोड स्कॅनिंग पर्याय",
@@ -522,7 +557,15 @@
       "view_presentation": "प्रस्तुती पहा",
       "keynote_presentation": "कीनोट प्रस्तुती",
       "uploaded_file": "अपलोड केलेली फाइल",
-      "view_file": "फाइल पहा"
+      "view_file": "फाइल पहा",
+      "question_instruction": "प्रश्न/सूचना",
+      "no_file_name": "फाइल नाव नाही",
+      "uploaded_presentation_file": "अपलोड केलेली प्रस्तुती फाइल",
+      "views": "दृश्ये",
+      "source": "अपलोड",
+      "source_label": "स्रोत",
+      "content_type": "प्रस्तुती",
+      "content_type_label": "सामग्री प्रकार"
     },
     "guess_number": {
       "question_label": "प्रश्न",
@@ -563,7 +606,8 @@
       "default_title": "तुमच्या आवडत्या वैशिष्ट्यांना 100 गुण वाटप करा...",
       "preview_prompt": "100 गुण वाटपाचे पूर्वावलोकन करण्यासाठी उजवीकडे घटक जोडा.",
       "add_items": "घटक जोडा",
-      "pts": "गुण"
+      "pts": "गुण",
+      "avg_points": "सरासरी गुण"
     },
     "two_by_two_grid": {
       "question_label": "प्रश्न",
@@ -587,6 +631,10 @@
       "preview_prompt": "पूर्वावलोकन करण्यासाठी उजवीकडे घटक जोडा",
       "horizontal_axis_default": "आडवा",
       "vertical_axis_default": "उभा"
+    },
+    "grid": {
+      "response": "प्रतिक्रिया",
+      "responses": "प्रतिक्रिया"
     },
     "pin_on_image": {
       "question_label": "प्रश्न",
@@ -622,6 +670,7 @@
     "not_found": "प्रस्तुती आढळली नाही",
     "back_to_dashboard": "डॅशबोर्डवर परत जा",
     "untitled": "शीर्षकहीन",
+    "untitled_presentation": "शीर्षकहीन प्रस्तुती",
     "slide_singular": "स्लाइड",
     "slide_plural": "स्लाइड्स",
     "saving": "जतन करत आहे...",
@@ -665,6 +714,60 @@
     "join_link_description": "हा दुवा सहभागींशी थेट सामायिक करा",
     "welcome": "स्वागत आहे",
     "live": "थेट"
+  },
+  "presentation_results": {
+    "title": "प्रस्तुती परिणाम",
+    "subtitle": "एकत्रित केलेल्या सर्व प्रतिक्रियांचे विहंगावलोकन",
+    "export": "निर्यात करा",
+    "exporting": "निर्यात होत आहे...",
+    "export_pdf": "PDF म्हणून निर्यात करा",
+    "export_csv": "CSV म्हणून निर्यात करा",
+    "export_excel": "Excel म्हणून निर्यात करा",
+    "no_presentation_available": "प्रस्तुती किंवा स्लाइड उपलब्ध नाहीत",
+    "no_data_to_export": "निर्यात करण्यासाठी डेटा उपलब्ध नाही",
+    "no_slides": "या प्रस्तुतीमध्ये स्लाइड नाहीत.",
+    "failed_to_load": "परिणाम लोड करण्यात अयशस्वी. कृपया पुन्हा प्रयत्न करा.",
+    "exported_success": "{{count}} स्लाइड(स) {{format}} म्हणून निर्यात केले",
+    "export_failed": "परिणाम निर्यात करण्यात अयशस्वी",
+    "exported_pdf_success": "{{count}} स्लाइड(स) PDF म्हणून निर्यात केले",
+    "export_pdf_failed": "PDF निर्यात करण्यात अयशस्वी",
+    "slide_number": "स्लाइड {{number}}",
+    "untitled_slide": "शीर्षकहीन स्लाइड",
+    "visualization_coming_soon": "{{type}} साठी परिणाम व्हिज्युअलायझेशन लवकरच येईल.",
+    "default_title": "प्रस्तुती",
+    "untitled_presentation": "शीर्षकहीन प्रस्तुती",
+    "exported": "निर्यात केले",
+    "total_slides": "एकूण स्लाइड",
+    "type": "प्रकार",
+    "total_responses": "एकूण प्रतिक्रिया",
+    "summary": "सारांश",
+    "detailed_responses": "तपशीलवार प्रतिक्रिया",
+    "presentation_title": "प्रस्तुती शीर्षक",
+    "question": "प्रश्न",
+    "slide": "स्लाइड",
+    "responses": "प्रतिक्रिया",
+    "filters": {
+      "all": "सर्व",
+      "answered": "उत्तर दिले",
+      "unanswered": "उत्तर न दिलेले"
+    },
+    "slide_types": {
+      "multiple_choice": "बहुपर्यायी",
+      "word_cloud": "शब्द मेघ",
+      "open_ended": "खुले शेवट",
+      "scales": "स्केल",
+      "ranking": "रँकिंग",
+      "hundred_points": "100 गुण",
+      "grid": "2x2 ग्रिड",
+      "pin_on_image": "प्रतिमेवर पिन",
+      "quiz": "क्विझ",
+      "guess_number": "संख्या अंदाज लावा",
+      "qna": "प्रश्न आणि उत्तर",
+      "leaderboard": "लीडरबोर्ड",
+      "pick_answer": "उत्तर निवडा",
+      "type_answer": "उत्तर टाइप करा",
+      "slide": "स्लाइड"
+    }
   },
   "dashboard": {
     "dashboard": "डॅशबोर्ड",

@@ -171,7 +171,13 @@
       "upload_success": "视频上传成功",
       "upload_failed": "视频上传失败",
       "video_load_error": "加载视频失败",
-      "video_not_supported": "您的浏览器不支持视频标签"
+      "video_not_supported": "您的浏览器不支持视频标签",
+      "video_content": "视频内容",
+      "video_url": "视频网址",
+      "participant_responses": "参与者回复",
+      "anonymous": "匿名",
+      "no_response_content": "无回复内容",
+      "no_video": "无可用视频"
     },
     "mcq": {
       "question_label": "问题",
@@ -252,7 +258,8 @@
       "default_title": "对以下项目进行排名...",
       "preview_prompt": "在右侧添加项目以预览排名提示。",
       "drag_handles_message": "拖动手柄将出现在参与者视图中。",
-      "instruction": "参与者将在提交前拖动项目以安排其首选顺序。"
+      "instruction": "参与者将在提交前拖动项目以安排其首选顺序。",
+      "points": "分"
     },
     "scales": {
       "question_label": "问题",
@@ -277,6 +284,7 @@
       "selected_value": "已选择: {{value}}",
       "select_value": "选择一个值",
       "rate_statement": "评价陈述 {{number}}: {{label}}",
+      "overall_score": "总分",
       "rate_label": "评价: {{label}}",
       "select_value_aria": "选择值 {{value}}",
       "response_submitted": "已提交回复",
@@ -363,6 +371,15 @@
       "view_board": "查看白板",
       "default_title": "Miro白板互动",
       "board_title": "Miro白板",
+      "miro_board": "Miro白板",
+      "board_embedded": "Miro白板已嵌入",
+      "board_interaction": "参与者可以与白板互动",
+      "total_interactions": "总互动数",
+      "board_type": "Miro",
+      "board_type_label": "白板类型",
+      "interaction_mode": "交互式",
+      "interaction_mode_label": "互动模式",
+      "question_instruction": "问题/说明",
       "participant_interaction": "参与者可以与Miro白板互动",
       "live_collaboration": "实时协作",
       "redirect_message": "参与者将被重定向到新标签页中的Miro白板"
@@ -370,11 +387,20 @@
     "google_slides": {
       "question_label": "问题/说明",
       "question_placeholder": "请输入给参与者的问题或说明...",
+      "question_instruction": "问题/说明",
       "url_label": "Google幻灯片网址",
       "url_placeholder": "https://docs.google.com/presentation/d/...",
       "url_description": "粘贴您的Google幻灯片演示文稿完整网址",
       "preview_title": "预览",
-      "default_title": "Google幻灯片演示文稿"
+      "default_title": "Google幻灯片演示文稿",
+      "presentation": "Google幻灯片演示文稿",
+      "presentation_title": "Google幻灯片演示文稿",
+      "presentation_description": "参与者可以查看演示文稿",
+      "views": "查看次数",
+      "platform": "Google幻灯片",
+      "platform_label": "平台",
+      "access_method": "网页",
+      "access_method_label": "访问方式"
     },
     "powerpoint": {
       "question_label": "问题/说明",
@@ -400,6 +426,14 @@
       "view_presentation": "查看演示文稿",
       "default_title": "PowerPoint演示文稿",
       "presentation_title": "PowerPoint演示文稿",
+      "presentation": "PowerPoint演示文稿",
+      "presentation_description": "参与者可以查看演示文稿",
+      "question_instruction": "问题/说明",
+      "views": "查看次数",
+      "file_type": "PowerPoint",
+      "file_type_label": "文件类型",
+      "content_type": "演示文稿",
+      "content_type_label": "内容类型",
       "participant_view": "参与者可以查看演示文稿",
       "live_presentation": "现场演示",
       "redirect_message": "参与者将被重定向以查看PowerPoint演示文稿"
@@ -409,6 +443,7 @@
       "non_editable_description": "此说明幻灯片具有固定内容，无法编辑。",
       "instructions_title": "说明",
       "default_title": "说明",
+      "join_description": "通过网站加入或扫描二维码",
       "instructions_description": "此幻灯片显示固定的说明，供参与者加入您的演示文稿：",
       "instruction_item_1": "带演示代码的网站访问",
       "instruction_item_2": "二维码扫描选项",
@@ -545,7 +580,8 @@
       "default_title": "为您的最爱功能分配100分...",
       "preview_prompt": "在右侧添加项目以预览100分分配。",
       "add_items": "添加项目",
-      "pts": "分"
+      "pts": "分",
+      "avg_points": "平均分"
     },
     "two_by_two_grid": {
       "question_label": "问题",
@@ -569,6 +605,10 @@
       "preview_prompt": "在右侧添加项目以预览",
       "horizontal_axis_default": "水平",
       "vertical_axis_default": "垂直"
+    },
+    "grid": {
+      "response": "回复",
+      "responses": "回复"
     },
     "pin_on_image": {
       "question_label": "问题",
@@ -614,7 +654,15 @@
       "view_presentation": "查看演示文稿",
       "keynote_presentation": "Keynote演示文稿",
       "uploaded_file": "已上传文件",
-      "view_file": "查看文件"
+      "view_file": "查看文件",
+      "question_instruction": "问题/说明",
+      "no_file_name": "无文件名",
+      "uploaded_presentation_file": "已上传的演示文稿文件",
+      "views": "查看次数",
+      "source": "上传",
+      "source_label": "来源",
+      "content_type": "演示文稿",
+      "content_type_label": "内容类型"
     }
   },
   "presentation": {
@@ -622,6 +670,7 @@
     "not_found": "未找到演示文稿",
     "back_to_dashboard": "返回仪表板",
     "untitled": "未命名",
+    "untitled_presentation": "未命名演示文稿",
     "slide_singular": "幻灯片",
     "slide_plural": "幻灯片",
     "saving": "保存中...",
@@ -671,6 +720,60 @@
     "kick_participant_title": "踢出参与者？",
     "kick_participant_description": "您确定要将{{participant}}踢出演示吗？",
     "kick": "踢出"
+  },
+  "presentation_results": {
+    "title": "演示文稿结果",
+    "subtitle": "所有收集的回复概览",
+    "export": "导出",
+    "exporting": "正在导出...",
+    "export_pdf": "导出为 PDF",
+    "export_csv": "导出为 CSV",
+    "export_excel": "导出为 Excel",
+    "no_presentation_available": "没有可用的演示文稿或幻灯片",
+    "no_data_to_export": "没有可导出的数据",
+    "no_slides": "此演示文稿中没有幻灯片。",
+    "failed_to_load": "加载结果失败。请重试。",
+    "exported_success": "已导出 {{count}} 张幻灯片为 {{format}}",
+    "export_failed": "导出结果失败",
+    "exported_pdf_success": "已导出 {{count}} 张幻灯片为 PDF",
+    "export_pdf_failed": "导出 PDF 失败",
+    "slide_number": "幻灯片 {{number}}",
+    "untitled_slide": "无标题幻灯片",
+    "visualization_coming_soon": "{{type}} 的结果可视化即将推出。",
+    "default_title": "演示文稿",
+    "untitled_presentation": "无标题演示文稿",
+    "exported": "已导出",
+    "total_slides": "总幻灯片数",
+    "type": "类型",
+    "total_responses": "总回复数",
+    "summary": "摘要",
+    "detailed_responses": "详细回复",
+    "presentation_title": "演示文稿标题",
+    "question": "问题",
+    "slide": "幻灯片",
+    "responses": "回复",
+    "filters": {
+      "all": "全部",
+      "answered": "已回答",
+      "unanswered": "未回答"
+    },
+    "slide_types": {
+      "multiple_choice": "多项选择",
+      "word_cloud": "词云",
+      "open_ended": "开放式",
+      "scales": "量表",
+      "ranking": "排名",
+      "hundred_points": "100 分",
+      "grid": "2x2 网格",
+      "pin_on_image": "图片定位",
+      "quiz": "测验",
+      "guess_number": "猜数字",
+      "qna": "问答",
+      "leaderboard": "排行榜",
+      "pick_answer": "选择答案",
+      "type_answer": "输入答案",
+      "slide": "幻灯片"
+    }
   },
   "dashboard": {
     "dashboard": "仪表板",

@@ -171,7 +171,13 @@
       "upload_success": "Vídeo enviado com sucesso",
       "upload_failed": "Falha ao enviar o vídeo",
       "video_load_error": "Falha ao carregar o vídeo",
-      "video_not_supported": "Seu navegador não suporta a tag de vídeo"
+      "video_not_supported": "Seu navegador não suporta a tag de vídeo",
+      "video_content": "Conteúdo do Vídeo",
+      "video_url": "URL do Vídeo",
+      "participant_responses": "Respostas dos Participantes",
+      "anonymous": "Anônimo",
+      "no_response_content": "Sem conteúdo de resposta",
+      "no_video": "Nenhum vídeo disponível"
     },
     "mcq": {
       "question_label": "Pergunta",
@@ -247,7 +253,8 @@
       "drag_to_start": "Arraste um item aqui para começar a classificar.",
       "available_items": "Itens disponíveis",
       "items_waiting": "Os itens aguardando classificação aparecem aqui.",
-      "submit_ranking": "Enviar classificação"
+      "submit_ranking": "Enviar classificação",
+      "points": "pontos"
     },
     "qna": {
       "question_label": "Pergunta",
@@ -292,6 +299,7 @@
       "selected_value": "Selecionado: {{value}}",
       "select_value": "Selecione um valor",
       "rate_statement": "Avaliar declaração {{number}}: {{label}}",
+      "overall_score": "Pontuação Geral",
       "rate_label": "Avaliar: {{label}}",
       "select_value_aria": "Selecionar valor {{value}}",
       "response_submitted": "Resposta enviada",
@@ -372,6 +380,15 @@
       "view_board": "Ver Quadro",
       "default_title": "Interação com o Quadro Miro",
       "board_title": "Quadro Miro",
+      "miro_board": "Quadro Miro",
+      "board_embedded": "Quadro Miro incorporado",
+      "board_interaction": "Os participantes podem interagir com o quadro",
+      "total_interactions": "Total de Interações",
+      "board_type": "Miro",
+      "board_type_label": "Tipo de Quadro",
+      "interaction_mode": "Interativo",
+      "interaction_mode_label": "Modo de Interação",
+      "question_instruction": "Pergunta/Instrução",
       "participant_interaction": "Os participantes podem interagir com o quadro Miro",
       "live_collaboration": "Colaboração ao Vivo",
       "redirect_message": "Os participantes serão redirecionados para o quadro Miro em uma nova aba"
@@ -400,6 +417,14 @@
       "view_presentation": "Ver Apresentação",
       "default_title": "Apresentação PowerPoint",
       "presentation_title": "Apresentação PowerPoint",
+      "presentation": "Apresentação PowerPoint",
+      "presentation_description": "Os participantes podem visualizar a apresentação",
+      "question_instruction": "Pergunta/Instrução",
+      "views": "Visualizações",
+      "file_type": "PowerPoint",
+      "file_type_label": "Tipo de Arquivo",
+      "content_type": "Apresentação",
+      "content_type_label": "Tipo de Conteúdo",
       "participant_view": "Os participantes podem ver a apresentação",
       "live_presentation": "Apresentação ao Vivo",
       "redirect_message": "Os participantes serão redirecionados para ver a apresentação PowerPoint"
@@ -407,17 +432,27 @@
     "google_slides": {
       "question_label": "Pergunta/Instrução",
       "question_placeholder": "Digite sua pergunta ou instrução para os participantes...",
+      "question_instruction": "Pergunta/Instrução",
       "url_label": "URL do Google Slides",
       "url_placeholder": "https://docs.google.com/presentation/d/...",
       "url_description": "Cole a URL completa da sua apresentação do Google Slides",
       "preview_title": "Visualização",
-      "default_title": "Apresentação do Google Slides"
+      "default_title": "Apresentação do Google Slides",
+      "presentation": "Apresentação do Google Slides",
+      "presentation_title": "Apresentação do Google Slides",
+      "presentation_description": "Os participantes podem visualizar a apresentação",
+      "views": "Visualizações",
+      "platform": "Google Slides",
+      "platform_label": "Plataforma",
+      "access_method": "Web",
+      "access_method_label": "Método de Acesso"
     },
     "instruction": {
       "non_editable_title": "Slide Não Editável",
       "non_editable_description": "Este slide de instruções tem conteúdo fixo e não pode ser editado.",
       "instructions_title": "Instruções",
       "default_title": "Instruções",
+      "join_description": "Junte-se através do site ou escaneie o código QR",
       "instructions_description": "Este slide exibe instruções fixas para que os participantes se juntem à sua apresentação:",
       "instruction_item_1": "Acesso ao site com código de apresentação",
       "instruction_item_2": "Opção de digitalização de código QR",
@@ -554,7 +589,8 @@
       "default_title": "Atribua 100 pontos aos seus recursos favoritos...",
       "preview_prompt": "Adicione itens à direita para pré-visualizar a atribuição de 100 pontos.",
       "add_items": "Adicionar itens",
-      "pts": "pts"
+      "pts": "pts",
+      "avg_points": "pontos médios"
     },
     "two_by_two_grid": {
       "question_label": "Pergunta",
@@ -578,6 +614,10 @@
       "preview_prompt": "Adicione itens à direita para pré-visualizar",
       "horizontal_axis_default": "Horizontal",
       "vertical_axis_default": "Vertical"
+    },
+    "grid": {
+      "response": "resposta",
+      "responses": "respostas"
     },
     "pin_on_image": {
       "question_label": "Pergunta",
@@ -623,7 +663,15 @@
       "view_presentation": "Ver Apresentação",
       "keynote_presentation": "Apresentação do Keynote",
       "uploaded_file": "Arquivo Enviado",
-      "view_file": "Ver Arquivo"
+      "view_file": "Ver Arquivo",
+      "question_instruction": "Pergunta/Instrução",
+      "no_file_name": "Sem nome de arquivo",
+      "uploaded_presentation_file": "Arquivo de Apresentação Enviado",
+      "views": "Visualizações",
+      "source": "Enviar",
+      "source_label": "Fonte",
+      "content_type": "Apresentação",
+      "content_type_label": "Tipo de Conteúdo"
     }
   },
   "presentation": {
@@ -631,6 +679,7 @@
     "not_found": "Apresentação não encontrada",
     "back_to_dashboard": "Voltar ao Painel",
     "untitled": "Sem título",
+    "untitled_presentation": "Apresentação sem título",
     "slide_singular": "slide",
     "slide_plural": "slides",
     "saving": "Salvando...",
@@ -680,6 +729,60 @@
     "kick_participant_title": "Expulsar Participante?",
     "kick_participant_description": "Tem certeza de que deseja expulsar {{participant}} da apresentação?",
     "kick": "Expulsar"
+  },
+  "presentation_results": {
+    "title": "Resultados da Apresentação",
+    "subtitle": "Visão geral de todas as respostas coletadas",
+    "export": "Exportar",
+    "exporting": "Exportando...",
+    "export_pdf": "Exportar como PDF",
+    "export_csv": "Exportar como CSV",
+    "export_excel": "Exportar como Excel",
+    "no_presentation_available": "Nenhuma apresentação ou slide disponível",
+    "no_data_to_export": "Nenhum dado disponível para exportar",
+    "no_slides": "Nenhum slide nesta apresentação.",
+    "failed_to_load": "Falha ao carregar resultados. Por favor, tente novamente.",
+    "exported_success": "{{count}} slide(s) exportado(s) como {{format}}",
+    "export_failed": "Falha ao exportar resultados",
+    "exported_pdf_success": "{{count}} slide(s) exportado(s) como PDF",
+    "export_pdf_failed": "Falha ao exportar PDF",
+    "slide_number": "Slide {{number}}",
+    "untitled_slide": "Slide sem título",
+    "visualization_coming_soon": "Visualização de resultados em breve para {{type}}.",
+    "default_title": "Apresentação",
+    "untitled_presentation": "Apresentação sem título",
+    "exported": "Exportado",
+    "total_slides": "Total de Slides",
+    "type": "Tipo",
+    "total_responses": "Total de Respostas",
+    "summary": "Resumo",
+    "detailed_responses": "Respostas Detalhadas",
+    "presentation_title": "Título da Apresentação",
+    "question": "Pergunta",
+    "slide": "Slide",
+    "responses": "respostas",
+    "filters": {
+      "all": "Todas",
+      "answered": "Respondidas",
+      "unanswered": "Sem resposta"
+    },
+    "slide_types": {
+      "multiple_choice": "Múltipla Escolha",
+      "word_cloud": "Nuvem de Palavras",
+      "open_ended": "Resposta Aberta",
+      "scales": "Escalas",
+      "ranking": "Classificação",
+      "hundred_points": "100 Pontos",
+      "grid": "Grade 2x2",
+      "pin_on_image": "Pin na Imagem",
+      "quiz": "Quiz",
+      "guess_number": "Adivinhar Número",
+      "qna": "Perguntas e Respostas",
+      "leaderboard": "Classificação",
+      "pick_answer": "Escolher Resposta",
+      "type_answer": "Digitar Resposta",
+      "slide": "Slide"
+    }
   },
   "dashboard": {
     "dashboard": "Painel",

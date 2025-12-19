@@ -2,79 +2,79 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { 
-  ArrowLeft, 
-  ArrowRight, 
-  Users, 
-  UserPlus, 
-  Globe, 
-  LayoutDashboard, 
-  FileText, 
-  Play, 
-  BarChart3,
-  Upload,
-  CheckCircle2,
-  QrCode,
-  Hash,
-  Image as ImageIcon,
-  Video,
-  Type,
-  MessageSquare,
-  HelpCircle,
-  Star,
-  Trophy,
-  Target,
-  Zap,
-  Brain,
-  MousePointerClick,
-  FileQuestion,
-  FileCheck,
-  ChevronRight,
-  Sparkles,
-  Lightbulb,
-  Presentation,
-  Settings,
-  Eye,
-  LogIn,
-  Plus,
-  Edit,
-  Share2,
-  BookOpen,
-  GraduationCap,
-  Building2,
-  Users2,
-  HeartHandshake,
-  Rocket,
-  Briefcase,
-  Landmark,
-  Scale,
-  Stethoscope,
-  Calendar,
-  Search,
-  ShoppingBag,
-  Laptop,
-  Gavel,
-  Gamepad2,
-  Network,
-  TrendingUp,
-  DollarSign,
-  Shield,
-  Megaphone,
-  CreditCard,
-  Infinity as InfinityIcon,
-  ArrowUp,
-  ArrowDown,
-  X,
-  Crown,
-  ChevronDown,
-  Database,
-  Lock,
-  Mail,
-  Trash2,
-  Download,
-  Cookie,
-  AlertTriangle,
-  UserCheck
+import {
+    ArrowLeft,
+    ArrowRight,
+    Users,
+    UserPlus,
+    Globe,
+    LayoutDashboard,
+    FileText,
+    Play,
+    BarChart3,
+    Upload,
+    CheckCircle2,
+    QrCode,
+    Hash,
+    Image as ImageIcon,
+    Video,
+    Type,
+    MessageSquare,
+    HelpCircle,
+    Star,
+    Trophy,
+    Target,
+    Zap,
+    Brain,
+    MousePointerClick,
+    FileQuestion,
+    FileCheck,
+    ChevronRight,
+    Sparkles,
+    Lightbulb,
+    Presentation,
+    Settings,
+    Eye,
+    LogIn,
+    Plus,
+    Edit,
+    Share2,
+    BookOpen,
+    GraduationCap,
+    Building2,
+    Users2,
+    HeartHandshake,
+    Rocket,
+    Briefcase,
+    Landmark,
+    Scale,
+    Stethoscope,
+    Calendar,
+    Search,
+    ShoppingBag,
+    Laptop,
+    Gavel,
+    Gamepad2,
+    Network,
+    TrendingUp,
+    DollarSign,
+    Shield,
+    Megaphone,
+    CreditCard,
+    Infinity as InfinityIcon,
+    ArrowUp,
+    ArrowDown,
+    X,
+    Crown,
+    ChevronDown,
+    Database,
+    Lock,
+    Mail,
+    Trash2,
+    Download,
+    Cookie,
+    AlertTriangle,
+    UserCheck
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
@@ -83,7 +83,7 @@ const HowItWorks = () => {
     const { t, i18n } = useTranslation();
     const [openPricingFAQ, setOpenPricingFAQ] = useState(null);
     const [openDataPrivacyFAQ, setOpenDataPrivacyFAQ] = useState(null);
-    
+
     // Ensure component re-renders when language changes
     useEffect(() => {
         // This effect ensures the component re-renders when language changes
@@ -102,8 +102,8 @@ const HowItWorks = () => {
 
     const itemVariants = {
         hidden: { opacity: 0, y: 20 },
-        visible: { 
-            opacity: 1, 
+        visible: {
+            opacity: 1,
             y: 0,
             transition: { duration: 0.5 }
         }
@@ -125,7 +125,7 @@ const HowItWorks = () => {
 
     const PricingFAQItem = ({ index, question, children }) => {
         const isOpen = openPricingFAQ === index;
-        
+
         return (
             <motion.div
                 variants={itemVariants}
@@ -170,7 +170,7 @@ const HowItWorks = () => {
 
     const DataPrivacyFAQItem = ({ index, question, children, icon: Icon }) => {
         const isOpen = openDataPrivacyFAQ === index;
-        
+
         return (
             <motion.div
                 variants={itemVariants}
@@ -205,6 +205,57 @@ const HowItWorks = () => {
                             className="overflow-hidden"
                         >
                             <div className="px-6 pb-6 pt-0">
+                                {children}
+                            </div>
+                        </motion.div>
+                    )}
+                </AnimatePresence>
+            </motion.div>
+        );
+    };
+
+    const NestedDataPrivacyFAQItem = ({ index, question, children, icon: Icon }) => {
+        const [isOpen, setIsOpen] = useState(false);
+        
+        const toggleFAQ = (e) => {
+            e.stopPropagation(); // Prevent event from bubbling up to parent FAQ
+            setIsOpen(!isOpen);
+        };
+
+        return (
+            <motion.div
+                variants={itemVariants}
+                initial="hidden"
+                whileInView="visible"
+                viewport={{ once: true }}
+                className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl overflow-hidden hover:bg-white/10 transition-all duration-300 ml-4"
+            >
+                <button
+                    onClick={toggleFAQ}
+                    className="w-full p-4 text-left flex items-center justify-between gap-4 hover:bg-white/5 transition-colors"
+                >
+                    <h4 className="font-bold flex items-center gap-2 flex-1">
+                        {Icon && <Icon className="w-4 h-4 text-blue-400 flex-shrink-0" />}
+                        <span className="text-blue-400">{index}.</span>
+                        <span className="text-sm">{question}</span>
+                    </h4>
+                    <motion.div
+                        animate={{ rotate: isOpen ? 180 : 0 }}
+                        transition={{ duration: 0.3 }}
+                    >
+                        <ChevronDown className="w-4 h-4 text-gray-400 flex-shrink-0" />
+                    </motion.div>
+                </button>
+                <AnimatePresence>
+                    {isOpen && (
+                        <motion.div
+                            initial={{ height: 0, opacity: 0 }}
+                            animate={{ height: 'auto', opacity: 1 }}
+                            exit={{ height: 0, opacity: 0 }}
+                            transition={{ duration: 0.3, ease: 'easeInOut' }}
+                            className="overflow-hidden"
+                        >
+                            <div className="px-4 pb-4 pt-0 text-sm">
                                 {children}
                             </div>
                         </motion.div>
@@ -325,7 +376,7 @@ const HowItWorks = () => {
                         <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500 to-teal-400 flex items-center justify-center shadow-lg shadow-blue-500/20">
                             <span className="text-xl font-bold text-white">𝑖</span>
                         </div>
-                <span className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-white to-gray-300 leading-tight">{t('navbar.brand_name')}</span>
+                        <span className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-white to-gray-300 leading-tight">{t('navbar.brand_name')}</span>
                     </div>
                     <button
                         onClick={() => navigate(-1)}
@@ -386,7 +437,7 @@ const HowItWorks = () => {
                                 <h3 className="text-2xl font-bold">{t('how_it_works.quick_start.participant.title')}</h3>
                             </div>
                             <p className="text-gray-300 mb-6">{t('how_it_works.quick_start.participant.description')}</p>
-                            
+
                             <FlowDiagram steps={[
                                 { icon: QrCode },
                                 { icon: Hash },
@@ -422,7 +473,7 @@ const HowItWorks = () => {
                                 <h3 className="text-2xl font-bold">{t('how_it_works.quick_start.presenter.title')}</h3>
                             </div>
                             <p className="text-gray-300 mb-6">{t('how_it_works.quick_start.presenter.description')}</p>
-                            
+
                             <FlowDiagram steps={[
                                 { icon: LogIn },
                                 { icon: LayoutDashboard },
@@ -454,8 +505,7 @@ const HowItWorks = () => {
                 <motion.section
                     variants={containerVariants}
                     initial="hidden"
-                    whileInView="visible"
-                    viewport={{ once: true }}
+                    animate="visible"
                     className="container mx-auto px-6 mb-20"
                 >
                     <div className="text-center mb-12">
@@ -710,8 +760,7 @@ const HowItWorks = () => {
                 <motion.section
                     variants={containerVariants}
                     initial="hidden"
-                    whileInView="visible"
-                    viewport={{ once: true }}
+                    animate="visible"
                     className="container mx-auto px-6 mb-20"
                 >
                     <div className="text-center mb-12">
@@ -1168,427 +1217,347 @@ const HowItWorks = () => {
                                 </li>
                             </ul>
                         </PricingFAQItem>
-                    </div>
-                </section>
 
-                {/* Data & Privacy FAQ Section */}
-                <section className="container mx-auto px-6 mb-20">
-                    <motion.div
-                        initial={{ opacity: 0 }}
-                        whileInView={{ opacity: 1 }}
-                        viewport={{ once: true }}
-                        className="text-center mb-12"
-                    >
-                        <h2 className="text-3xl font-bold mb-4 flex items-center justify-center gap-3">
-                            <Shield className="w-8 h-8 text-blue-400" />
-                            {t('how_it_works.data_privacy_faq.title')}
-                        </h2>
-                        <p className="text-gray-300 max-w-3xl mx-auto">
-                            {t('how_it_works.data_privacy_faq.subtitle')}
-                        </p>
-                    </motion.div>
+                        {/* Question 18 */}
+                        <PricingFAQItem index={18} question={"Data & Privacy FAQs"}>
+                            <div className="space-y-4">
+                                <NestedDataPrivacyFAQItem index={1} question={t('how_it_works.data_privacy_faq.q1.question')} icon={Database}>
+                                    <p className="text-gray-300 mb-3">{t('how_it_works.data_privacy_faq.q1.answer')}</p>
+                                    <p className="text-gray-300 mb-3">{t('how_it_works.data_privacy_faq.q1.may_include')}</p>
+                                    <ul className="space-y-2 text-sm text-gray-300">
+                                        <li className="flex items-start gap-2">
+                                            <CheckCircle2 className="w-4 h-4 text-blue-400 flex-shrink-0 mt-0.5" />
+                                            <span>{t('how_it_works.data_privacy_faq.q1.presenter_details')}</span>
+                                        </li>
+                                        <li className="flex items-start gap-2">
+                                            <CheckCircle2 className="w-4 h-4 text-blue-400 flex-shrink-0 mt-0.5" />
+                                            <span>{t('how_it_works.data_privacy_faq.q1.admin_details')}</span>
+                                        </li>
+                                        <li className="flex items-start gap-2">
+                                            <CheckCircle2 className="w-4 h-4 text-blue-400 flex-shrink-0 mt-0.5" />
+                                            <span>{t('how_it_works.data_privacy_faq.q1.presentation_content')}</span>
+                                        </li>
+                                        <li className="flex items-start gap-2">
+                                            <CheckCircle2 className="w-4 h-4 text-blue-400 flex-shrink-0 mt-0.5" />
+                                            <span>{t('how_it_works.data_privacy_faq.q1.participant_responses')}</span>
+                                        </li>
+                                        <li className="flex items-start gap-2">
+                                            <CheckCircle2 className="w-4 h-4 text-blue-400 flex-shrink-0 mt-0.5" />
+                                            <span>{t('how_it_works.data_privacy_faq.q1.usage_data')}</span>
+                                        </li>
+                                    </ul>
+                                    <p className="text-gray-300 mt-3">{t('how_it_works.data_privacy_faq.q1.note')}</p>
+                                </NestedDataPrivacyFAQItem>
 
-                    <div className="max-w-4xl mx-auto space-y-4">
-                        {/* Question 1 */}
-                        <DataPrivacyFAQItem index={1} question={t('how_it_works.data_privacy_faq.q1.question')} icon={Database}>
-                            <p className="text-gray-300 mb-3">{t('how_it_works.data_privacy_faq.q1.answer')}</p>
-                            <p className="text-gray-300 mb-3">{t('how_it_works.data_privacy_faq.q1.may_include')}</p>
-                            <ul className="space-y-2 text-sm text-gray-300">
-                                <li className="flex items-start gap-2">
-                                    <CheckCircle2 className="w-4 h-4 text-blue-400 flex-shrink-0 mt-0.5" />
-                                    <span>{t('how_it_works.data_privacy_faq.q1.presenter_details')}</span>
-                                </li>
-                                <li className="flex items-start gap-2">
-                                    <CheckCircle2 className="w-4 h-4 text-blue-400 flex-shrink-0 mt-0.5" />
-                                    <span>{t('how_it_works.data_privacy_faq.q1.admin_details')}</span>
-                                </li>
-                                <li className="flex items-start gap-2">
-                                    <CheckCircle2 className="w-4 h-4 text-blue-400 flex-shrink-0 mt-0.5" />
-                                    <span>{t('how_it_works.data_privacy_faq.q1.presentation_content')}</span>
-                                </li>
-                                <li className="flex items-start gap-2">
-                                    <CheckCircle2 className="w-4 h-4 text-blue-400 flex-shrink-0 mt-0.5" />
-                                    <span>{t('how_it_works.data_privacy_faq.q1.participant_responses')}</span>
-                                </li>
-                                <li className="flex items-start gap-2">
-                                    <CheckCircle2 className="w-4 h-4 text-blue-400 flex-shrink-0 mt-0.5" />
-                                    <span>{t('how_it_works.data_privacy_faq.q1.usage_data')}</span>
-                                </li>
-                            </ul>
-                            <p className="text-gray-300 mt-3">{t('how_it_works.data_privacy_faq.q1.note')}</p>
-                        </DataPrivacyFAQItem>
+                                <NestedDataPrivacyFAQItem index={2} question={t('how_it_works.data_privacy_faq.q2.question')} icon={UserCheck}>
+                                    <p className="text-gray-300 mb-3">{t('how_it_works.data_privacy_faq.q2.answer')}</p>
+                                    <p className="text-gray-300 mb-3">{t('how_it_works.data_privacy_faq.q2.participants')}</p>
+                                    <ul className="space-y-2 text-sm text-gray-300 mb-3">
+                                        <li className="flex items-start gap-2">
+                                            <CheckCircle2 className="w-4 h-4 text-blue-400 flex-shrink-0 mt-0.5" />
+                                            <span>{t('how_it_works.data_privacy_faq.q2.no_account')}</span>
+                                        </li>
+                                        <li className="flex items-start gap-2">
+                                            <CheckCircle2 className="w-4 h-4 text-blue-400 flex-shrink-0 mt-0.5" />
+                                            <span>{t('how_it_works.data_privacy_faq.q2.join_code')}</span>
+                                        </li>
+                                        <li className="flex items-start gap-2">
+                                            <CheckCircle2 className="w-4 h-4 text-blue-400 flex-shrink-0 mt-0.5" />
+                                            <span>{t('how_it_works.data_privacy_faq.q2.optional_name')}</span>
+                                        </li>
+                                    </ul>
+                                    <p className="text-gray-300 mb-3">{t('how_it_works.data_privacy_faq.q2.responses_treated')}</p>
+                                    <ul className="space-y-2 text-sm text-gray-300">
+                                        <li className="flex items-start gap-2">
+                                            <CheckCircle2 className="w-4 h-4 text-blue-400 flex-shrink-0 mt-0.5" />
+                                            <span>{t('how_it_works.data_privacy_faq.q2.anonymous')}</span>
+                                        </li>
+                                        <li className="flex items-start gap-2">
+                                            <CheckCircle2 className="w-4 h-4 text-blue-400 flex-shrink-0 mt-0.5" />
+                                            <span>{t('how_it_works.data_privacy_faq.q2.pseudonymous')}</span>
+                                        </li>
+                                    </ul>
+                                </NestedDataPrivacyFAQItem>
 
-                        {/* Question 2 */}
-                        <DataPrivacyFAQItem index={2} question={t('how_it_works.data_privacy_faq.q2.question')} icon={UserCheck}>
-                            <p className="text-gray-300 mb-3">{t('how_it_works.data_privacy_faq.q2.answer')}</p>
-                            <p className="text-gray-300 mb-3">{t('how_it_works.data_privacy_faq.q2.participants')}</p>
-                            <ul className="space-y-2 text-sm text-gray-300 mb-3">
-                                <li className="flex items-start gap-2">
-                                    <CheckCircle2 className="w-4 h-4 text-blue-400 flex-shrink-0 mt-0.5" />
-                                    <span>{t('how_it_works.data_privacy_faq.q2.no_account')}</span>
-                                </li>
-                                <li className="flex items-start gap-2">
-                                    <CheckCircle2 className="w-4 h-4 text-blue-400 flex-shrink-0 mt-0.5" />
-                                    <span>{t('how_it_works.data_privacy_faq.q2.join_code')}</span>
-                                </li>
-                                <li className="flex items-start gap-2">
-                                    <CheckCircle2 className="w-4 h-4 text-blue-400 flex-shrink-0 mt-0.5" />
-                                    <span>{t('how_it_works.data_privacy_faq.q2.optional_name')}</span>
-                                </li>
-                            </ul>
-                            <p className="text-gray-300 mb-3">{t('how_it_works.data_privacy_faq.q2.responses_treated')}</p>
-                            <ul className="space-y-2 text-sm text-gray-300">
-                                <li className="flex items-start gap-2">
-                                    <CheckCircle2 className="w-4 h-4 text-blue-400 flex-shrink-0 mt-0.5" />
-                                    <span>{t('how_it_works.data_privacy_faq.q2.anonymous')}</span>
-                                </li>
-                                <li className="flex items-start gap-2">
-                                    <CheckCircle2 className="w-4 h-4 text-blue-400 flex-shrink-0 mt-0.5" />
-                                    <span>{t('how_it_works.data_privacy_faq.q2.pseudonymous')}</span>
-                                </li>
-                            </ul>
-                        </DataPrivacyFAQItem>
+                                <NestedDataPrivacyFAQItem index={3} question={t('how_it_works.data_privacy_faq.q3.question')} icon={FileText}>
+                                    <p className="text-gray-300 mb-3 font-semibold">{t('how_it_works.data_privacy_faq.q3.answer')}</p>
+                                    <ul className="space-y-2 text-sm text-gray-300">
+                                        <li className="flex items-start gap-2">
+                                            <CheckCircle2 className="w-4 h-4 text-blue-400 flex-shrink-0 mt-0.5" />
+                                            <span>{t('how_it_works.data_privacy_faq.q3.presenters_own')}</span>
+                                        </li>
+                                        <li className="flex items-start gap-2">
+                                            <CheckCircle2 className="w-4 h-4 text-blue-400 flex-shrink-0 mt-0.5" />
+                                            <span>{t('how_it_works.data_privacy_faq.q3.institutions_own')}</span>
+                                        </li>
+                                        <li className="flex items-start gap-2">
+                                            <CheckCircle2 className="w-4 h-4 text-blue-400 flex-shrink-0 mt-0.5" />
+                                            <span>{t('how_it_works.data_privacy_faq.q3.no_ownership')}</span>
+                                        </li>
+                                    </ul>
+                                </NestedDataPrivacyFAQItem>
 
-                        {/* Question 3 */}
-                        <DataPrivacyFAQItem index={3} question={t('how_it_works.data_privacy_faq.q3.question')} icon={FileText}>
-                            <p className="text-gray-300 mb-3 font-semibold">{t('how_it_works.data_privacy_faq.q3.answer')}</p>
-                            <ul className="space-y-2 text-sm text-gray-300">
-                                <li className="flex items-start gap-2">
-                                    <CheckCircle2 className="w-4 h-4 text-blue-400 flex-shrink-0 mt-0.5" />
-                                    <span>{t('how_it_works.data_privacy_faq.q3.presenters_own')}</span>
-                                </li>
-                                <li className="flex items-start gap-2">
-                                    <CheckCircle2 className="w-4 h-4 text-blue-400 flex-shrink-0 mt-0.5" />
-                                    <span>{t('how_it_works.data_privacy_faq.q3.institutions_own')}</span>
-                                </li>
-                                <li className="flex items-start gap-2">
-                                    <CheckCircle2 className="w-4 h-4 text-blue-400 flex-shrink-0 mt-0.5" />
-                                    <span>{t('how_it_works.data_privacy_faq.q3.no_ownership')}</span>
-                                </li>
-                            </ul>
-                        </DataPrivacyFAQItem>
+                                <NestedDataPrivacyFAQItem index={4} question={t('how_it_works.data_privacy_faq.q4.question')} icon={Shield}>
+                                    <p className="text-gray-300 mb-3 font-semibold">{t('how_it_works.data_privacy_faq.q4.answer')}</p>
+                                    <p className="text-gray-300 mb-3">{t('how_it_works.data_privacy_faq.q4.inavora')}</p>
+                                    <ul className="space-y-2 text-sm text-gray-300">
+                                        <li className="flex items-start gap-2">
+                                            <CheckCircle2 className="w-4 h-4 text-blue-400 flex-shrink-0 mt-0.5" />
+                                            <span>{t('how_it_works.data_privacy_faq.q4.no_sell')}</span>
+                                        </li>
+                                        <li className="flex items-start gap-2">
+                                            <CheckCircle2 className="w-4 h-4 text-blue-400 flex-shrink-0 mt-0.5" />
+                                            <span>{t('how_it_works.data_privacy_faq.q4.no_share')}</span>
+                                        </li>
+                                        <li className="flex items-start gap-2">
+                                            <CheckCircle2 className="w-4 h-4 text-blue-400 flex-shrink-0 mt-0.5" />
+                                            <span>{t('how_it_works.data_privacy_faq.q4.no_marketing')}</span>
+                                        </li>
+                                    </ul>
+                                    <p className="text-gray-300 mt-3">{t('how_it_works.data_privacy_faq.q4.data_use')}</p>
+                                </NestedDataPrivacyFAQItem>
 
-                        {/* Question 4 */}
-                        <DataPrivacyFAQItem index={4} question={t('how_it_works.data_privacy_faq.q4.question')} icon={Shield}>
-                            <p className="text-gray-300 mb-3 font-semibold">{t('how_it_works.data_privacy_faq.q4.answer')}</p>
-                            <p className="text-gray-300 mb-3">{t('how_it_works.data_privacy_faq.q4.inavora')}</p>
-                            <ul className="space-y-2 text-sm text-gray-300">
-                                <li className="flex items-start gap-2">
-                                    <CheckCircle2 className="w-4 h-4 text-blue-400 flex-shrink-0 mt-0.5" />
-                                    <span>{t('how_it_works.data_privacy_faq.q4.no_sell')}</span>
-                                </li>
-                                <li className="flex items-start gap-2">
-                                    <CheckCircle2 className="w-4 h-4 text-blue-400 flex-shrink-0 mt-0.5" />
-                                    <span>{t('how_it_works.data_privacy_faq.q4.no_share')}</span>
-                                </li>
-                                <li className="flex items-start gap-2">
-                                    <CheckCircle2 className="w-4 h-4 text-blue-400 flex-shrink-0 mt-0.5" />
-                                    <span>{t('how_it_works.data_privacy_faq.q4.no_marketing')}</span>
-                                </li>
-                            </ul>
-                            <p className="text-gray-300 mt-3">{t('how_it_works.data_privacy_faq.q4.data_use')}</p>
-                        </DataPrivacyFAQItem>
+                                <NestedDataPrivacyFAQItem index={5} question={t('how_it_works.data_privacy_faq.q5.question')} icon={Lock}>
+                                    <p className="text-gray-300 mb-3">{t('how_it_works.data_privacy_faq.q5.answer')}</p>
+                                    <ul className="space-y-2 text-sm text-gray-300 mb-3">
+                                        <li className="flex items-start gap-2">
+                                            <CheckCircle2 className="w-4 h-4 text-blue-400 flex-shrink-0 mt-0.5" />
+                                            <span>{t('how_it_works.data_privacy_faq.q5.secure_access')}</span>
+                                        </li>
+                                        <li className="flex items-start gap-2">
+                                            <CheckCircle2 className="w-4 h-4 text-blue-400 flex-shrink-0 mt-0.5" />
+                                            <span>{t('how_it_works.data_privacy_faq.q5.encrypted')}</span>
+                                        </li>
+                                        <li className="flex items-start gap-2">
+                                            <CheckCircle2 className="w-4 h-4 text-blue-400 flex-shrink-0 mt-0.5" />
+                                            <span>{t('how_it_works.data_privacy_faq.q5.role_based')}</span>
+                                        </li>
+                                    </ul>
+                                    <p className="text-gray-300 mb-3">{t('how_it_works.data_privacy_faq.q5.for_institutions')}</p>
+                                    <ul className="space-y-2 text-sm text-gray-300">
+                                        <li className="flex items-start gap-2">
+                                            <CheckCircle2 className="w-4 h-4 text-blue-400 flex-shrink-0 mt-0.5" />
+                                            <span>{t('how_it_works.data_privacy_faq.q5.gdpr')}</span>
+                                        </li>
+                                        <li className="flex items-start gap-2">
+                                            <CheckCircle2 className="w-4 h-4 text-blue-400 flex-shrink-0 mt-0.5" />
+                                            <span>{t('how_it_works.data_privacy_faq.q5.institutional')}</span>
+                                        </li>
+                                    </ul>
+                                </NestedDataPrivacyFAQItem>
 
-                        {/* Question 5 */}
-                        <DataPrivacyFAQItem index={5} question={t('how_it_works.data_privacy_faq.q5.question')} icon={Lock}>
-                            <p className="text-gray-300 mb-3">{t('how_it_works.data_privacy_faq.q5.answer')}</p>
-                            <ul className="space-y-2 text-sm text-gray-300 mb-3">
-                                <li className="flex items-start gap-2">
-                                    <CheckCircle2 className="w-4 h-4 text-blue-400 flex-shrink-0 mt-0.5" />
-                                    <span>{t('how_it_works.data_privacy_faq.q5.secure_access')}</span>
-                                </li>
-                                <li className="flex items-start gap-2">
-                                    <CheckCircle2 className="w-4 h-4 text-blue-400 flex-shrink-0 mt-0.5" />
-                                    <span>{t('how_it_works.data_privacy_faq.q5.encrypted')}</span>
-                                </li>
-                                <li className="flex items-start gap-2">
-                                    <CheckCircle2 className="w-4 h-4 text-blue-400 flex-shrink-0 mt-0.5" />
-                                    <span>{t('how_it_works.data_privacy_faq.q5.role_based')}</span>
-                                </li>
-                            </ul>
-                            <p className="text-gray-300 mb-3">{t('how_it_works.data_privacy_faq.q5.for_institutions')}</p>
-                            <ul className="space-y-2 text-sm text-gray-300">
-                                <li className="flex items-start gap-2">
-                                    <CheckCircle2 className="w-4 h-4 text-blue-400 flex-shrink-0 mt-0.5" />
-                                    <span>{t('how_it_works.data_privacy_faq.q5.gdpr')}</span>
-                                </li>
-                                <li className="flex items-start gap-2">
-                                    <CheckCircle2 className="w-4 h-4 text-blue-400 flex-shrink-0 mt-0.5" />
-                                    <span>{t('how_it_works.data_privacy_faq.q5.institutional')}</span>
-                                </li>
-                            </ul>
-                        </DataPrivacyFAQItem>
+                                <NestedDataPrivacyFAQItem index={6} question={t('how_it_works.data_privacy_faq.q6.question')} icon={Database}>
+                                    <ul className="space-y-2 text-sm text-gray-300">
+                                        <li className="flex items-start gap-2">
+                                            <CheckCircle2 className="w-4 h-4 text-blue-400 flex-shrink-0 mt-0.5" />
+                                            <span>{t('how_it_works.data_privacy_faq.q6.secure_cloud')}</span>
+                                        </li>
+                                        <li className="flex items-start gap-2">
+                                            <CheckCircle2 className="w-4 h-4 text-blue-400 flex-shrink-0 mt-0.5" />
+                                            <span>{t('how_it_works.data_privacy_faq.q6.restricted')}</span>
+                                        </li>
+                                        <li className="flex items-start gap-2">
+                                            <CheckCircle2 className="w-4 h-4 text-blue-400 flex-shrink-0 mt-0.5" />
+                                            <span>{t('how_it_works.data_privacy_faq.q6.monitoring')}</span>
+                                        </li>
+                                    </ul>
+                                    <p className="text-gray-300 mt-3 text-sm italic">{t('how_it_works.data_privacy_faq.q6.note')}</p>
+                                </NestedDataPrivacyFAQItem>
 
-                        {/* Question 6 */}
-                        <DataPrivacyFAQItem index={6} question={t('how_it_works.data_privacy_faq.q6.question')} icon={Database}>
-                            <ul className="space-y-2 text-sm text-gray-300">
-                                <li className="flex items-start gap-2">
-                                    <CheckCircle2 className="w-4 h-4 text-blue-400 flex-shrink-0 mt-0.5" />
-                                    <span>{t('how_it_works.data_privacy_faq.q6.secure_cloud')}</span>
-                                </li>
-                                <li className="flex items-start gap-2">
-                                    <CheckCircle2 className="w-4 h-4 text-blue-400 flex-shrink-0 mt-0.5" />
-                                    <span>{t('how_it_works.data_privacy_faq.q6.restricted')}</span>
-                                </li>
-                                <li className="flex items-start gap-2">
-                                    <CheckCircle2 className="w-4 h-4 text-blue-400 flex-shrink-0 mt-0.5" />
-                                    <span>{t('how_it_works.data_privacy_faq.q6.monitoring')}</span>
-                                </li>
-                            </ul>
-                            <p className="text-gray-300 mt-3 text-sm italic">{t('how_it_works.data_privacy_faq.q6.note')}</p>
-                        </DataPrivacyFAQItem>
+                                <NestedDataPrivacyFAQItem index={7} question={t('how_it_works.data_privacy_faq.q7.question')} icon={Settings}>
+                                    <p className="text-gray-300 mb-3 font-semibold">{t('how_it_works.data_privacy_faq.q7.answer')}</p>
+                                    <p className="text-gray-300 mb-3">{t('how_it_works.data_privacy_faq.q7.admins_can')}</p>
+                                    <ul className="space-y-2 text-sm text-gray-300">
+                                        <li className="flex items-start gap-2">
+                                            <CheckCircle2 className="w-4 h-4 text-blue-400 flex-shrink-0 mt-0.5" />
+                                            <span>{t('how_it_works.data_privacy_faq.q7.manage_users')}</span>
+                                        </li>
+                                        <li className="flex items-start gap-2">
+                                            <CheckCircle2 className="w-4 h-4 text-blue-400 flex-shrink-0 mt-0.5" />
+                                            <span>{t('how_it_works.data_privacy_faq.q7.monitor')}</span>
+                                        </li>
+                                        <li className="flex items-start gap-2">
+                                            <CheckCircle2 className="w-4 h-4 text-blue-400 flex-shrink-0 mt-0.5" />
+                                            <span>{t('how_it_works.data_privacy_faq.q7.control_exports')}</span>
+                                        </li>
+                                        <li className="flex items-start gap-2">
+                                            <CheckCircle2 className="w-4 h-4 text-blue-400 flex-shrink-0 mt-0.5" />
+                                            <span>{t('how_it_works.data_privacy_faq.q7.apply_policies')}</span>
+                                        </li>
+                                    </ul>
+                                </NestedDataPrivacyFAQItem>
 
-                        {/* Question 7 */}
-                        <DataPrivacyFAQItem index={7} question={t('how_it_works.data_privacy_faq.q7.question')} icon={Settings}>
-                            <p className="text-gray-300 mb-3 font-semibold">{t('how_it_works.data_privacy_faq.q7.answer')}</p>
-                            <p className="text-gray-300 mb-3">{t('how_it_works.data_privacy_faq.q7.admins_can')}</p>
-                            <ul className="space-y-2 text-sm text-gray-300">
-                                <li className="flex items-start gap-2">
-                                    <CheckCircle2 className="w-4 h-4 text-blue-400 flex-shrink-0 mt-0.5" />
-                                    <span>{t('how_it_works.data_privacy_faq.q7.manage_users')}</span>
-                                </li>
-                                <li className="flex items-start gap-2">
-                                    <CheckCircle2 className="w-4 h-4 text-blue-400 flex-shrink-0 mt-0.5" />
-                                    <span>{t('how_it_works.data_privacy_faq.q7.monitor')}</span>
-                                </li>
-                                <li className="flex items-start gap-2">
-                                    <CheckCircle2 className="w-4 h-4 text-blue-400 flex-shrink-0 mt-0.5" />
-                                    <span>{t('how_it_works.data_privacy_faq.q7.control_exports')}</span>
-                                </li>
-                                <li className="flex items-start gap-2">
-                                    <CheckCircle2 className="w-4 h-4 text-blue-400 flex-shrink-0 mt-0.5" />
-                                    <span>{t('how_it_works.data_privacy_faq.q7.apply_policies')}</span>
-                                </li>
-                            </ul>
-                        </DataPrivacyFAQItem>
+                                <NestedDataPrivacyFAQItem index={8} question={t('how_it_works.data_privacy_faq.q8.question')} icon={Eye}>
+                                    <ul className="space-y-2 text-sm text-gray-300">
+                                        <li className="flex items-start gap-2">
+                                            <CheckCircle2 className="w-4 h-4 text-blue-400 flex-shrink-0 mt-0.5" />
+                                            <span>{t('how_it_works.data_privacy_faq.q8.authorized')}</span>
+                                        </li>
+                                        <li className="flex items-start gap-2">
+                                            <CheckCircle2 className="w-4 h-4 text-blue-400 flex-shrink-0 mt-0.5" />
+                                            <span>{t('how_it_works.data_privacy_faq.q8.institution_level')}</span>
+                                        </li>
+                                        <li className="flex items-start gap-2">
+                                            <CheckCircle2 className="w-4 h-4 text-blue-400 flex-shrink-0 mt-0.5" />
+                                            <span>{t('how_it_works.data_privacy_faq.q8.no_exposure')}</span>
+                                        </li>
+                                    </ul>
+                                </NestedDataPrivacyFAQItem>
 
-                        {/* Question 8 */}
-                        <DataPrivacyFAQItem index={8} question={t('how_it_works.data_privacy_faq.q8.question')} icon={Eye}>
-                            <ul className="space-y-2 text-sm text-gray-300">
-                                <li className="flex items-start gap-2">
-                                    <CheckCircle2 className="w-4 h-4 text-blue-400 flex-shrink-0 mt-0.5" />
-                                    <span>{t('how_it_works.data_privacy_faq.q8.authorized')}</span>
-                                </li>
-                                <li className="flex items-start gap-2">
-                                    <CheckCircle2 className="w-4 h-4 text-blue-400 flex-shrink-0 mt-0.5" />
-                                    <span>{t('how_it_works.data_privacy_faq.q8.institution_level')}</span>
-                                </li>
-                                <li className="flex items-start gap-2">
-                                    <CheckCircle2 className="w-4 h-4 text-blue-400 flex-shrink-0 mt-0.5" />
-                                    <span>{t('how_it_works.data_privacy_faq.q8.no_exposure')}</span>
-                                </li>
-                            </ul>
-                        </DataPrivacyFAQItem>
+                                <NestedDataPrivacyFAQItem index={9} question={t('how_it_works.data_privacy_faq.q9.question')} icon={Calendar}>
+                                    <ul className="space-y-2 text-sm text-gray-300">
+                                        <li className="flex items-start gap-2">
+                                            <CheckCircle2 className="w-4 h-4 text-blue-400 flex-shrink-0 mt-0.5" />
+                                            <span>{t('how_it_works.data_privacy_faq.q9.active')}</span>
+                                        </li>
+                                        <li className="flex items-start gap-2">
+                                            <CheckCircle2 className="w-4 h-4 text-blue-400 flex-shrink-0 mt-0.5" />
+                                            <span>{t('how_it_works.data_privacy_faq.q9.request_deletion')}</span>
+                                        </li>
+                                        <li className="flex items-start gap-2">
+                                            <CheckCircle2 className="w-4 h-4 text-blue-400 flex-shrink-0 mt-0.5" />
+                                            <span>{t('how_it_works.data_privacy_faq.q9.delete_presentations')}</span>
+                                        </li>
+                                    </ul>
+                                    <p className="text-gray-300 mt-3">{t('how_it_works.data_privacy_faq.q9.note')}</p>
+                                </NestedDataPrivacyFAQItem>
 
-                        {/* Question 9 */}
-                        <DataPrivacyFAQItem index={9} question={t('how_it_works.data_privacy_faq.q9.question')} icon={Calendar}>
-                            <ul className="space-y-2 text-sm text-gray-300">
-                                <li className="flex items-start gap-2">
-                                    <CheckCircle2 className="w-4 h-4 text-blue-400 flex-shrink-0 mt-0.5" />
-                                    <span>{t('how_it_works.data_privacy_faq.q9.active')}</span>
-                                </li>
-                                <li className="flex items-start gap-2">
-                                    <CheckCircle2 className="w-4 h-4 text-blue-400 flex-shrink-0 mt-0.5" />
-                                    <span>{t('how_it_works.data_privacy_faq.q9.request_deletion')}</span>
-                                </li>
-                                <li className="flex items-start gap-2">
-                                    <CheckCircle2 className="w-4 h-4 text-blue-400 flex-shrink-0 mt-0.5" />
-                                    <span>{t('how_it_works.data_privacy_faq.q9.delete_presentations')}</span>
-                                </li>
-                            </ul>
-                            <p className="text-gray-300 mt-3">{t('how_it_works.data_privacy_faq.q9.note')}</p>
-                        </DataPrivacyFAQItem>
+                                <NestedDataPrivacyFAQItem index={10} question={t('how_it_works.data_privacy_faq.q10.question')} icon={Download}>
+                                    <p className="text-gray-300 mb-3 font-semibold">{t('how_it_works.data_privacy_faq.q10.answer')}</p>
+                                    <p className="text-gray-300 mb-3">{t('how_it_works.data_privacy_faq.q10.depending_plan')}</p>
+                                    <ul className="space-y-2 text-sm text-gray-300">
+                                        <li className="flex items-start gap-2">
+                                            <CheckCircle2 className="w-4 h-4 text-blue-400 flex-shrink-0 mt-0.5" />
+                                            <span>{t('how_it_works.data_privacy_faq.q10.export_results')}</span>
+                                        </li>
+                                        <li className="flex items-start gap-2">
+                                            <CheckCircle2 className="w-4 h-4 text-blue-400 flex-shrink-0 mt-0.5" />
+                                            <span>{t('how_it_works.data_privacy_faq.q10.download_reports')}</span>
+                                        </li>
+                                        <li className="flex items-start gap-2">
+                                            <CheckCircle2 className="w-4 h-4 text-blue-400 flex-shrink-0 mt-0.5" />
+                                            <span>{t('how_it_works.data_privacy_faq.q10.maintain_records')}</span>
+                                        </li>
+                                    </ul>
+                                </NestedDataPrivacyFAQItem>
 
-                        {/* Question 10 */}
-                        <DataPrivacyFAQItem index={10} question={t('how_it_works.data_privacy_faq.q10.question')} icon={Download}>
-                            <p className="text-gray-300 mb-3 font-semibold">{t('how_it_works.data_privacy_faq.q10.answer')}</p>
-                            <p className="text-gray-300 mb-3">{t('how_it_works.data_privacy_faq.q10.depending_plan')}</p>
-                            <ul className="space-y-2 text-sm text-gray-300">
-                                <li className="flex items-start gap-2">
-                                    <CheckCircle2 className="w-4 h-4 text-blue-400 flex-shrink-0 mt-0.5" />
-                                    <span>{t('how_it_works.data_privacy_faq.q10.export_results')}</span>
-                                </li>
-                                <li className="flex items-start gap-2">
-                                    <CheckCircle2 className="w-4 h-4 text-blue-400 flex-shrink-0 mt-0.5" />
-                                    <span>{t('how_it_works.data_privacy_faq.q10.download_reports')}</span>
-                                </li>
-                                <li className="flex items-start gap-2">
-                                    <CheckCircle2 className="w-4 h-4 text-blue-400 flex-shrink-0 mt-0.5" />
-                                    <span>{t('how_it_works.data_privacy_faq.q10.maintain_records')}</span>
-                                </li>
-                            </ul>
-                        </DataPrivacyFAQItem>
+                                <NestedDataPrivacyFAQItem index={11} question={t('how_it_works.data_privacy_faq.q11.question')} icon={Trash2}>
+                                    <ul className="space-y-2 text-sm text-gray-300">
+                                        <li className="flex items-start gap-2">
+                                            <CheckCircle2 className="w-4 h-4 text-blue-400 flex-shrink-0 mt-0.5" />
+                                            <span>{t('how_it_works.data_privacy_faq.q11.account_removed')}</span>
+                                        </li>
+                                        <li className="flex items-start gap-2">
+                                            <CheckCircle2 className="w-4 h-4 text-blue-400 flex-shrink-0 mt-0.5" />
+                                            <span>{t('how_it_works.data_privacy_faq.q11.presentations_deleted')}</span>
+                                        </li>
+                                        <li className="flex items-start gap-2">
+                                            <CheckCircle2 className="w-4 h-4 text-blue-400 flex-shrink-0 mt-0.5" />
+                                            <span>{t('how_it_works.data_privacy_faq.q11.institutional_remains')}</span>
+                                        </li>
+                                    </ul>
+                                </NestedDataPrivacyFAQItem>
 
-                        {/* Question 11 */}
-                        <DataPrivacyFAQItem index={11} question={t('how_it_works.data_privacy_faq.q11.question')} icon={Trash2}>
-                            <ul className="space-y-2 text-sm text-gray-300">
-                                <li className="flex items-start gap-2">
-                                    <CheckCircle2 className="w-4 h-4 text-blue-400 flex-shrink-0 mt-0.5" />
-                                    <span>{t('how_it_works.data_privacy_faq.q11.account_removed')}</span>
-                                </li>
-                                <li className="flex items-start gap-2">
-                                    <CheckCircle2 className="w-4 h-4 text-blue-400 flex-shrink-0 mt-0.5" />
-                                    <span>{t('how_it_works.data_privacy_faq.q11.presentations_deleted')}</span>
-                                </li>
-                                <li className="flex items-start gap-2">
-                                    <CheckCircle2 className="w-4 h-4 text-blue-400 flex-shrink-0 mt-0.5" />
-                                    <span>{t('how_it_works.data_privacy_faq.q11.institutional_remains')}</span>
-                                </li>
-                            </ul>
-                        </DataPrivacyFAQItem>
+                                <NestedDataPrivacyFAQItem index={12} question={t('how_it_works.data_privacy_faq.q12.question')} icon={Brain}>
+                                    <p className="text-gray-300 mb-3">{t('how_it_works.data_privacy_faq.q12.ai_features')}</p>
+                                    <ul className="space-y-2 text-sm text-gray-300 mb-3">
+                                        <li className="flex items-start gap-2">
+                                            <CheckCircle2 className="w-4 h-4 text-blue-400 flex-shrink-0 mt-0.5" />
+                                            <span>{t('how_it_works.data_privacy_faq.q12.anonymized')}</span>
+                                        </li>
+                                        <li className="flex items-start gap-2">
+                                            <CheckCircle2 className="w-4 h-4 text-blue-400 flex-shrink-0 mt-0.5" />
+                                            <span>{t('how_it_works.data_privacy_faq.q12.no_expose')}</span>
+                                        </li>
+                                        <li className="flex items-start gap-2">
+                                            <CheckCircle2 className="w-4 h-4 text-blue-400 flex-shrink-0 mt-0.5" />
+                                            <span>{t('how_it_works.data_privacy_faq.q12.access_controls')}</span>
+                                        </li>
+                                    </ul>
+                                    <p className="text-gray-300">{t('how_it_works.data_privacy_faq.q12.opt_in')}</p>
+                                </NestedDataPrivacyFAQItem>
 
-                        {/* Question 12 */}
-                        <DataPrivacyFAQItem index={12} question={t('how_it_works.data_privacy_faq.q12.question')} icon={Brain}>
-                            <p className="text-gray-300 mb-3">{t('how_it_works.data_privacy_faq.q12.ai_features')}</p>
-                            <ul className="space-y-2 text-sm text-gray-300 mb-3">
-                                <li className="flex items-start gap-2">
-                                    <CheckCircle2 className="w-4 h-4 text-blue-400 flex-shrink-0 mt-0.5" />
-                                    <span>{t('how_it_works.data_privacy_faq.q12.anonymized')}</span>
-                                </li>
-                                <li className="flex items-start gap-2">
-                                    <CheckCircle2 className="w-4 h-4 text-blue-400 flex-shrink-0 mt-0.5" />
-                                    <span>{t('how_it_works.data_privacy_faq.q12.no_expose')}</span>
-                                </li>
-                                <li className="flex items-start gap-2">
-                                    <CheckCircle2 className="w-4 h-4 text-blue-400 flex-shrink-0 mt-0.5" />
-                                    <span>{t('how_it_works.data_privacy_faq.q12.access_controls')}</span>
-                                </li>
-                            </ul>
-                            <p className="text-gray-300">{t('how_it_works.data_privacy_faq.q12.opt_in')}</p>
-                        </DataPrivacyFAQItem>
+                                <NestedDataPrivacyFAQItem index={13} question={t('how_it_works.data_privacy_faq.q13.question')} icon={Cookie}>
+                                    <ul className="space-y-2 text-sm text-gray-300">
+                                        <li className="flex items-start gap-2">
+                                            <CheckCircle2 className="w-4 h-4 text-blue-400 flex-shrink-0 mt-0.5" />
+                                            <span>{t('how_it_works.data_privacy_faq.q13.basic_cookies')}</span>
+                                        </li>
+                                        <li className="flex items-start gap-2">
+                                            <CheckCircle2 className="w-4 h-4 text-blue-400 flex-shrink-0 mt-0.5" />
+                                            <span>{t('how_it_works.data_privacy_faq.q13.no_intrusive')}</span>
+                                        </li>
+                                        <li className="flex items-start gap-2">
+                                            <CheckCircle2 className="w-4 h-4 text-blue-400 flex-shrink-0 mt-0.5" />
+                                            <span>{t('how_it_works.data_privacy_faq.q13.no_advertising')}</span>
+                                        </li>
+                                    </ul>
+                                </NestedDataPrivacyFAQItem>
 
-                        {/* Question 13 */}
-                        <DataPrivacyFAQItem index={13} question={t('how_it_works.data_privacy_faq.q13.question')} icon={Cookie}>
-                            <ul className="space-y-2 text-sm text-gray-300">
-                                <li className="flex items-start gap-2">
-                                    <CheckCircle2 className="w-4 h-4 text-blue-400 flex-shrink-0 mt-0.5" />
-                                    <span>{t('how_it_works.data_privacy_faq.q13.basic_cookies')}</span>
-                                </li>
-                                <li className="flex items-start gap-2">
-                                    <CheckCircle2 className="w-4 h-4 text-blue-400 flex-shrink-0 mt-0.5" />
-                                    <span>{t('how_it_works.data_privacy_faq.q13.no_intrusive')}</span>
-                                </li>
-                                <li className="flex items-start gap-2">
-                                    <CheckCircle2 className="w-4 h-4 text-blue-400 flex-shrink-0 mt-0.5" />
-                                    <span>{t('how_it_works.data_privacy_faq.q13.no_advertising')}</span>
-                                </li>
-                            </ul>
-                        </DataPrivacyFAQItem>
+                                <NestedDataPrivacyFAQItem index={14} question={t('how_it_works.data_privacy_faq.q14.question')} icon={Shield}>
+                                    <p className="text-gray-300 mb-3">{t('how_it_works.data_privacy_faq.q14.inavora_uses')}</p>
+                                    <ul className="space-y-2 text-sm text-gray-300">
+                                        <li className="flex items-start gap-2">
+                                            <CheckCircle2 className="w-4 h-4 text-blue-400 flex-shrink-0 mt-0.5" />
+                                            <span>{t('how_it_works.data_privacy_faq.q14.role_based_access')}</span>
+                                        </li>
+                                        <li className="flex items-start gap-2">
+                                            <CheckCircle2 className="w-4 h-4 text-blue-400 flex-shrink-0 mt-0.5" />
+                                            <span>{t('how_it_works.data_privacy_faq.q14.audit_logs')}</span>
+                                        </li>
+                                        <li className="flex items-start gap-2">
+                                            <CheckCircle2 className="w-4 h-4 text-blue-400 flex-shrink-0 mt-0.5" />
+                                            <span>{t('how_it_works.data_privacy_faq.q14.monitoring')}</span>
+                                        </li>
+                                    </ul>
+                                </NestedDataPrivacyFAQItem>
 
-                        {/* Question 14 */}
-                        <DataPrivacyFAQItem index={14} question={t('how_it_works.data_privacy_faq.q14.question')} icon={Shield}>
-                            <p className="text-gray-300 mb-3">{t('how_it_works.data_privacy_faq.q14.inavora_uses')}</p>
-                            <ul className="space-y-2 text-sm text-gray-300">
-                                <li className="flex items-start gap-2">
-                                    <CheckCircle2 className="w-4 h-4 text-blue-400 flex-shrink-0 mt-0.5" />
-                                    <span>{t('how_it_works.data_privacy_faq.q14.role_based_access')}</span>
-                                </li>
-                                <li className="flex items-start gap-2">
-                                    <CheckCircle2 className="w-4 h-4 text-blue-400 flex-shrink-0 mt-0.5" />
-                                    <span>{t('how_it_works.data_privacy_faq.q14.audit_logs')}</span>
-                                </li>
-                                <li className="flex items-start gap-2">
-                                    <CheckCircle2 className="w-4 h-4 text-blue-400 flex-shrink-0 mt-0.5" />
-                                    <span>{t('how_it_works.data_privacy_faq.q14.monitoring')}</span>
-                                </li>
-                            </ul>
-                        </DataPrivacyFAQItem>
+                                <NestedDataPrivacyFAQItem index={15} question={t('how_it_works.data_privacy_faq.q15.question')} icon={Mail}>
+                                    <p className="text-gray-300 mb-3">
+                                        <a href="mailto:support@inavora.com" className="text-blue-400 hover:text-blue-300 underline">{t('how_it_works.data_privacy_faq.q15.email')}</a>
+                                    </p>
+                                    <p className="text-gray-300 mb-3">{t('how_it_works.data_privacy_faq.q15.institutions_can')}</p>
+                                    <ul className="space-y-2 text-sm text-gray-300">
+                                        <li className="flex items-start gap-2">
+                                            <CheckCircle2 className="w-4 h-4 text-blue-400 flex-shrink-0 mt-0.5" />
+                                            <span>{t('how_it_works.data_privacy_faq.q15.dpa')}</span>
+                                        </li>
+                                        <li className="flex items-start gap-2">
+                                            <CheckCircle2 className="w-4 h-4 text-blue-400 flex-shrink-0 mt-0.5" />
+                                            <span>{t('how_it_works.data_privacy_faq.q15.security_docs')}</span>
+                                        </li>
+                                        <li className="flex items-start gap-2">
+                                            <CheckCircle2 className="w-4 h-4 text-blue-400 flex-shrink-0 mt-0.5" />
+                                            <span>{t('how_it_works.data_privacy_faq.q15.privacy_clarifications')}</span>
+                                        </li>
+                                    </ul>
+                                </NestedDataPrivacyFAQItem>
 
-                        {/* Question 15 */}
-                        <DataPrivacyFAQItem index={15} question={t('how_it_works.data_privacy_faq.q15.question')} icon={Mail}>
-                            <p className="text-gray-300 mb-3">
-                                <a href="mailto:support@inavora.com" className="text-blue-400 hover:text-blue-300 underline">{t('how_it_works.data_privacy_faq.q15.email')}</a>
-                            </p>
-                            <p className="text-gray-300 mb-3">{t('how_it_works.data_privacy_faq.q15.institutions_can')}</p>
-                            <ul className="space-y-2 text-sm text-gray-300">
-                                <li className="flex items-start gap-2">
-                                    <CheckCircle2 className="w-4 h-4 text-blue-400 flex-shrink-0 mt-0.5" />
-                                    <span>{t('how_it_works.data_privacy_faq.q15.dpa')}</span>
-                                </li>
-                                <li className="flex items-start gap-2">
-                                    <CheckCircle2 className="w-4 h-4 text-blue-400 flex-shrink-0 mt-0.5" />
-                                    <span>{t('how_it_works.data_privacy_faq.q15.security_docs')}</span>
-                                </li>
-                                <li className="flex items-start gap-2">
-                                    <CheckCircle2 className="w-4 h-4 text-blue-400 flex-shrink-0 mt-0.5" />
-                                    <span>{t('how_it_works.data_privacy_faq.q15.privacy_clarifications')}</span>
-                                </li>
-                            </ul>
-                        </DataPrivacyFAQItem>
-
-                        {/* Question 16 */}
-                        <DataPrivacyFAQItem index={16} question={t('how_it_works.data_privacy_faq.q16.question')} icon={AlertTriangle}>
-                            <p className="text-gray-300 mb-3">{t('how_it_works.data_privacy_faq.q16.serves')}</p>
-                            <ul className="space-y-2 text-sm text-gray-300">
-                                <li className="flex items-start gap-2">
-                                    <CheckCircle2 className="w-4 h-4 text-blue-400 flex-shrink-0 mt-0.5" />
-                                    <span>{t('how_it_works.data_privacy_faq.q16.schools')}</span>
-                                </li>
-                                <li className="flex items-start gap-2">
-                                    <CheckCircle2 className="w-4 h-4 text-blue-400 flex-shrink-0 mt-0.5" />
-                                    <span>{t('how_it_works.data_privacy_faq.q16.institutions')}</span>
-                                </li>
-                                <li className="flex items-start gap-2">
-                                    <CheckCircle2 className="w-4 h-4 text-blue-400 flex-shrink-0 mt-0.5" />
-                                    <span>{t('how_it_works.data_privacy_faq.q16.enterprises')}</span>
-                                </li>
-                            </ul>
-                            <p className="text-gray-300 mt-3 font-semibold">{t('how_it_works.data_privacy_faq.q16.trust')}</p>
-                        </DataPrivacyFAQItem>
-                    </div>
-                </section>
-
-                {/* FAQ Section */}
-                <section className="container mx-auto px-6 mb-20">
-                    <motion.div
-                        initial={{ opacity: 0 }}
-                        whileInView={{ opacity: 1 }}
-                        viewport={{ once: true }}
-                        className="text-center mb-12"
-                    >
-                        <h2 className="text-3xl font-bold mb-4 flex items-center justify-center gap-3">
-                            <HelpCircle className="w-8 h-8 text-blue-400" />
-                            {t('how_it_works.faq.title')}
-                        </h2>
-                    </motion.div>
-
-                    <div className="max-w-3xl mx-auto space-y-4">
-                        <motion.div
-                            variants={itemVariants}
-                            className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-6"
-                        >
-                            <div className="flex items-start gap-4">
-                                <Users className="w-6 h-6 text-teal-400 flex-shrink-0 mt-1" />
-                                <div>
-                                    <h3 className="text-lg font-bold mb-2">{t('how_it_works.faq.participants_account.title')}</h3>
-                                    <p className="text-gray-300">{t('how_it_works.faq.participants_account.answer')}</p>
-                                </div>
+                                <NestedDataPrivacyFAQItem index={16} question={t('how_it_works.data_privacy_faq.q16.question')} icon={AlertTriangle}>
+                                    <p className="text-gray-300 mb-3">{t('how_it_works.data_privacy_faq.q16.serves')}</p>
+                                    <ul className="space-y-2 text-sm text-gray-300">
+                                        <li className="flex items-start gap-2">
+                                            <CheckCircle2 className="w-4 h-4 text-blue-400 flex-shrink-0 mt-0.5" />
+                                            <span>{t('how_it_works.data_privacy_faq.q16.schools')}</span>
+                                        </li>
+                                        <li className="flex items-start gap-2">
+                                            <CheckCircle2 className="w-4 h-4 text-blue-400 flex-shrink-0 mt-0.5" />
+                                            <span>{t('how_it_works.data_privacy_faq.q16.institutions')}</span>
+                                        </li>
+                                        <li className="flex items-start gap-2">
+                                            <CheckCircle2 className="w-4 h-4 text-blue-400 flex-shrink-0 mt-0.5" />
+                                            <span>{t('how_it_works.data_privacy_faq.q16.enterprises')}</span>
+                                        </li>
+                                    </ul>
+                                    <p className="text-gray-300 mt-3 font-semibold">{t('how_it_works.data_privacy_faq.q16.trust')}</p>
+                                </NestedDataPrivacyFAQItem>
                             </div>
-                        </motion.div>
-
-                        <motion.div
-                            variants={itemVariants}
-                            className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-6"
-                        >
-                            <div className="flex items-start gap-4">
-                                <Globe className="w-6 h-6 text-blue-400 flex-shrink-0 mt-1" />
-                                <div>
-                                    <h3 className="text-lg font-bold mb-2">{t('how_it_works.faq.where_used.title')}</h3>
-                                    <p className="text-gray-300 mb-4">{t('how_it_works.faq.where_used.description')}</p>
-                                    <button
-                                        onClick={() => {
-                                            document.getElementById('use-cases-section')?.scrollIntoView({ behavior: 'smooth' });
-                                        }}
-                                        className="text-blue-400 hover:text-blue-300 text-sm font-medium flex items-center gap-2"
-                                    >
-                                        {t('how_it_works.faq.where_used.view_all')}
-                                        <ArrowRight className="w-4 h-4" />
-                                    </button>
-                                </div>
-                            </div>
-                        </motion.div>
+                        </PricingFAQItem>
                     </div>
                 </section>
+
+
+
 
                 {/* Use Cases Section */}
                 <section id="use-cases-section" className="container mx-auto px-6 mb-20">

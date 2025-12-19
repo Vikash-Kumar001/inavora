@@ -258,6 +258,27 @@ router.put('/profile', verifyInstitutionAdmin, institutionAdminController.update
 router.put('/change-password', verifyInstitutionAdmin, institutionAdminController.changePassword);
 
 /**
+ * @route   GET /api/institution-admin/subscription
+ * @desc    Get subscription details
+ * @access  Private (Institution Admin)
+ */
+router.get('/subscription', verifyInstitutionAdmin, institutionAdminController.getSubscriptionDetails);
+
+/**
+ * @route   GET /api/institution-admin/subscription/status
+ * @desc    Get subscription status (lightweight for real-time updates)
+ * @access  Private (Institution Admin)
+ */
+router.get('/subscription/status', verifyInstitutionAdmin, institutionAdminController.getSubscriptionStatus);
+
+/**
+ * @route   GET /api/institution-admin/subscription/usage
+ * @desc    Get usage statistics
+ * @access  Private (Institution Admin)
+ */
+router.get('/subscription/usage', verifyInstitutionAdmin, institutionAdminController.getUsageStatistics);
+
+/**
  * @route   POST /api/institution-admin/subscription/renew
  * @desc    Create payment order for subscription renewal
  * @access  Private (Institution Admin)

@@ -2,12 +2,14 @@ import { BarChart3, Cloud, MessageSquare, Sliders, HelpCircle, Grid2X2, MapPin, 
 import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
+import { getEffectivePlan } from '../../utils/subscriptionUtils';
 
 const NewSlideDropdown = ({ onSelectType, onClose, isHorizontal = false, user }) => {
   const { t } = useTranslation();
   
-  // Check if user is on a free plan
-  const isFreePlan = user && (user.subscription?.plan === 'free' || !user.subscription);
+  // Check if user is on a free plan (using effective plan to check expiry)
+  const effectivePlan = getEffectivePlan(user?.subscription);
+  const isFreePlan = !user || effectivePlan === 'free';
   
   // Define restricted slide types for free users
   const restrictedSlideTypes = ['miro', 'powerpoint', 'google_slides'];

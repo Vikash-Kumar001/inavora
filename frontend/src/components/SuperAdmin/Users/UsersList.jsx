@@ -6,6 +6,7 @@ import FilterBar from '../common/FilterBar';
 import UserDetailModal from './UserDetailModal';
 import toast from 'react-hot-toast';
 import { Eye, Download, CheckSquare, Square } from 'lucide-react';
+import { getEffectivePlan, getEffectiveStatus } from '../../../utils/subscriptionUtils';
 
 const UsersList = ({ onUserClick }) => {
   const [users, setUsers] = useState([]);
@@ -119,45 +120,51 @@ const UsersList = ({ onUserClick }) => {
     { label: 'Actions' }
   ];
 
-  const renderRow = (user) => (
-    <>
-      <td className="py-3 px-4">
-        <input
-          type="checkbox"
-          checked={selectedUsers.has(user._id)}
-          onChange={(e) => handleSelectUser(user._id, e.target.checked)}
-          className="w-4 h-4 rounded border-white/20 bg-black/30 text-teal-500 focus:ring-teal-500"
-        />
-      </td>
-      <td className="py-3 px-4">
-        <div className="flex items-center gap-3">
-          {user.photoURL ? (
-            <img
-              src={user.photoURL}
-              alt={user.displayName}
-              className="w-8 h-8 rounded-full"
-            />
-          ) : (
-            <div className="w-8 h-8 rounded-full bg-teal-500/20 flex items-center justify-center">
-              <span className="text-teal-400 text-sm font-medium">
-                {user.displayName?.charAt(0).toUpperCase()}
-              </span>
-            </div>
-          )}
-          <span className="font-medium">{user.displayName}</span>
-        </div>
-      </td>
-      <td className="py-3 px-4 text-gray-300">{user.email}</td>
-      <td className="py-3 px-4">
-        <span className={`px-2 py-1 rounded-full text-xs border ${getPlanBadgeColor(user.subscription?.plan)}`}>
-          {user.subscription?.plan || 'free'}
-        </span>
-      </td>
-      <td className="py-3 px-4">
-        <span className={`px-2 py-1 rounded-full text-xs border ${getStatusBadgeColor(user.subscription?.status)}`}>
-          {user.subscription?.status || 'active'}
-        </span>
-      </td>
+  const renderRow = (user) => {
+    // Get effective plan and status (checks expiry)
+    // Pass user object to check for institution users (backend already calculates effective plan)
+    const effectivePlan = getEffectivePlan(user.subscription, user);
+    const effectiveStatus = getEffectiveStatus(user.subscription);
+
+    return (
+      <>
+        <td className="py-3 px-4">
+          <input
+            type="checkbox"
+            checked={selectedUsers.has(user._id)}
+            onChange={(e) => handleSelectUser(user._id, e.target.checked)}
+            className="w-4 h-4 rounded border-white/20 bg-black/30 text-teal-500 focus:ring-teal-500"
+          />
+        </td>
+        <td className="py-3 px-4">
+          <div className="flex items-center gap-3">
+            {user.photoURL ? (
+              <img
+                src={user.photoURL}
+                alt={user.displayName}
+                className="w-8 h-8 rounded-full"
+              />
+            ) : (
+              <div className="w-8 h-8 rounded-full bg-teal-500/20 flex items-center justify-center">
+                <span className="text-teal-400 text-sm font-medium">
+                  {user.displayName?.charAt(0).toUpperCase()}
+                </span>
+              </div>
+            )}
+            <span className="font-medium">{user.displayName}</span>
+          </div>
+        </td>
+        <td className="py-3 px-4 text-gray-300">{user.email}</td>
+        <td className="py-3 px-4">
+          <span className={`px-2 py-1 rounded-full text-xs border ${getPlanBadgeColor(effectivePlan)}`}>
+            {effectivePlan}
+          </span>
+        </td>
+        <td className="py-3 px-4">
+          <span className={`px-2 py-1 rounded-full text-xs border ${getStatusBadgeColor(effectiveStatus)}`}>
+            {effectiveStatus}
+          </span>
+        </td>
       <td className="py-3 px-4 text-gray-300">
         {user.institutionId ? (
           <span className="text-teal-400">{user.institutionId.name || 'N/A'}</span>
@@ -183,7 +190,8 @@ const UsersList = ({ onUserClick }) => {
         </div>
       </td>
     </>
-  );
+    );
+  };
 
   const handleExport = () => {
     // Simple CSV export
@@ -191,8 +199,8 @@ const UsersList = ({ onUserClick }) => {
     const rows = users.map(user => [
       user.displayName,
       user.email,
-      user.subscription?.plan || 'free',
-      user.subscription?.status || 'active',
+      getEffectivePlan(user.subscription, user),
+      getEffectiveStatus(user.subscription),
       user.institutionId?.name || '-',
       new Date(user.createdAt).toLocaleDateString()
     ]);

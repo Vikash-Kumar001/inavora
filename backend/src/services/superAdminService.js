@@ -232,6 +232,23 @@ const getUsers = async (filters = {}, page = 1, limit = 50) => {
             const userDoc = await User.findById(user._id);
             if (userDoc) {
               const effectivePlan = await getEffectivePlan(userDoc);
+              
+              // Debug logging for specific user
+              if (user.email === 'vikashdotdev@gmail.com') {
+                Logger.info(`[DEBUG] User ${user.email} plan check:`, {
+                  isInstitutionUser: user.isInstitutionUser,
+                  institutionId: user.institutionId,
+                  originalSubscriptionPlan: user.subscription?.plan,
+                  effectivePlanResult: effectivePlan,
+                  subscriptionAfterUpdate: {
+                    ...user.subscription,
+                    plan: effectivePlan.plan,
+                    status: effectivePlan.status,
+                    endDate: effectivePlan.endDate
+                  }
+                });
+              }
+              
               subscription = {
                 ...user.subscription,
                 plan: effectivePlan.plan,
@@ -242,6 +259,13 @@ const getUsers = async (filters = {}, page = 1, limit = 50) => {
           } catch (error) {
             Logger.error(`Error getting effective plan for user ${user._id}`, error);
           }
+        } else if (user.email === 'vikashdotdev@gmail.com') {
+          // Debug logging for non-institution user case
+          Logger.info(`[DEBUG] User ${user.email} is NOT an institution user:`, {
+            isInstitutionUser: user.isInstitutionUser,
+            institutionId: user.institutionId,
+            subscriptionPlan: user.subscription?.plan
+          });
         }
         return {
           ...user,

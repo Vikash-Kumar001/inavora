@@ -334,6 +334,7 @@ const InstitutionAdmin = () => {
                             institution={institution}
                             stats={stats}
                             onRefresh={fetchStats}
+                            onAddUser={() => setIsAddUserModalOpen(true)}
                         />
                     )}
 

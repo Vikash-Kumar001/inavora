@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useMemo } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
@@ -13,6 +13,7 @@ import LanguageSelector from './common/LanguageSelector/LanguageSelector';
 import SupportWidget from './common/SupportWidget';
 import { translateError } from '../utils/errorTranslator';
 import ChangePasswordModal from './common/ChangePasswordModal';
+import { getEffectivePlan } from '../utils/subscriptionUtils';
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -33,6 +34,11 @@ const Dashboard = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 6;
+
+  // Calculate effective plan (checks expiry)
+  const effectivePlan = useMemo(() => {
+    return getEffectivePlan(currentUser?.subscription);
+  }, [currentUser?.subscription]);
 
   // Load presentations on mount
   useEffect(() => {
@@ -298,7 +304,7 @@ const Dashboard = () => {
 
           {/* User Menu */}
           <div className='flex gap-3 justify-center items-center'>
-            {currentUser?.subscription?.plan === 'free' &&
+            {effectivePlan === 'free' &&
               <button
                 onClick={() => navigate('/pricing')}
                 className="group max-sm:hidden w-full sm:w-auto px-4 py-3 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 transition-all flex items-center justify-center gap-1"
@@ -311,7 +317,7 @@ const Dashboard = () => {
                 onClick={() => setShowUserMenu(!showUserMenu)}
                 className="flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-white/5 transition-colors border border-transparent hover:border-white/10"
               >
-                <div className={currentUser?.subscription?.plan !== 'free' ? 'border-2 border-red-400 rounded-full' : ''} style={{ padding: '3px' }}>
+                <div className={effectivePlan !== 'free' ? 'border-2 border-red-400 rounded-full' : ''} style={{ padding: '3px' }}>
                   {currentUser?.photoURL ? (
                     <img src={currentUser?.photoURL} alt="User" className='w-8 h-8 rounded-full border border-white/10 ' />
                   ) : (
@@ -342,8 +348,8 @@ const Dashboard = () => {
                   <p className="text-sm font-semibold text-white">{currentUser?.displayName}</p>
                   <p className="text-xs text-gray-400 truncate">{currentUser?.email}</p>
                 </div>
-                <p className='px-4 py-3 border-b border-white/5'>{t(`pricing.${currentUser?.subscription?.plan}_plan_name`)} {t('dashboard.plan')}</p>
-                {currentUser?.subscription?.plan === 'free' && (
+                <p className='px-4 py-3 border-b border-white/5'>{t(`pricing.${effectivePlan}_plan_name`)} {t('dashboard.plan')}</p>
+                {effectivePlan === 'free' && (
                   <Link to="/pricing" className='px-4 py-3 border-b border-white/5 text-sm text-teal-400 hover:text-teal-300 hover:bg-teal-500/10 transition-colors flex items-center gap-2 max-sm:flex sm:hidden'>
                     <Crown className='w-4 h-4 fill-current' />
                     {t('navbar.upgrade_to_pro')}

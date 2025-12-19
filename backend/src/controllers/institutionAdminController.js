@@ -141,29 +141,43 @@ const checkInstitutionAdmin = asyncHandler(async (req, res, next) => {
  * @access Private (Institution Admin)
  */
 const verifyToken = asyncHandler(async (req, res, next) => {
+  // Get fresh institution data with subscription
+  const institution = await Institution.findById(req.institution._id)
+    .select('-password -__v')
+    .lean();
+
   res.status(200).json({
     success: true,
     message: 'Token is valid',
     authenticated: true,
     institution: {
-      id: req.institution._id,
-      name: req.institution.name,
-      email: req.institution.email,
-      adminEmail: req.institution.adminEmail,
-      adminName: req.institution.adminName,
-      branding: req.institution.branding || {
+      id: institution._id,
+      name: institution.name,
+      email: institution.email,
+      adminEmail: institution.adminEmail,
+      adminName: institution.adminName,
+      subscription: institution.subscription || {
+        plan: 'institution',
+        status: 'active',
+        billingCycle: 'yearly',
+        maxUsers: 10,
+        currentUsers: 0,
+        startDate: new Date(),
+        endDate: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000) // 1 year from now
+      },
+      branding: institution.branding || {
         primaryColor: '#3b82f6',
         secondaryColor: '#14b8a6',
         logoUrl: null,
         customDomain: null
       },
-      settings: req.institution.settings || {
+      settings: institution.settings || {
         aiFeaturesEnabled: true,
         exportEnabled: true,
         watermarkEnabled: false,
         analyticsEnabled: true
       },
-      securitySettings: req.institution.securitySettings || {
+      securitySettings: institution.securitySettings || {
         twoFactorEnabled: false,
         passwordMinLength: 8,
         passwordRequireUppercase: true,
@@ -1591,6 +1605,193 @@ const getPaymentHistory = asyncHandler(async (req, res, next) => {
 });
 
 /**
+ * Get Subscription Details
+ * @route GET /api/institution-admin/subscription
+ * @access Private (Institution Admin)
+ */
+const getSubscriptionDetails = asyncHandler(async (req, res, next) => {
+  const institutionId = req.institutionId;
+  const institution = await Institution.findById(institutionId);
+  
+  if (!institution) {
+    throw new AppError('Institution not found', 404, 'RESOURCE_NOT_FOUND');
+  }
+
+  const subscription = institution.subscription || {};
+  const now = new Date();
+  const endDate = subscription.endDate ? new Date(subscription.endDate) : null;
+  const startDate = subscription.startDate ? new Date(subscription.startDate) : null;
+  
+  // Calculate subscription status
+  const isActive = subscription.status === 'active' && endDate && endDate > now;
+  const isExpired = subscription.status === 'expired' || (endDate && endDate < now);
+  const daysRemaining = endDate ? Math.ceil((endDate - now) / (1000 * 60 * 60 * 24)) : null;
+
+  // Get current user count
+  const User = require('../models/User');
+  const currentUserCount = await User.countDocuments({ 
+    institutionId, 
+    isInstitutionUser: true 
+  });
+
+  // Determine plan name
+  const getPlanName = (maxUsers) => {
+    if (!maxUsers) return 'Institution';
+    if (maxUsers === 10) return 'Basic';
+    if (maxUsers === 50) return 'Professional';
+    return 'Custom';
+  };
+
+  const planName = getPlanName(subscription.maxUsers);
+
+  // Get plan details from INSTITUTION_PLANS
+  let planDetails = null;
+  if (subscription.maxUsers === 10) {
+    planDetails = INSTITUTION_PLANS.basic;
+  } else if (subscription.maxUsers === 50) {
+    planDetails = INSTITUTION_PLANS.professional;
+  } else if (subscription.maxUsers > 50) {
+    planDetails = INSTITUTION_PLANS.enterprise;
+  }
+
+  res.status(200).json({
+    success: true,
+    subscription: {
+      plan: subscription.plan || 'institution',
+      planName: planName,
+      status: subscription.status || 'active',
+      billingCycle: subscription.billingCycle || 'yearly',
+      startDate: startDate,
+      endDate: endDate,
+      maxUsers: subscription.maxUsers || 10,
+      currentUsers: currentUserCount,
+      isActive: isActive,
+      isExpired: isExpired,
+      daysRemaining: daysRemaining !== null ? Math.max(0, daysRemaining) : null,
+      planDetails: planDetails ? {
+        name: planDetails.name,
+        maxUsers: planDetails.maxUsers,
+        prices: planDetails.price, // Note: price is already an object with yearly/perUser
+        features: planDetails.features,
+        badge: planDetails.badge || null,
+        isCustom: planDetails.isCustom || false,
+        minUsers: planDetails.minUsers || null
+      } : null
+    }
+  });
+});
+
+/**
+ * Get Subscription Status (Lightweight for real-time updates)
+ * @route GET /api/institution-admin/subscription/status
+ * @access Private (Institution Admin)
+ */
+const getSubscriptionStatus = asyncHandler(async (req, res, next) => {
+  const institutionId = req.institutionId;
+  const institution = await Institution.findById(institutionId).select('subscription');
+  
+  if (!institution) {
+    throw new AppError('Institution not found', 404, 'RESOURCE_NOT_FOUND');
+  }
+
+  const subscription = institution.subscription || {};
+  const now = new Date();
+  const endDate = subscription.endDate ? new Date(subscription.endDate) : null;
+  
+  const isActive = subscription.status === 'active' && endDate && endDate > now;
+  const isExpired = subscription.status === 'expired' || (endDate && endDate < now);
+  const daysRemaining = endDate ? Math.ceil((endDate - now) / (1000 * 60 * 60 * 24)) : null;
+
+  // Get current user count
+  const User = require('../models/User');
+  const currentUserCount = await User.countDocuments({ 
+    institutionId, 
+    isInstitutionUser: true 
+  });
+
+  res.status(200).json({
+    success: true,
+    status: {
+      isActive: isActive,
+      isExpired: isExpired,
+      status: subscription.status || 'active',
+      daysRemaining: daysRemaining !== null ? Math.max(0, daysRemaining) : null,
+      maxUsers: subscription.maxUsers || 10,
+      currentUsers: currentUserCount,
+      usagePercent: subscription.maxUsers ? ((currentUserCount / subscription.maxUsers) * 100) : 0,
+      endDate: endDate,
+      lastUpdated: new Date()
+    }
+  });
+});
+
+/**
+ * Get Usage Statistics
+ * @route GET /api/institution-admin/subscription/usage
+ * @access Private (Institution Admin)
+ */
+const getUsageStatistics = asyncHandler(async (req, res, next) => {
+  const institutionId = req.institutionId;
+  const institution = await Institution.findById(institutionId).select('subscription');
+  
+  if (!institution) {
+    throw new AppError('Institution not found', 404, 'RESOURCE_NOT_FOUND');
+  }
+
+  const User = require('../models/User');
+  const Presentation = require('../models/Presentation');
+  
+  // Get user count
+  const totalUsers = await User.countDocuments({ 
+    institutionId, 
+    isInstitutionUser: true 
+  });
+
+  // Get active users (last 30 days)
+  const thirtyDaysAgo = new Date();
+  thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+  const activeUsers = await User.countDocuments({
+    institutionId,
+    isInstitutionUser: true,
+    lastLogin: { $gte: thirtyDaysAgo }
+  });
+
+  // Get presentations count
+  const institutionUsers = await User.find({ 
+    institutionId, 
+    isInstitutionUser: true 
+  }).select('_id').lean();
+  const userIds = institutionUsers.map(u => u._id);
+  
+  const totalPresentations = await Presentation.countDocuments({
+    userId: { $in: userIds }
+  });
+
+  // Get total responses
+  const totalResponses = await Presentation.aggregate([
+    { $match: { userId: { $in: userIds } } },
+    { $group: { _id: null, total: { $sum: { $ifNull: ['$responseCount', 0] } } } }
+  ]);
+
+  const subscription = institution.subscription || {};
+  const maxUsers = subscription.maxUsers || 10;
+  const userUsagePercent = maxUsers ? ((totalUsers / maxUsers) * 100) : 0;
+
+  res.status(200).json({
+    success: true,
+    usage: {
+      totalUsers: totalUsers,
+      activeUsers: activeUsers || 0,
+      maxUsers: maxUsers,
+      userUsagePercent: Math.min(100, userUsagePercent),
+      totalPresentations: totalPresentations,
+      totalResponses: totalResponses[0]?.total || 0,
+      lastUpdated: new Date()
+    }
+  });
+});
+
+/**
  * Validate Users Before Payment - Check which users already exist
  * @route POST /api/institution-admin/users/validate-before-payment
  * @access Private (Institution Admin)
@@ -2075,12 +2276,13 @@ const createSubscriptionRenewalOrder = asyncHandler(async (req, res, next) => {
     selectedPlanDetails = INSTITUTION_PLANS[plan];
     
     if (selectedPlanDetails.isCustom) {
-      // Custom plan: base price + per user price
+      // Custom plan: base price + (userCount * perUserPrice)
+      // Matching the calculation from institution registration
       const userCount = customUserCount || selectedPlanDetails.minUsers || 10;
       if (userCount < selectedPlanDetails.minUsers) {
         throw new AppError(`Minimum ${selectedPlanDetails.minUsers} users required for Custom plan`, 400, 'VALIDATION_ERROR');
       }
-      amount = selectedPlanDetails.price.yearly + ((userCount - selectedPlanDetails.minUsers) * selectedPlanDetails.price.perUser);
+      amount = selectedPlanDetails.price.yearly + (userCount * selectedPlanDetails.price.perUser);
       maxUsers = userCount;
     } else {
       // Fixed plans
@@ -2092,10 +2294,16 @@ const createSubscriptionRenewalOrder = asyncHandler(async (req, res, next) => {
   }
 
   // Create Razorpay order
+  // Receipt must be max 40 characters - use short format
+  // Format: inst_[last8chars]_[last8digits] = max 25 chars
+  const instIdShort = institutionId.toString().slice(-8);
+  const timestampShort = Date.now().toString().slice(-8);
+  const receiptId = `inst_${instIdShort}_${timestampShort}`;
+  
   const options = {
     amount: amount,
     currency: 'INR',
-    receipt: `inst_renewal_${institutionId}_${Date.now()}`,
+    receipt: receiptId, // Will be max 25 characters: inst_12345678_12345678
     notes: {
       institutionId: institutionId.toString(),
       type: plan ? 'subscription_upgrade' : 'subscription_renewal',
@@ -2431,6 +2639,9 @@ module.exports = {
   validateUsersBeforePayment,
   createAdditionalUsersPaymentOrder,
   verifyAdditionalUsersPayment,
+  getSubscriptionDetails,
+  getSubscriptionStatus,
+  getUsageStatistics,
   createSubscriptionRenewalOrder,
   verifySubscriptionRenewal,
   updateProfile,

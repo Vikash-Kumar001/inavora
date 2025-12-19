@@ -4,6 +4,7 @@ import { X, Mail, Calendar, Users, CreditCard, Building2, Edit2 } from 'lucide-r
 import api from '../../../config/api';
 import toast from 'react-hot-toast';
 import PlanManagementModal from '../common/PlanManagementModal';
+import { getEffectivePlan } from '../../../utils/subscriptionUtils';
 
 const InstitutionDetailModal = ({ institution, isOpen, onClose, onUpdate }) => {
   const [institutionDetails, setInstitutionDetails] = useState(null);
@@ -197,7 +198,7 @@ const InstitutionDetailModal = ({ institution, isOpen, onClose, onUpdate }) => {
                                   <p className="text-sm text-gray-400">{user.email}</p>
                                 </div>
                                 <span className="px-2 py-1 bg-blue-500/20 text-blue-400 rounded text-xs">
-                                  {user.subscription?.plan || 'free'}
+                                  {getEffectivePlan(user.subscription)}
                                 </span>
                               </div>
                             ))}

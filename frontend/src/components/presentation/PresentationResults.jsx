@@ -8,6 +8,7 @@ import toast from 'react-hot-toast';
 import * as XLSX from 'xlsx';
 import { useAuth } from '../../context/AuthContext';
 import { useTranslation } from 'react-i18next';
+import { getEffectivePlan, getEffectiveStatus } from '../../utils/subscriptionUtils';
 
 // Import new Result Components
 import MCQResult from '../interactions/Results/MCQResult';
@@ -58,7 +59,7 @@ const PresentationResults = ({ slides, presentationId }) => {
             return false;
         }
         
-        const plan = currentUser?.subscription?.plan;
+        const plan = getEffectivePlan(currentUser?.subscription);
         const isInstitutionUser = currentUser?.isInstitutionUser === true;
         const hasInstitutionId = currentUser?.institutionId && currentUser?.institutionId !== null;
         const hasInstitutionPlan = currentUser?.subscription?.institutionPlan?.institutionId || 
@@ -92,8 +93,8 @@ const PresentationResults = ({ slides, presentationId }) => {
             return false;
         }
         
-        const plan = currentUser?.subscription?.plan;
-        const status = currentUser?.subscription?.status;
+        const plan = getEffectivePlan(currentUser?.subscription);
+        const status = getEffectiveStatus(currentUser?.subscription);
         
         // Pro users with active subscription can export Pro PDF
         return plan === 'pro' && status === 'active';

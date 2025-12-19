@@ -29,6 +29,7 @@ import { motion, AnimatePresence, useScroll, useTransform } from 'framer-motion'
 import { JoinPresentationBtn, JoinPresentationDialog } from '../common/JoinPresentationDialog';
 import LanguageSelector from '../common/LanguageSelector/LanguageSelector';
 import TestimonialsSection from '../Testimonials/TestimonialsSection';
+import { getEffectivePlan } from '../../utils/subscriptionUtils';
 
 export default function Landing() {
   const navigate = useNavigate();
@@ -52,6 +53,11 @@ export default function Landing() {
   // Check if user is institution admin
   const [isInstitutionAdmin, setIsInstitutionAdmin] = useState(!!sessionStorage.getItem('institutionAdminToken'));
   const [institutionData, setInstitutionData] = useState(null);
+
+  // Calculate effective plan (checks expiry)
+  const effectivePlan = useMemo(() => {
+    return getEffectivePlan(currentUser?.subscription);
+  }, [currentUser?.subscription]);
 
   // Fetch institution data if user is institution admin
   useEffect(() => {
@@ -420,7 +426,7 @@ export default function Landing() {
                     onClick={() => setShowUserMenu(!showUserMenu)}
                     className="flex items-center gap-2 px-2 py-2 rounded-full hover:bg-white/5 transition-colors border border-transparent hover:border-white/10"
                   >
-                    <div className={currentUser?.subscription?.plan !== 'free' ? 'border-2 border-red-400 rounded-full' : ''} style={{ padding: '3px' }}>
+                    <div className={effectivePlan !== 'free' ? 'border-2 border-red-400 rounded-full' : ''} style={{ padding: '3px' }}>
                       {currentUser?.photoURL ? (
                         <img 
                           src={currentUser.photoURL} 
@@ -452,7 +458,7 @@ export default function Landing() {
                               <p className="text-xs text-gray-400 truncate">{currentUser?.email}</p>
                             </div>
                             <p className="px-4 py-3 border-b border-white/5 text-sm text-gray-300">
-                              {t(`pricing.${currentUser?.subscription?.plan}_plan_name`)} {t('dashboard.plan')}
+                              {t(`pricing.${effectivePlan}_plan_name`)} {t('dashboard.plan')}
                             </p>
                           </>
                         ) : (
@@ -614,7 +620,7 @@ export default function Landing() {
                           </div>
                         </div>
                         <p className="px-3 py-2 text-sm text-gray-300 border-b border-white/5">
-                          {t(`pricing.${currentUser?.subscription?.plan}_plan_name`)} {t('dashboard.plan')}
+                          {t(`pricing.${effectivePlan}_plan_name`)} {t('dashboard.plan')}
                         </p>
                       </>
                     ) : (

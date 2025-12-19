@@ -4,6 +4,7 @@ import { X, Mail, Calendar, Building2, CreditCard, Presentation, Edit2 } from 'l
 import api from '../../../config/api';
 import toast from 'react-hot-toast';
 import PlanManagementModal from '../common/PlanManagementModal';
+import { getEffectivePlan, getEffectiveStatus } from '../../../utils/subscriptionUtils';
 
 const UserDetailModal = ({ user, isOpen, onClose, onUpdate }) => {
   const [userDetails, setUserDetails] = useState(null);
@@ -40,6 +41,11 @@ const UserDetailModal = ({ user, isOpen, onClose, onUpdate }) => {
   if (!isOpen) return null;
 
   const userData = userDetails?.user || user;
+
+  // Get effective plan and status (checks expiry)
+  // Pass user object to check for institution users (backend already calculates effective plan)
+  const effectivePlan = getEffectivePlan(userData.subscription, userData);
+  const effectiveStatus = getEffectiveStatus(userData.subscription);
 
   const getPlanBadgeColor = (plan) => {
     const colors = {
@@ -132,14 +138,14 @@ const UserDetailModal = ({ user, isOpen, onClose, onUpdate }) => {
                         <div className="grid grid-cols-2 gap-4">
                           <div>
                             <p className="text-sm text-gray-400 mb-1">Plan</p>
-                            <span className={`px-3 py-1 rounded-full text-sm border ${getPlanBadgeColor(userData.subscription?.plan)}`}>
-                              {userData.subscription?.plan || 'free'}
+                            <span className={`px-3 py-1 rounded-full text-sm border ${getPlanBadgeColor(effectivePlan)}`}>
+                              {effectivePlan}
                             </span>
                           </div>
                           <div>
                             <p className="text-sm text-gray-400 mb-1">Status</p>
-                            <span className={`px-3 py-1 rounded-full text-sm border ${getStatusBadgeColor(userData.subscription?.status)}`}>
-                              {userData.subscription?.status || 'active'}
+                            <span className={`px-3 py-1 rounded-full text-sm border ${getStatusBadgeColor(effectiveStatus)}`}>
+                              {effectiveStatus}
                             </span>
                           </div>
                           {userData.subscription?.startDate && (

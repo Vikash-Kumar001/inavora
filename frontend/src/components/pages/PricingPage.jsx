@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { translateError } from '../../utils/errorTranslator'; // Added useTranslation import
@@ -9,6 +9,7 @@ import toast from 'react-hot-toast';
 import { motion } from 'framer-motion';
 import { createOrder, verifyPayment, loadRazorpay } from '../../services/paymentService';
 import { detectCountryFromBrowser } from '../../utils/countryDetector';
+import { getEffectivePlan } from '../../utils/subscriptionUtils';
 
 const PricingPage = () => {
     const { t } = useTranslation(); // Added useTranslation hook
@@ -25,6 +26,11 @@ const PricingPage = () => {
     }, []);
 
     const [billingCycle, setBillingCycle] = useState('monthly');
+
+    // Calculate effective plan (checks expiry)
+    const effectivePlan = useMemo(() => {
+        return getEffectivePlan(user?.subscription);
+    }, [user?.subscription]);
 
     const plans = [
         {
@@ -395,7 +401,7 @@ const PricingPage = () => {
 
                                         <th className="p-6 border-b border-white/10 bg-white/5 text-center text-lg font-semibold relative">
                                             {t('pricing.compare_table_free')}
-                                            {user && (!user?.subscription?.plan || user?.subscription?.plan === 'free') && (
+                                            {user && effectivePlan === 'free' && (
                                                 <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-white text-slate-900 text-[10px] font-bold px-2 py-0.5 rounded-full shadow-lg whitespace-nowrap">
                                                     Current Plan
                                                 </div>
@@ -404,7 +410,7 @@ const PricingPage = () => {
 
                                         <th className="p-6 border-b border-white/10 bg-white/5 text-center text-lg font-semibold relative">
                                             {t('pricing.compare_table_pro')}
-                                            {user && (user?.subscription?.plan === 'pro' || user?.subscription?.plan === 'pro-monthly' || user?.subscription?.plan === 'pro-yearly') ? (
+                                            {user && effectivePlan === 'pro' ? (
                                                 <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-white text-slate-900 text-[10px] font-bold px-2 py-0.5 rounded-full shadow-lg whitespace-nowrap">
                                                     Current Plan
                                                 </div>
@@ -413,7 +419,7 @@ const PricingPage = () => {
 
                                         <th className="p-6 border-b border-white/10 bg-amber-500/10 text-center text-lg font-bold relative text-amber-400">
                                             {t('pricing.compare_table_lifetime')}
-                                            {user && user?.subscription?.plan === 'lifetime' ? (
+                                            {user && effectivePlan === 'lifetime' ? (
                                                 <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-white text-slate-900 text-[10px] font-bold px-2 py-0.5 rounded-full shadow-lg whitespace-nowrap">
                                                     Current Plan
                                                 </div>
@@ -424,7 +430,7 @@ const PricingPage = () => {
 
                                         <th className="p-6 border-b border-white/10 bg-white/5 text-center rounded-tr-2xl text-lg font-semibold relative">
                                             {t('pricing.compare_table_institution')}
-                                            {user && user?.subscription?.plan === 'institution' && (
+                                            {user && effectivePlan === 'institution' && (
                                                 <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-white text-slate-900 text-[10px] font-bold px-2 py-0.5 rounded-full shadow-lg whitespace-nowrap">
                                                     Current Plan
                                                 </div>

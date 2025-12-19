@@ -34,6 +34,7 @@ router.put('/users/:id/status', verifySuperAdmin, superAdminController.updateUse
 /**
  * Institutions Routes
  */
+router.post('/institutions', verifySuperAdmin, superAdminController.createInstitution);
 router.get('/institutions', verifySuperAdmin, superAdminController.getInstitutions);
 router.get('/institutions/:id', verifySuperAdmin, superAdminController.getInstitutionById);
 router.put('/institutions/:id/plan', verifySuperAdmin, superAdminController.updateInstitutionPlan);

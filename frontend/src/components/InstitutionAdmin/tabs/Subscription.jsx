@@ -1,4 +1,3 @@
-import { motion } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
 import { useState, useEffect } from 'react';
 import {
@@ -11,39 +10,82 @@ import {
     Calendar,
     Clock,
     RefreshCw,
-    ArrowUp,
-    Sparkles,
-    X,
     Receipt,
     DollarSign,
     Building2,
     Mail,
-    User
+    User,
+    Plus,
+    Sparkles,
+    X
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import api from '../../../config/api';
-import { translateError } from '../../../utils/errorTranslator';
 import { getBrandingColors, getRgbaColor, hexToRgb } from '../utils/brandingColors';
 
-const Subscription = ({ institution, stats, onRefresh }) => {
+const Subscription = ({ institution, stats, onRefresh, onAddUser }) => {
     const { t } = useTranslation();
     const { primaryColor, secondaryColor } = getBrandingColors(institution);
     const [renewalLoading, setRenewalLoading] = useState(false);
-    const [plans, setPlans] = useState([]);
-    const [loadingPlans, setLoadingPlans] = useState(false);
     const [showPlanSelection, setShowPlanSelection] = useState(false);
     const [selectedPlan, setSelectedPlan] = useState(null);
     const [customUserCount, setCustomUserCount] = useState(10);
-    const [showUpgrade, setShowUpgrade] = useState(false);
+    const [plans, setPlans] = useState([]);
+    const [loadingPlans, setLoadingPlans] = useState(false);
     const [payments, setPayments] = useState([]);
     const [loadingPayments, setLoadingPayments] = useState(false);
+    const [subscriptionData, setSubscriptionData] = useState(null);
+    const [loadingSubscription, setLoadingSubscription] = useState(true);
+    const [usageStats, setUsageStats] = useState(null);
 
-    // Calculate subscription status
-    const subscription = institution?.subscription;
-    const isActive = subscription?.status === 'active' && subscription?.endDate && new Date(subscription.endDate) > new Date();
-    const isExpired = subscription?.status === 'expired' || (subscription?.endDate && new Date(subscription.endDate) < new Date());
-    const daysRemaining = subscription?.endDate ? Math.ceil((new Date(subscription.endDate) - new Date()) / (1000 * 60 * 60 * 24)) : null;
-    const userUsagePercent = subscription?.maxUsers ? ((stats?.totalUsers || 0) / subscription.maxUsers) * 100 : 0;
+    // Fetch subscription details
+    const fetchSubscriptionDetails = async () => {
+        try {
+            setLoadingSubscription(true);
+            const response = await api.get('/institution-admin/subscription');
+            if (response.data.success && response.data.subscription) {
+                setSubscriptionData(response.data.subscription);
+            } else {
+                setSubscriptionData(null);
+            }
+        } catch (error) {
+            console.error('Error fetching subscription details:', error);
+            setSubscriptionData(null);
+        } finally {
+            setLoadingSubscription(false);
+        }
+    };
+
+    // Fetch usage statistics
+    const fetchUsageStats = async () => {
+        try {
+            const response = await api.get('/institution-admin/subscription/usage');
+            if (response.data.success && response.data.usage) {
+                setUsageStats(response.data.usage);
+            } else {
+                setUsageStats(null);
+            }
+        } catch (error) {
+            console.error('Error fetching usage stats:', error);
+            setUsageStats(null);
+        }
+    };
+
+    // Initial data fetch
+    useEffect(() => {
+        fetchSubscriptionDetails();
+        fetchUsageStats();
+    }, []);
+
+    // Use subscription data from API or fallback to institution prop
+    const subscription = subscriptionData || institution?.subscription;
+    const isActive = subscription?.isActive !== undefined ? subscription.isActive : (subscription?.status === 'active' && subscription?.endDate && new Date(subscription.endDate) > new Date());
+    const isExpired = subscription?.isExpired !== undefined ? subscription.isExpired : (subscription?.status === 'expired' || (subscription?.endDate && new Date(subscription.endDate) < new Date()));
+    const daysRemaining = subscription?.daysRemaining !== undefined ? subscription.daysRemaining : (subscription?.endDate ? Math.ceil((new Date(subscription.endDate) - new Date()) / (1000 * 60 * 60 * 24)) : null);
+    
+    // Use usage stats from API or fallback to stats prop
+    const currentUsers = usageStats?.totalUsers || stats?.totalUsers || subscription?.currentUsers || 0;
+    const userUsagePercent = subscription?.maxUsers ? ((currentUsers / subscription.maxUsers) * 100) : 0;
     const showUserWarning = userUsagePercent >= 80;
     const showRenewalWarning = daysRemaining !== null && daysRemaining <= 30 && daysRemaining > 0;
 
@@ -55,12 +97,12 @@ const Subscription = ({ institution, stats, onRefresh }) => {
         return 'Custom';
     };
 
-    const currentPlanName = getPlanName(subscription?.maxUsers);
+    const currentPlanName = subscription?.planName || getPlanName(subscription?.maxUsers);
 
-    // Fetch available plans
+    // Fetch plans only when renewal modal is shown (for expired subscriptions)
     useEffect(() => {
-        const fetchPlans = async () => {
-            if (isExpired || showUpgrade) {
+        if (showPlanSelection && isExpired) {
+            const fetchPlans = async () => {
                 setLoadingPlans(true);
                 try {
                     const response = await api.get('/institution/register/plans');
@@ -73,10 +115,18 @@ const Subscription = ({ institution, stats, onRefresh }) => {
                 } finally {
                     setLoadingPlans(false);
                 }
-            }
-        };
-        fetchPlans();
-    }, [isExpired, showUpgrade]);
+            };
+            fetchPlans();
+        }
+    }, [showPlanSelection, isExpired]);
+
+    // Refresh data when onRefresh is triggered (e.g., after actions like renewal/upgrade)
+    useEffect(() => {
+        if (onRefresh) {
+            fetchSubscriptionDetails();
+            fetchUsageStats();
+        }
+    }, [onRefresh]);
 
     // Fetch payment history
     useEffect(() => {
@@ -100,7 +150,8 @@ const Subscription = ({ institution, stats, onRefresh }) => {
     const handleSelectPlan = (plan) => {
         setSelectedPlan(plan);
         if (plan.isCustom) {
-            setCustomUserCount(Math.max(plan.minUsers || 10, subscription?.maxUsers || 10));
+            // Set to minimum users when first selecting custom plan (matching registration page)
+            setCustomUserCount(plan.minUsers || 10);
         }
     };
 
@@ -108,14 +159,8 @@ const Subscription = ({ institution, stats, onRefresh }) => {
     const handleRenewSubscription = async (planToUse = null) => {
         const plan = planToUse || selectedPlan;
         
-        // If expired and no plan selected, show plan selection
+        // If expired and no plan selected, show plan selection modal
         if (isExpired && !plan && !showPlanSelection) {
-            setShowPlanSelection(true);
-            return;
-        }
-
-        // If upgrading and no plan selected, show plan selection
-        if (showUpgrade && !plan && !showPlanSelection) {
             setShowPlanSelection(true);
             return;
         }
@@ -128,19 +173,13 @@ const Subscription = ({ institution, stats, onRefresh }) => {
 
         // Validate custom plan
         if (plan.isCustom) {
-            if (!customUserCount || customUserCount < plan.minUsers) {
-                toast.error(`Minimum ${plan.minUsers} users required for Custom plan`);
+            if (!customUserCount || customUserCount < (plan.minUsers || 10)) {
+                toast.error(`Minimum ${plan.minUsers || 10} users required for Custom plan`);
                 return;
             }
         }
 
-        const confirmMessage = isExpired 
-            ? `Renew subscription with ${plan.name} plan?`
-            : `Upgrade to ${plan.name} plan? This will update your subscription.`;
-        
-        if (!window.confirm(confirmMessage)) {
-            return;
-        }
+        // No confirmation needed - proceed directly to payment gateway
 
         setRenewalLoading(true);
 
@@ -223,7 +262,6 @@ const Subscription = ({ institution, stats, onRefresh }) => {
                     order_id: response.data.orderId,
                     handler: async function (paymentResponse) {
                         try {
-                            setRenewalLoading(true);
                             
                             // Verify payment
                             const verifyResponse = await api.post('/institution-admin/subscription/verify-renewal', {
@@ -239,13 +277,13 @@ const Subscription = ({ institution, stats, onRefresh }) => {
                                         : (t('institution_admin.subscription_upgraded_success') || 'Subscription upgraded successfully!')
                                 );
                                 setShowPlanSelection(false);
-                                setShowUpgrade(false);
                                 setSelectedPlan(null);
+                                // Refresh subscription data
+                                await fetchSubscriptionDetails();
+                                await fetchUsageStats();
                                 if (onRefresh) {
                                     onRefresh();
                                 }
-                                // Reload page to refresh institution data
-                                window.location.reload();
                             } else {
                                 toast.error(verifyResponse.data.message || t('institution_admin.payment_verification_failed'));
                             }
@@ -304,10 +342,7 @@ const Subscription = ({ institution, stats, onRefresh }) => {
     };
 
     return (
-        <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-        >
+        <div>
             <div className="mb-8">
                 <h1 className="text-3xl font-bold text-white mb-2">{t('institution_admin.subscription_billing')}</h1>
                 <p className="text-gray-400">{t('institution_admin.subscription_description')}</p>
@@ -415,58 +450,122 @@ const Subscription = ({ institution, stats, onRefresh }) => {
                     )}
                 </div>
 
-            {subscription ? (
+            {loadingSubscription ? (
+                <div className="flex items-center justify-center py-12">
+                    <div 
+                        className="w-8 h-8 border-2 border-t-transparent rounded-full animate-spin"
+                        style={{ borderColor: `${secondaryColor} transparent transparent transparent` }}
+                    ></div>
+                </div>
+            ) : subscription ? (
                 <div className="space-y-6">
-                    {/* Plan Details */}
-                    <div className="bg-white/5 border border-white/10 rounded-xl p-6 backdrop-blur-sm">
-                        <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
-                            <CreditCard className="w-5 h-5" style={{ color: secondaryColor }} />
-                            {t('institution_admin.current_plan')}
-                        </h3>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+                    {/* Current Plan Details - Enhanced */}
+                    <div className="bg-gradient-to-br from-white/10 to-white/5 border-2 rounded-2xl p-8 backdrop-blur-sm"
+                         style={{ borderColor: isActive && !isExpired ? `${secondaryColor}80` : 'rgba(255,255,255,0.1)' }}>
+                        <div className="flex items-center justify-between mb-6">
                             <div>
-                                <p className="text-gray-400 text-sm mb-1">{t('institution_admin.plan')}</p>
-                                <div className="flex items-center gap-2">
-                                    <p className="text-lg font-semibold text-white">{currentPlanName}</p>
-                                    {subscription?.maxUsers && (
-                                        <span className="text-sm text-gray-400">({subscription.maxUsers} users)</span>
-                                    )}
-                                </div>
+                                <h3 className="text-2xl font-bold text-white mb-2 flex items-center gap-3">
+                                    <CreditCard className="w-6 h-6" style={{ color: secondaryColor }} />
+                                    Current Plan: {currentPlanName}
+                                </h3>
+                                <p className="text-gray-400">Your active subscription details and features</p>
                             </div>
-                            <div>
-                                <p className="text-gray-400 text-sm mb-1">{t('institution_admin.status')}</p>
-                                <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${
-                                    isActive && !isExpired
-                                        ? 'bg-green-500/20 text-green-400' 
-                                        : isExpired
-                                        ? 'bg-red-500/20 text-red-400'
-                                        : 'bg-yellow-500/20 text-yellow-400'
-                                }`}>
-                                    {isActive && !isExpired && <CheckCircle className="w-4 h-4 mr-1" />}
-                                    {isExpired ? (t('institution_admin.expired') || 'Expired') : (isActive ? 'Active' : subscription.status)}
-                                </span>
+                            <span className={`inline-flex items-center px-4 py-2 rounded-full text-sm font-semibold ${
+                                isActive && !isExpired
+                                    ? 'bg-green-500/20 text-green-400 border border-green-500/30' 
+                                    : isExpired
+                                    ? 'bg-red-500/20 text-red-400 border border-red-500/30'
+                                    : 'bg-yellow-500/20 text-yellow-400 border border-yellow-500/30'
+                            }`}>
+                                {isActive && !isExpired && <CheckCircle className="w-4 h-4 mr-2" />}
+                                {isExpired ? (t('institution_admin.expired') || 'Expired') : (isActive ? 'Active' : subscription.status)}
+                            </span>
+                        </div>
+
+                        {/* Current Plan Pricing & Details */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                            <div className="bg-black/30 rounded-xl p-4 border border-white/10">
+                                <p className="text-gray-400 text-sm mb-2">Plan Price</p>
+                                {(() => {
+                                    const price = subscription?.planDetails?.prices?.yearly || 0;
+                                    const priceInRupees = (price / 100).toLocaleString('en-IN');
+                                    return (
+                                        <div>
+                                            <p className="text-2xl font-bold text-white">₹{priceInRupees}</p>
+                                            <p className="text-xs text-gray-400">per year</p>
+                                        </div>
+                                    );
+                                })()}
                             </div>
-                            <div>
-                                <p className="text-gray-400 text-sm mb-1">{t('institution_admin.billing_cycle')}</p>
-                                <p className="text-lg font-semibold text-white capitalize">{subscription.billingCycle || 'Yearly'}</p>
+                            <div className="bg-black/30 rounded-xl p-4 border border-white/10">
+                                <p className="text-gray-400 text-sm mb-2">Max Users</p>
+                                <p className="text-2xl font-bold text-white">{subscription.maxUsers || 'Unlimited'}</p>
+                                <p className="text-xs text-gray-400">users included</p>
                             </div>
-                            <div>
-                                <p className="text-gray-400 text-sm mb-1">{t('institution_admin.renewal_date')}</p>
-                                <p className="text-lg font-semibold text-white">
+                            <div className="bg-black/30 rounded-xl p-4 border border-white/10">
+                                <p className="text-gray-400 text-sm mb-2">Billing Cycle</p>
+                                <p className="text-2xl font-bold text-white capitalize">{subscription.billingCycle || 'Yearly'}</p>
+                                <p className="text-xs text-gray-400">renewal period</p>
+                            </div>
+                            <div className="bg-black/30 rounded-xl p-4 border border-white/10">
+                                <p className="text-gray-400 text-sm mb-2">Renewal Date</p>
+                                <p className="text-lg font-bold text-white">
                                     {subscription.endDate 
-                                        ? new Date(subscription.endDate).toLocaleDateString()
+                                        ? new Date(subscription.endDate).toLocaleDateString('en-US', {
+                                            month: 'short',
+                                            day: 'numeric',
+                                            year: 'numeric'
+                                        })
                                         : 'N/A'}
                                 </p>
+                                {daysRemaining !== null && (
+                                    <p className={`text-xs mt-1 ${daysRemaining <= 30 ? 'text-yellow-400' : 'text-gray-400'}`}>
+                                        {daysRemaining > 0 ? `${daysRemaining} days left` : 'Expired'}
+                                    </p>
+                                )}
                             </div>
                         </div>
 
+                        {/* Current Plan Features */}
+                        {subscription?.planDetails?.features ? (
+                            <div className="bg-black/20 rounded-xl p-6 border border-white/10">
+                                <h4 className="text-lg font-semibold text-white mb-4">Plan Features</h4>
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                                    {subscription.planDetails.features.map((feature, idx) => (
+                                        <div key={idx} className="flex items-center gap-2">
+                                            <CheckCircle className="w-5 h-5 flex-shrink-0" style={{ color: secondaryColor }} />
+                                            <span className="text-gray-300">{feature}</span>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        ) : null}
+
                         {/* Action Buttons */}
                         <div className="mt-6 pt-6 border-t border-white/10 flex flex-wrap gap-3">
+                            {isActive && !isExpired && onAddUser && (
+                                <button
+                                    onClick={onAddUser}
+                                    className="px-6 py-3 text-white font-semibold rounded-lg transition-all flex items-center justify-center gap-2"
+                                    style={{
+                                        background: `linear-gradient(to right, ${primaryColor}, ${secondaryColor})`,
+                                        boxShadow: `0 10px 15px -3px ${getRgbaColor(secondaryColor, 0.25)}`
+                                    }}
+                                    onMouseEnter={(e) => {
+                                        e.target.style.boxShadow = `0 10px 15px -3px ${getRgbaColor(secondaryColor, 0.4)}`;
+                                    }}
+                                    onMouseLeave={(e) => {
+                                        e.target.style.boxShadow = `0 10px 15px -3px ${getRgbaColor(secondaryColor, 0.25)}`;
+                                    }}
+                                >
+                                    <Plus className="w-5 h-5" />
+                                    {t('institution_admin.add_users') || 'Add Users'}
+                                </button>
+                            )}
                             {isExpired && (
                                 <button
                                     onClick={() => {
                                         setShowPlanSelection(true);
-                                        setShowUpgrade(false);
                                     }}
                                     disabled={renewalLoading}
                                     className="px-6 py-3 text-white font-semibold rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
@@ -518,45 +617,25 @@ const Subscription = ({ institution, stats, onRefresh }) => {
                                     )}
                                 </button>
                             )}
-                            {isActive && !isExpired && (
-                                <button
-                                    onClick={() => {
-                                        setShowUpgrade(true);
-                                        setShowPlanSelection(true);
-                                        setSelectedPlan(null);
-                                    }}
-                                    disabled={renewalLoading}
-                                    className="px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-500 text-white font-semibold rounded-lg hover:shadow-lg hover:shadow-pink-500/25 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-                                >
-                                    <ArrowUp className="w-5 h-5" />
-                                    {t('institution_admin.upgrade_plan') || 'Upgrade Plan'}
-                                </button>
-                            )}
                         </div>
                     </div>
 
-                    {/* Plan Selection Modal */}
-                    {showPlanSelection && (isExpired || showUpgrade) && (
+                    {/* Plan Selection Modal for Renewal (only for expired subscriptions) */}
+                    {showPlanSelection && isExpired && (
                         <div className="bg-white/5 border border-white/10 rounded-xl p-6 backdrop-blur-sm">
-                            <div className="flex items-center justify-between mb-6">
-                                <h3 className="text-xl font-semibold text-white flex items-center gap-2">
-                                    <Sparkles className="w-5 h-5" style={{ color: secondaryColor }} />
-                                    {isExpired 
-                                        ? (t('institution_admin.select_plan_to_renew') || 'Select Plan to Renew')
-                                        : (t('institution_admin.select_plan_to_upgrade') || 'Select Plan to Upgrade')
-                                    }
-                                </h3>
-                                <button
-                                    onClick={() => {
-                                        setShowPlanSelection(false);
-                                        setShowUpgrade(false);
-                                        setSelectedPlan(null);
-                                    }}
-                                    className="text-gray-400 hover:text-white transition-colors"
-                                >
-                                    <X className="w-5 h-5" />
-                                </button>
+                            <div className="mb-6">
+                                <h3 className="text-2xl font-bold text-white mb-2">Select Plan</h3>
+                                <p className="text-gray-400">Choose the subscription plan that fits your needs</p>
                             </div>
+                            <button
+                                onClick={() => {
+                                    setShowPlanSelection(false);
+                                    setSelectedPlan(null);
+                                }}
+                                className="absolute top-6 right-6 text-gray-400 hover:text-white transition-colors"
+                            >
+                                <X className="w-5 h-5" />
+                            </button>
 
                             {loadingPlans ? (
                                 <div className="flex items-center justify-center py-8">
@@ -566,12 +645,16 @@ const Subscription = ({ institution, stats, onRefresh }) => {
                                     ></div>
                                 </div>
                             ) : (
-                                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                <div className="grid md:grid-cols-3 gap-6">
                                     {plans.map((plan) => {
                                         const isSelected = selectedPlan?.id === plan.id;
                                         const isCurrentPlan = !plan.isCustom && plan.maxUsers === subscription?.maxUsers;
-                                        const price = plan.prices?.yearly || 0;
-                                        const priceInRupees = (price / 100).toLocaleString('en-IN');
+                                        const basePrice = (plan.prices?.yearly || 0) / 100;
+                                        const perUserPrice = (plan.prices?.perUser || 0) / 100;
+                                        const currentUserCount = isSelected ? (customUserCount || plan.minUsers || 10) : (plan.minUsers || 10);
+                                        const totalPrice = plan.isCustom 
+                                            ? (basePrice + (perUserPrice * currentUserCount))
+                                            : basePrice;
 
                                         return (
                                             <div
@@ -579,94 +662,123 @@ const Subscription = ({ institution, stats, onRefresh }) => {
                                                 onClick={() => !isCurrentPlan && handleSelectPlan(plan)}
                                                 className={`relative p-6 rounded-xl border-2 cursor-pointer transition-all ${
                                                     isSelected
-                                                        ? ''
+                                                        ? 'border-teal-500 bg-teal-500/10'
                                                         : isCurrentPlan
                                                         ? 'border-gray-500 bg-gray-500/10 cursor-not-allowed opacity-60'
-                                                        : 'border-white/10 bg-white/5 hover:border-white/20 hover:bg-white/10'
+                                                        : 'border-white/10 bg-white/5 hover:border-white/20'
                                                 }`}
-                                                style={isSelected ? {
-                                                    borderColor: secondaryColor,
-                                                    backgroundColor: getRgbaColor(secondaryColor, 0.1)
-                                                } : {}}
                                             >
                                                 {plan.badge && (
-                                                    <span 
-                                                        className="absolute top-4 right-4 px-2 py-1 text-xs font-semibold rounded"
-                                                        style={{
-                                                            backgroundColor: getRgbaColor(secondaryColor, 0.2),
-                                                            color: secondaryColor
-                                                        }}
-                                                    >
+                                                    <div className="absolute -top-3 right-4 bg-gradient-to-r from-orange-500 to-red-500 text-white text-xs font-bold px-3 py-1 rounded-full shadow-lg z-10">
                                                         {plan.badge}
-                                                    </span>
+                                                    </div>
                                                 )}
-                                                {isCurrentPlan && (
-                                                    <span 
-                                                        className="absolute top-4 right-4 px-2 py-1 text-xs font-semibold rounded"
-                                                        style={{
-                                                            backgroundColor: getRgbaColor(primaryColor, 0.2),
-                                                            color: primaryColor
-                                                        }}
-                                                    >
-                                                        Current
-                                                    </span>
-                                                )}
-                                                <h4 className="text-xl font-bold text-white mb-2">{plan.name}</h4>
-                                                <div className="mb-4">
-                                                    <span className="text-3xl font-bold text-white">₹{priceInRupees}</span>
-                                                    <span className="text-gray-400 text-sm">/year</span>
-                                                </div>
-                                                <div className="mb-4">
-                                                    <p className="text-white font-medium">
-                                                        {plan.isCustom ? 'Custom' : plan.maxUsers} {plan.isCustom ? 'Users' : 'Users'}
-                                                    </p>
-                                                    {plan.isCustom && plan.minUsers && (
-                                                        <p className="text-gray-400 text-sm">Min: {plan.minUsers} users</p>
+                                                <div className="flex items-center justify-end mb-4">
+                                                    {isSelected && (
+                                                        <CheckCircle className="w-6 h-6 text-teal-500" />
                                                     )}
                                                 </div>
-                                                <ul className="space-y-2 mb-4">
-                                                    {plan.features?.slice(0, 3).map((feature, idx) => (
-                                                        <li key={idx} className="flex items-start gap-2 text-sm text-gray-300">
-                                                            <CheckCircle className="w-4 h-4 mt-0.5 flex-shrink-0" style={{ color: secondaryColor }} />
-                                                            <span>{feature}</span>
+                                                
+                                                {plan.isCustom ? (
+                                                    <>
+                                                        <div className="mb-4 min-w-0 overflow-hidden">
+                                                            <div className="flex flex-wrap items-baseline gap-1 mb-2 break-words">
+                                                                <span className="text-2xl sm:text-3xl font-bold break-all min-w-0">
+                                                                    ₹{basePrice.toLocaleString('en-IN')}/yr
+                                                                </span>
+                                                                <span className="text-gray-400 text-lg sm:text-xl flex-shrink-0">+</span>
+                                                                <span className="text-xl sm:text-2xl font-bold break-all min-w-0">
+                                                                    ₹{(perUserPrice * currentUserCount).toLocaleString('en-IN')}
+                                                                </span>
+                                                            </div>
+                                                            <p className="text-xs text-gray-400 break-words">
+                                                                (Base ₹{basePrice.toLocaleString('en-IN')} + {currentUserCount} users × ₹{perUserPrice.toLocaleString('en-IN')})
+                                                            </p>
+                                                        </div>
+                                                        <div className="mb-4">
+                                                            <p className="text-sm text-gray-300 mb-2">1 Admin Dashboard +</p>
+                                                            <div className="flex items-center gap-2">
+                                                                <input
+                                                                    type="number"
+                                                                    value={isSelected ? customUserCount : (plan.minUsers || 10)}
+                                                                    onChange={(e) => {
+                                                                        const inputValue = e.target.value;
+                                                                        if (inputValue === '') {
+                                                                            setCustomUserCount('');
+                                                                            if (!isSelected) {
+                                                                                handleSelectPlan(plan);
+                                                                            }
+                                                                            return;
+                                                                        }
+                                                                        const value = parseInt(inputValue) || 0;
+                                                                        setCustomUserCount(value);
+                                                                        if (!isSelected) {
+                                                                            handleSelectPlan(plan);
+                                                                        }
+                                                                    }}
+                                                                    onClick={(e) => {
+                                                                        e.stopPropagation();
+                                                                        if (!isSelected) {
+                                                                            handleSelectPlan(plan);
+                                                                        }
+                                                                    }}
+                                                                    min={plan.minUsers || 10}
+                                                                    className="w-20 px-3 py-2 bg-black/30 border border-white/10 rounded-lg text-white focus:ring-2 focus:ring-teal-500 focus:border-transparent outline-none text-sm"
+                                                                />
+                                                                <span className="text-sm text-gray-300">users</span>
+                                                            </div>
+                                                            <div className="mt-2 min-w-0">
+                                                                <p className="text-lg sm:text-xl font-bold text-teal-400 break-all overflow-hidden">
+                                                                    ₹{totalPrice.toLocaleString('en-IN')} Total
+                                                                </p>
+                                                            </div>
+                                                        </div>
+                                                    </>
+                                                ) : (
+                                                    <>
+                                                        <div className="mb-4">
+                                                            <span className="text-3xl font-bold">
+                                                                ₹{basePrice.toLocaleString('en-IN')}
+                                                            </span>
+                                                            <span className="text-gray-400">/yr</span>
+                                                        </div>
+                                                        <div className="mb-4">
+                                                            <p className="text-sm text-gray-400">1 Admin Dashboard + {plan.maxUsers} users</p>
+                                                        </div>
+                                                    </>
+                                                )}
+                                                
+                                                <ul className="space-y-2 mb-6">
+                                                    {plan.features?.map((feature, idx) => (
+                                                        <li key={idx} className="flex items-center gap-2 text-sm">
+                                                            <CheckCircle className="w-4 h-4 text-teal-500" />
+                                                            {feature}
                                                         </li>
                                                     ))}
                                                 </ul>
-                                                {plan.isCustom && isSelected && (
-                                                    <div className="mt-4">
-                                                        <label className="block text-sm text-gray-300 mb-2">
-                                                            Number of Users
-                                                        </label>
-                                                        <input
-                                                            type="number"
-                                                            min={plan.minUsers || 10}
-                                                            value={customUserCount}
-                                                            onChange={(e) => setCustomUserCount(Math.max(plan.minUsers || 10, parseInt(e.target.value) || plan.minUsers || 10))}
-                                                            className="w-full px-3 py-2 bg-black/30 border border-white/10 rounded-lg text-white focus:ring-2 focus:ring-teal-500 focus:border-transparent outline-none"
-                                                        />
-                                                        <p className="text-xs text-gray-400 mt-1">
-                                                            Price: ₹{((plan.prices?.yearly || 0) / 100 + (customUserCount - (plan.minUsers || 10)) * ((plan.prices?.perUser || 0) / 100)).toLocaleString('en-IN')}/year
-                                                        </p>
-                                                    </div>
-                                                )}
+                                                
                                                 {!isCurrentPlan && (
                                                     <button
                                                         onClick={(e) => {
                                                             e.stopPropagation();
-                                                            if (!plan.isCustom) {
-                                                                handleSelectPlan(plan);
+                                                            if (plan.isCustom) {
+                                                                if (!isSelected) {
+                                                                    handleSelectPlan(plan);
+                                                                    return;
+                                                                }
+                                                                // Validate custom plan
+                                                                if (!customUserCount || customUserCount < (plan.minUsers || 10)) {
+                                                                    toast.error(`Minimum ${plan.minUsers || 10} users required for Custom plan`);
+                                                                    return;
+                                                                }
                                                             }
                                                             handleRenewSubscription(plan);
                                                         }}
-                                                        disabled={renewalLoading || (plan.isCustom && !isSelected)}
-                                                        className={`w-full mt-4 px-4 py-2 rounded-lg font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed ${
-                                                            isSelected || !plan.isCustom
-                                                                ? 'text-white'
-                                                                : 'bg-white/10 hover:bg-white/20 text-white'
-                                                        }`}
-                                                        style={(isSelected || !plan.isCustom) ? {
-                                                            backgroundColor: secondaryColor
-                                                        } : {}}
+                                                        disabled={renewalLoading || (plan.isCustom && !isSelected) || (plan.isCustom && (!customUserCount || customUserCount < (plan.minUsers || 10)))}
+                                                        className="w-full mt-4 px-4 py-2 rounded-lg font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed text-white"
+                                                        style={{
+                                                            backgroundColor: (isSelected || !plan.isCustom) ? secondaryColor : 'rgba(255, 255, 255, 0.1)'
+                                                        }}
                                                         onMouseEnter={(e) => {
                                                             if (!e.target.disabled && (isSelected || !plan.isCustom)) {
                                                                 const rgb = hexToRgb(secondaryColor);
@@ -731,122 +843,140 @@ const Subscription = ({ institution, stats, onRefresh }) => {
                         </div>
                     )}
 
-                    {/* Usage Statistics */}
-                    <div className="bg-white/5 border border-white/10 rounded-xl sm:rounded-2xl p-4 sm:p-6">
-                        <h3 className="text-lg sm:text-xl font-bold mb-4 flex items-center gap-2">
-                            <TrendingUp className="w-5 h-5" />
-                            {t('institution_admin.usage_statistics')}
-                        </h3>
-                        
-                        {/* Users Usage */}
-                        <div className="mb-6">
-                            <div className="flex items-center justify-between mb-2">
-                                <span className="text-gray-300 font-medium">{t('institution_admin.users_label')}</span>
-                                <span className="text-sm text-gray-400">
-                                    {stats?.totalUsers || subscription.currentUsers || 0} / {subscription.maxUsers || 10}
-                                </span>
-                            </div>
-                            <div className="w-full bg-black/30 rounded-full h-3 overflow-hidden">
-                                <div 
-                                    className={`h-full rounded-full transition-all ${
-                                        userUsagePercent > 0.8 
-                                            ? 'bg-red-500' 
-                                            : userUsagePercent > 0.6
-                                            ? 'bg-yellow-500'
-                                            : 'bg-teal-500'
-                                    }`}
-                                    style={{ 
-                                        width: `${Math.min(userUsagePercent, 100)}%` 
-                                    }}
-                                />
-                            </div>
-                            {userUsagePercent > 0.8 && (
-                                <p className="text-xs text-yellow-400 mt-1">
-                                    <AlertCircle className="w-3 h-3 inline mr-1" />
-                                    {t('institution_admin.approaching_user_limit')}
-                                </p>
-                            )}
-                        </div>
-
-                        {/* Other Usage Stats */}
-                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-6">
-                            <div className="p-4 bg-black/20 rounded-lg">
-                                <p className="text-gray-400 text-xs mb-1">{t('institution_admin.presentations_label')}</p>
-                                <p className="text-2xl font-bold text-white">{stats?.totalPresentations || 0}</p>
-                            </div>
-                            <div className="p-4 bg-black/20 rounded-lg">
-                                <p className="text-gray-400 text-xs mb-1">{t('institution_admin.total_responses_label_stats')}</p>
-                                <p className="text-2xl font-bold text-white">{stats?.totalResponses || 0}</p>
-                            </div>
-                            <div className="p-4 bg-black/20 rounded-lg">
-                                <p className="text-gray-400 text-xs mb-1">{t('institution_admin.active_users_30_days')}</p>
-                                <p className="text-2xl font-bold text-white">{stats?.activeUsers || 0}</p>
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Subscription Period */}
-                    {subscription.startDate && subscription.endDate && (
-                        <div className="bg-white/5 border border-white/10 rounded-xl sm:rounded-2xl p-4 sm:p-6 backdrop-blur-sm">
-                            <h3 className="text-lg sm:text-xl font-bold text-white mb-4 flex items-center gap-2">
-                                <Calendar className="w-5 h-5" style={{ color: secondaryColor }} />
-                                {t('institution_admin.subscription_period')}
+                    {/* Usage Statistics & Subscription Period - Combined Section */}
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        {/* Usage Statistics */}
+                        <div className="bg-white/5 border border-white/10 rounded-xl p-6 backdrop-blur-sm">
+                            <h3 className="text-lg font-bold mb-4 flex items-center gap-2">
+                                <TrendingUp className="w-5 h-5" style={{ color: secondaryColor }} />
+                                {t('institution_admin.usage_statistics')}
                             </h3>
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                <div>
-                                    <p className="text-gray-400 text-sm mb-1">{t('institution_admin.start_date')}</p>
-                                    <p className="text-lg font-semibold text-white">
-                                        {new Date(subscription.startDate).toLocaleDateString('en-US', {
-                                            year: 'numeric',
-                                            month: 'long',
-                                            day: 'numeric'
-                                        })}
-                                    </p>
+                            
+                            {/* Users Usage Progress */}
+                            <div className="mb-6">
+                                <div className="flex items-center justify-between mb-2">
+                                    <span className="text-gray-300 font-medium">{t('institution_admin.users_label')}</span>
+                                    <span className="text-sm text-gray-400 font-semibold">
+                                        {currentUsers} / {subscription.maxUsers || 10}
+                                    </span>
                                 </div>
-                                <div>
-                                    <p className="text-gray-400 text-sm mb-1">{t('institution_admin.end_date')}</p>
-                                    <p className="text-lg font-semibold text-white">
-                                        {new Date(subscription.endDate).toLocaleDateString('en-US', {
-                                            year: 'numeric',
-                                            month: 'long',
-                                            day: 'numeric'
-                                        })}
+                                <div className="w-full bg-black/30 rounded-full h-4 overflow-hidden shadow-inner">
+                                    <div 
+                                        className={`h-full rounded-full transition-all duration-500 ${
+                                            userUsagePercent >= 90 
+                                                ? 'bg-red-500' 
+                                                : userUsagePercent >= 75
+                                                ? 'bg-orange-500'
+                                                : userUsagePercent >= 50
+                                                ? 'bg-yellow-500'
+                                                : 'bg-teal-500'
+                                        }`}
+                                        style={{ 
+                                            width: `${Math.min(userUsagePercent, 100)}%`,
+                                            boxShadow: userUsagePercent >= 75 ? '0 0 10px rgba(239, 68, 68, 0.5)' : 'none'
+                                        }}
+                                    />
+                                </div>
+                                <div className="flex items-center justify-between mt-2">
+                                    <span className="text-xs text-gray-400">
+                                        {Math.round(userUsagePercent)}% of plan limit used
+                                    </span>
+                                    {userUsagePercent >= 75 && (
+                                        <span className="text-xs text-yellow-400 flex items-center gap-1">
+                                            <AlertCircle className="w-3 h-3" />
+                                            {userUsagePercent >= 90 ? 'Critical' : 'Warning'}
+                                        </span>
+                                    )}
+                                </div>
+                            </div>
+
+                            {/* Other Usage Stats Grid */}
+                            <div className="grid grid-cols-2 gap-4">
+                                <div className="p-4 bg-black/20 rounded-lg border border-white/5">
+                                    <p className="text-gray-400 text-xs mb-1">{t('institution_admin.presentations_label')}</p>
+                                    <p className="text-2xl font-bold text-white">{usageStats?.totalPresentations || stats?.totalPresentations || 0}</p>
+                                </div>
+                                <div className="p-4 bg-black/20 rounded-lg border border-white/5">
+                                    <p className="text-gray-400 text-xs mb-1">{t('institution_admin.total_responses_label_stats')}</p>
+                                    <p className="text-2xl font-bold text-white">{usageStats?.totalResponses || stats?.totalResponses || 0}</p>
+                                </div>
+                                <div className="p-4 bg-black/20 rounded-lg border border-white/5">
+                                    <p className="text-gray-400 text-xs mb-1">{t('institution_admin.active_users_30_days')}</p>
+                                    <p className="text-2xl font-bold text-white">{usageStats?.activeUsers || stats?.activeUsers || 0}</p>
+                                </div>
+                                <div className="p-4 bg-black/20 rounded-lg border border-white/5">
+                                    <p className="text-gray-400 text-xs mb-1">Available Users</p>
+                                    <p className="text-2xl font-bold text-white">
+                                        {Math.max(0, (subscription.maxUsers || 10) - currentUsers)}
                                     </p>
                                 </div>
                             </div>
-                            {subscription.endDate && daysRemaining !== null && (
-                                <div className={`mt-4 p-3 rounded-lg ${
-                                    daysRemaining <= 0 
-                                        ? 'bg-red-500/10 border border-red-500/20'
-                                        : daysRemaining <= 30
-                                        ? 'bg-yellow-500/10 border border-yellow-500/20'
-                                        : 'bg-blue-500/10 border border-blue-500/20'
-                                }`}>
-                                    <div className="flex items-center gap-2">
-                                        <Clock className={`w-4 h-4 ${
-                                            daysRemaining <= 0 
-                                                ? 'text-red-400'
-                                                : daysRemaining <= 30
-                                                ? 'text-yellow-400'
-                                                : 'text-blue-400'
-                                        }`} />
-                                        <span className={`text-sm ${
-                                            daysRemaining <= 0 
-                                                ? 'text-red-300'
-                                                : daysRemaining <= 30
-                                                ? 'text-yellow-300'
-                                                : ''
-                                        }`}>
-                                            {daysRemaining <= 0 
-                                                ? t('institution_admin.subscription_expired') || 'Subscription Expired'
-                                                : `${daysRemaining} ${t('institution_admin.days_remaining') || 'days remaining'}`
-                                            }
-                                        </span>
-                                    </div>
-                                </div>
-                            )}
                         </div>
-                    )}
+
+                        {/* Subscription Period */}
+                        {subscription.startDate && subscription.endDate && (
+                            <div className="bg-white/5 border border-white/10 rounded-xl p-6 backdrop-blur-sm">
+                                <h3 className="text-lg font-bold mb-4 flex items-center gap-2">
+                                    <Calendar className="w-5 h-5" style={{ color: secondaryColor }} />
+                                    {t('institution_admin.subscription_period')}
+                                </h3>
+                                <div className="space-y-4">
+                                    <div className="p-4 bg-black/20 rounded-lg border border-white/5">
+                                        <p className="text-gray-400 text-xs mb-1">{t('institution_admin.start_date')}</p>
+                                        <p className="text-lg font-semibold text-white">
+                                            {new Date(subscription.startDate).toLocaleDateString('en-US', {
+                                                year: 'numeric',
+                                                month: 'long',
+                                                day: 'numeric'
+                                            })}
+                                        </p>
+                                    </div>
+                                    <div className="p-4 bg-black/20 rounded-lg border border-white/5">
+                                        <p className="text-gray-400 text-xs mb-1">{t('institution_admin.end_date')}</p>
+                                        <p className="text-lg font-semibold text-white">
+                                            {new Date(subscription.endDate).toLocaleDateString('en-US', {
+                                                year: 'numeric',
+                                                month: 'long',
+                                                day: 'numeric'
+                                            })}
+                                        </p>
+                                    </div>
+                                    {subscription.endDate && daysRemaining !== null && (
+                                        <div className={`p-4 rounded-lg border ${
+                                            daysRemaining <= 0 
+                                                ? 'bg-red-500/10 border-red-500/30'
+                                                : daysRemaining <= 30
+                                                ? 'bg-yellow-500/10 border-yellow-500/30'
+                                                : 'bg-blue-500/10 border-blue-500/30'
+                                        }`}>
+                                            <div className="flex items-center gap-3">
+                                                <Clock className={`w-5 h-5 ${
+                                                    daysRemaining <= 0 
+                                                        ? 'text-red-400'
+                                                        : daysRemaining <= 30
+                                                        ? 'text-yellow-400'
+                                                        : 'text-blue-400'
+                                                }`} />
+                                                <div>
+                                                    <p className="text-sm font-semibold text-white">
+                                                        {daysRemaining <= 0 
+                                                            ? t('institution_admin.subscription_expired') || 'Subscription Expired'
+                                                            : `${daysRemaining} ${t('institution_admin.days_remaining') || 'days remaining'}`
+                                                        }
+                                                    </p>
+                                                    {daysRemaining > 0 && daysRemaining <= 30 && (
+                                                        <p className="text-xs text-yellow-300 mt-1">
+                                                            Renew soon to avoid service interruption
+                                                        </p>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        )}
+                    </div>
                 </div>
             ) : (
                 <div className="space-y-6">
@@ -891,35 +1021,10 @@ const Subscription = ({ institution, stats, onRefresh }) => {
                             </div>
                         </div>
                     </div>
-
                 </div>
             )}
-
-                {/* Usage Statistics - Always Visible */}
-                {stats && (
-                    <div className="bg-white/5 border border-white/10 rounded-xl p-6 backdrop-blur-sm">
-                        <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
-                            <TrendingUp className="w-5 h-5" style={{ color: secondaryColor }} />
-                            {t('institution_admin.usage_statistics')}
-                        </h3>
-                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                            <div className="p-4 bg-black/20 rounded-lg">
-                                <p className="text-gray-400 text-xs mb-1">{t('institution_admin.users_label')}</p>
-                                <p className="text-2xl font-bold text-white">{stats?.totalUsers || 0}</p>
-                            </div>
-                            <div className="p-4 bg-black/20 rounded-lg">
-                                <p className="text-gray-400 text-xs mb-1">{t('institution_admin.presentations_label')}</p>
-                                <p className="text-2xl font-bold text-white">{stats?.totalPresentations || 0}</p>
-                            </div>
-                            <div className="p-4 bg-black/20 rounded-lg">
-                                <p className="text-gray-400 text-xs mb-1">{t('institution_admin.total_responses_label_stats')}</p>
-                                <p className="text-2xl font-bold text-white">{stats?.totalResponses || 0}</p>
-                            </div>
-                        </div>
-                    </div>
-                )}
             </div>
-        </motion.div>
+        </div>
     );
 };
 

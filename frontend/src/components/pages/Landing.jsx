@@ -974,7 +974,8 @@ export default function Landing() {
                   t('pricing.pro_plan_feature2'),
                   t('pricing.pro_plan_feature3'),
                   t('pricing.pro_plan_feature4'),
-                  t('pricing.pro_plan_feature5')
+                  t('pricing.pro_plan_feature5'),
+                  t('pricing.pro_plan_feature6')
                 ],
                 color: 'from-teal-400 to-emerald-500',
                 borderColor: 'border-teal-500/30',
@@ -1099,14 +1100,6 @@ export default function Landing() {
                 className="w-full sm:w-auto px-10 py-5 rounded-full bg-gradient-to-r from-blue-600 to-teal-500 text-white font-bold text-xl shadow-xl hover:shadow-teal-500/25 transition-all"
               >
                 {t('landing.sign_up_today')}
-              </motion.button>
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                onClick={() => toast.success(t('toasts.landing.demo_booking_coming_soon'))}
-                className="w-full sm:w-auto px-10 py-5 rounded-full bg-white text-slate-900 font-bold text-xl hover:bg-gray-100 transition-all"
-              >
-                {t('landing.book_demo')}
               </motion.button>
             </div>
           </div>

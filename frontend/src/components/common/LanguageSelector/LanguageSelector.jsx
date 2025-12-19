@@ -18,11 +18,25 @@ const LanguageSelector = () => {
     { code: 'zh', name: 'Chinese', nativeName: '中文', type: 'foreign' },
     { code: 'fr', name: 'French', nativeName: 'Français', type: 'foreign' },
     { code: 'pt', name: 'Portuguese', nativeName: 'Português', type: 'foreign' },
+    { code: 'id', name: 'Indonesian', nativeName: 'Bahasa Indonesia', type: 'foreign' },
+    { code: 'ru', name: 'Russian', nativeName: 'Русский', type: 'foreign' },
+    { code: 'ja', name: 'Japanese', nativeName: '日本語', type: 'foreign' },
+    { code: 'de', name: 'German', nativeName: 'Deutsch', type: 'foreign' },
+    { code: 'ko', name: 'Korean', nativeName: '한국어', type: 'foreign' },
+    { code: 'tr', name: 'Turkish', nativeName: 'Türkçe', type: 'foreign' },
+    { code: 'it', name: 'Italian', nativeName: 'Italiano', type: 'foreign' },
+    { code: 'vi', name: 'Vietnamese', nativeName: 'Tiếng Việt', type: 'foreign' },
+    { code: 'sw', name: 'Swahili', nativeName: 'Kiswahili', type: 'foreign' },
     { code: 'hi', name: 'Hindi', nativeName: 'हिन्दी', type: 'regional' },
     { code: 'ta', name: 'Tamil', nativeName: 'தமிழ்', type: 'regional' },
     { code: 'te', name: 'Telugu', nativeName: 'తెలుగు', type: 'regional' },
     { code: 'bn', name: 'Bengali', nativeName: 'বাংলা', type: 'regional' },
-    { code: 'mr', name: 'Marathi', nativeName: 'मराठी', type: 'regional' }
+    { code: 'mr', name: 'Marathi', nativeName: 'मराठी', type: 'regional' },
+    { code: 'kn', name: 'Kannada', nativeName: 'ಕನ್ನಡ', type: 'regional' },
+    { code: 'gu', name: 'Gujarati', nativeName: 'ગુજરાતી', type: 'regional' },
+    { code: 'ml', name: 'Malayalam', nativeName: 'മലയാളം', type: 'regional' },
+    { code: 'pa', name: 'Punjabi', nativeName: 'ਪੰਜਾਬੀ', type: 'regional' },
+    { code: 'ur', name: 'Urdu', nativeName: 'اردو', type: 'regional' }
   ];
 
   // Filter languages based on type and search term
@@ -39,7 +53,7 @@ const LanguageSelector = () => {
   // Handle language change
   const changeLanguage = (code) => {
     // Check if the language is one of the new coming soon languages
-    const comingSoonLanguages = [];
+    const comingSoonLanguages = ['kn', 'gu', 'ml', 'pa', 'ur', 'id', 'ru', 'ja', 'de', 'ko', 'tr', 'it', 'vi', 'sw'];
     if (comingSoonLanguages.includes(code)) {
       const languageName = languages.find(lang => lang.code === code)?.name || 'This';
       toast(`${languageName} language coming soon`);

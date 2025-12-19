@@ -56,6 +56,7 @@ const PricingPage = () => {
                 t('pricing.pro_plan_feature3'),
                 t('pricing.pro_plan_feature4'),
                 t('pricing.pro_plan_feature5'),
+                t('pricing.pro_plan_feature6'),
             ],
             buttonText: t('pricing.pro_plan_button'),
             color: 'from-teal-400 to-emerald-500',

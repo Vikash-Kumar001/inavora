@@ -1147,6 +1147,7 @@
     "pro_plan_feature3": "Unlimited Slides",
     "pro_plan_feature4": "Unlimited Audience",
     "pro_plan_feature5": "Export Results",
+    "pro_plan_feature6": "Import Your Presentations",
     "pro_plan_button": "Upgrade to Pro",
     "pro_plan_popular": "POPULAR",
     "lifetime_plan_name": "Lifetime",
@@ -2481,6 +2482,9 @@
         "help1": "Use the Help Center",
         "help2": "Contact priority support",
         "help3": "Share feedback directly from the dashboard"
+      },
+      "q18": {
+        "question": "Data & Privacy FAQs"
       }
     },
     "data_privacy_faq": {

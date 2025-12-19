@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { Image as ImageIcon, Upload, X, Link as LinkIcon } from 'lucide-react';
 import SlideTypeHeader from '../common/SlideTypeHeader';
 import toast from 'react-hot-toast';
@@ -15,6 +15,8 @@ const ImageEditor = ({ slide, onUpdate }) => {
   const [uploadMethod, setUploadMethod] = useState('file'); // 'file' or 'url'
   const [urlInput, setUrlInput] = useState('');
   const [isValidatingUrl, setIsValidatingUrl] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
+  const dropZoneRef = useRef(null);
 
   useEffect(() => {
     if (slide) {
@@ -32,13 +34,8 @@ const ImageEditor = ({ slide, onUpdate }) => {
     }
   }, [slide]);
 
-  const handleQuestionChange = (value) => {
-    setQuestion(value);
-    onUpdate({ ...slide, question: value });
-  };
-
-  const handleImageUpload = async (e) => {
-    const file = e.target.files[0];
+  // Process image file (used by file input, drag-drop, and paste)
+  const processImageFile = useCallback(async (file) => {
     if (!file) return;
 
     // Check if file is an image
@@ -72,6 +69,8 @@ const ImageEditor = ({ slide, onUpdate }) => {
               imagePublicId: response.data.publicId
             });
             toast.success(t('slide_editors.image.upload_success'));
+            // Switch to file method after successful upload
+            setUploadMethod('file');
           }
         } catch (error) {
           console.error('Upload error:', error);
@@ -101,6 +100,75 @@ const ImageEditor = ({ slide, onUpdate }) => {
       console.error('Image processing error:', error);
       toast.error(translateError(error, t, 'slide_editors.image.upload_failed'));
       setIsUploading(false);
+    }
+  }, [slide, onUpdate, t]);
+
+  // Handle paste event for clipboard images
+  useEffect(() => {
+    const handlePaste = async (e) => {
+      // Only handle paste when the editor is focused/active
+      const items = e.clipboardData?.items;
+      if (!items) return;
+
+      for (let i = 0; i < items.length; i++) {
+        const item = items[i];
+        if (item.type.indexOf('image') !== -1) {
+          e.preventDefault();
+          const file = item.getAsFile();
+          if (file) {
+            await processImageFile(file);
+          }
+          break;
+        }
+      }
+    };
+
+    // Add paste event listener to the document
+    document.addEventListener('paste', handlePaste);
+    return () => {
+      document.removeEventListener('paste', handlePaste);
+    };
+  }, [processImageFile]);
+
+  const handleQuestionChange = (value) => {
+    setQuestion(value);
+    onUpdate({ ...slide, question: value });
+  };
+
+  const handleImageUpload = async (e) => {
+    const file = e.target.files[0];
+    await processImageFile(file);
+  };
+
+  // Drag and drop handlers
+  const handleDragOver = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!isUploading) {
+      setIsDragging(true);
+    }
+  };
+
+  const handleDragLeave = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    // Only set dragging to false if we're leaving the drop zone
+    if (!e.currentTarget.contains(e.relatedTarget)) {
+      setIsDragging(false);
+    }
+  };
+
+  const handleDrop = async (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+
+    if (isUploading) return;
+
+    const files = e.dataTransfer.files;
+    if (files && files.length > 0) {
+      const file = files[0];
+      await processImageFile(file);
     }
   };
 
@@ -199,7 +267,13 @@ const ImageEditor = ({ slide, onUpdate }) => {
   };
 
   return (
-    <div className="h-full overflow-y-auto scrollbar-thin bg-[#1F1F1F] text-[#E0E0E0]">
+    <div 
+      className="h-full overflow-y-auto scrollbar-thin bg-[#1F1F1F] text-[#E0E0E0]"
+      onDragOver={handleDragOver}
+      onDragLeave={handleDragLeave}
+      onDrop={handleDrop}
+      ref={dropZoneRef}
+    >
       <SlideTypeHeader type="image" />
 
       <div className="p-4 border-b border-[#2A2A2A]">
@@ -273,9 +347,26 @@ const ImageEditor = ({ slide, onUpdate }) => {
 
             {/* File Upload Method */}
             {uploadMethod === 'file' && (
-              <div className="border-2 border-dashed border-[#2A2A2A] rounded-lg p-6 text-center bg-[#232323]">
-                <ImageIcon className="h-10 w-10 text-[#9E9E9E] mx-auto mb-3" />
-                <p className="text-sm text-[#9E9E9E] mb-3">{t('slide_editors.image.upload_prompt')}</p>
+              <div 
+                className={`border-2 border-dashed rounded-lg p-6 text-center bg-[#232323] transition-all ${
+                  isDragging 
+                    ? 'border-[#4CAF50] bg-[#2A3A2A] scale-[1.02]' 
+                    : 'border-[#2A2A2A] hover:border-[#4CAF50]/50'
+                }`}
+                onDragOver={handleDragOver}
+                onDragLeave={handleDragLeave}
+                onDrop={handleDrop}
+              >
+                <ImageIcon className={`h-10 w-10 mx-auto mb-3 transition-colors ${
+                  isDragging ? 'text-[#4CAF50]' : 'text-[#9E9E9E]'
+                }`} />
+                <p className={`text-sm mb-3 transition-colors ${
+                  isDragging ? 'text-[#4CAF50] font-medium' : 'text-[#9E9E9E]'
+                }`}>
+                  {isDragging 
+                    ? t('slide_editors.image.drop_image_here') || 'Drop image here'
+                    : t('slide_editors.image.upload_prompt')}
+                </p>
                 <label className="inline-flex items-center px-4 py-2 bg-[#4CAF50] text-white rounded-lg hover:bg-[#43A047] transition-colors cursor-pointer">
                   <Upload className="h-4 w-4 mr-2" />
                   {isUploading ? t('slide_editors.image.uploading') : t('slide_editors.image.choose_file')}
@@ -287,7 +378,9 @@ const ImageEditor = ({ slide, onUpdate }) => {
                     disabled={isUploading}
                   />
                 </label>
-                <p className="text-xs text-[#7E7E7E] mt-2">{t('slide_editors.image.max_size')}</p>
+                <p className="text-xs text-[#7E7E7E] mt-2">
+                  {t('slide_editors.image.max_size')} • {t('slide_editors.image.drag_drop_hint') || 'Drag & drop or paste image'}
+                </p>
               </div>
             )}
 

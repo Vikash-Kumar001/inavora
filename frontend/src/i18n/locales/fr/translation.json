@@ -172,6 +172,8 @@
       "upload_failed": "Échec du téléchargement de la vidéo",
       "video_load_error": "Échec du chargement de la vidéo",
       "video_not_supported": "Votre navigateur ne prend pas en charge la balise vidéo",
+      "drop_video_here": "Déposez la vidéo ici",
+      "drag_drop_hint": "Glissez-déposez ou collez la vidéo",
       "video_content": "Contenu Vidéo",
       "video_url": "URL de la Vidéo",
       "participant_responses": "Réponses des Participants",
@@ -346,7 +348,9 @@
       "add_image": "Ajouter l'image",
       "validating": "Validation...",
       "url_hint": "Entrez un lien direct vers une image (jpg, png, gif, webp, etc.)",
-      "image_load_error": "Échec du chargement de l'image"
+      "image_load_error": "Échec du chargement de l'image",
+      "drop_image_here": "Déposez l'image ici",
+      "drag_drop_hint": "Glissez-déposez ou collez l'image"
     },
     "text": {
       "title_label": "Titre",

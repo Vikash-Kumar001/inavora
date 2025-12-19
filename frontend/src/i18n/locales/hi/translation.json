@@ -137,6 +137,8 @@
       "upload_failed": "वीडियो अपलोड करने में विफल",
       "video_load_error": "वीडियो लोड करने में विफल",
       "video_not_supported": "आपका ब्राउज़र वीडियो टैग का समर्थन नहीं करता है",
+      "drop_video_here": "यहाँ वीडियो छोड़ें",
+      "drag_drop_hint": "वीडियो खींचें और छोड़ें या पेस्ट करें",
       "video_content": "वीडियो सामग्री",
       "video_url": "वीडियो URL",
       "participant_responses": "प्रतिभागी प्रतिक्रियाएं",
@@ -316,7 +318,9 @@
       "add_image": "छवि जोड़ें",
       "validating": "सत्यापन...",
       "url_hint": "एक छवि का सीधा लिंक दर्ज करें (jpg, png, gif, webp, आदि)",
-      "image_load_error": "छवि लोड करने में विफल"
+      "image_load_error": "छवि लोड करने में विफल",
+      "drop_image_here": "यहाँ छवि छोड़ें",
+      "drag_drop_hint": "छवि खींचें और छोड़ें या पेस्ट करें"
     },
     "text": {
       "title_label": "शीर्षक",

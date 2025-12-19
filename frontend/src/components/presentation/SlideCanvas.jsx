@@ -128,12 +128,12 @@ const SlideCanvas = ({ slide, presentation, isPresenter = false, onSettingsChang
     return url;
   };
 
-  // Update local state when slide prop changes (only when slide ID changes to avoid infinite loops)
+  // Update local state when slide prop changes
   useEffect(() => {
     if (slide?.question !== undefined) {
       setQuestion(slide.question);
     }
-  }, [slide?.id]); // Only depend on slide ID, not question, to prevent infinite loops
+  }, [slide?.id, slide?.question]); // Include question to update in real-time when edited
 
   // Fetch leaderboard data when viewing a leaderboard slide
   useEffect(() => {
@@ -857,9 +857,6 @@ const SlideCanvas = ({ slide, presentation, isPresenter = false, onSettingsChang
               ) : (
                 <div className="rounded-xl border-2 border-dashed border-[#3A3A3A] bg-[#232323] py-12 sm:py-16 text-center">
                   <p className="text-[#9E9E9E]">{t('slide_editors.video.enter_url_prompt')}</p>
-                  {process.env.NODE_ENV === 'development' && (
-                    <p className="text-xs text-[#666] mt-2">Debug: videoUrl={slide?.videoUrl ? 'exists' : 'missing'}, videoPublicId={slide?.videoPublicId ? 'exists' : 'missing'}</p>
-                  )}
                 </div>
               )}
             </div>

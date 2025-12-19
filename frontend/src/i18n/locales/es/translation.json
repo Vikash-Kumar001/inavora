@@ -137,6 +137,8 @@
       "upload_failed": "Error al subir el video",
       "video_load_error": "Error al cargar el video",
       "video_not_supported": "Su navegador no admite la etiqueta de video",
+      "drop_video_here": "Suelta el video aquí",
+      "drag_drop_hint": "Arrastra y suelta o pega el video",
       "video_content": "Contenido de Video",
       "video_url": "URL de Video",
       "participant_responses": "Respuestas de Participantes",
@@ -317,7 +319,9 @@
       "add_image": "Agregar Imagen",
       "validating": "Validando...",
       "url_hint": "Ingrese un enlace directo a una imagen (jpg, png, gif, webp, etc.)",
-      "image_load_error": "Error al cargar la imagen"
+      "image_load_error": "Error al cargar la imagen",
+      "drop_image_here": "Suelta la imagen aquí",
+      "drag_drop_hint": "Arrastra y suelta o pega la imagen"
     },
     "text": {
       "title_label": "Título",

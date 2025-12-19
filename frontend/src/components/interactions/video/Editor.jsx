@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { Video, Link, Upload, X } from 'lucide-react';
 import SlideTypeHeader from '../common/SlideTypeHeader';
 import { useTranslation } from 'react-i18next';
@@ -13,7 +13,9 @@ const VideoEditor = ({ slide, onUpdate }) => {
   const [videoPublicId, setVideoPublicId] = useState(slide?.videoPublicId || '');
   const [isUploading, setIsUploading] = useState(false);
   const [uploadMethod, setUploadMethod] = useState('url'); // 'url' or 'file'
+  const [isDragging, setIsDragging] = useState(false);
   const fileInputRef = useRef(null);
+  const dropZoneRef = useRef(null);
 
   useEffect(() => {
     if (slide) {
@@ -30,73 +32,19 @@ const VideoEditor = ({ slide, onUpdate }) => {
     }
   }, [slide]);
 
-  const handleQuestionChange = (value) => {
-    setQuestion(value);
-    onUpdate({ ...slide, question: value });
-  };
-
-  const handleVideoUrlChange = (value) => {
-    setVideoUrl(value);
-    onUpdate({ ...slide, videoUrl: value });
-  };
-
-  // Extract video ID from YouTube URL for preview
-  const getYoutubeEmbedUrl = (url) => {
-    const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
-    const match = url.match(regExp);
-    const videoId = (match && match[2].length === 11) ? match[2] : null;
-    return videoId ? `https://www.youtube.com/embed/${videoId}` : null;
-  };
-
-  // Check if URL is a valid video URL
-  const isValidVideoUrl = (url) => {
-    return url.includes('youtube.com') || url.includes('youtu.be') || url.includes('vimeo.com');
-  };
-
-  // Clean Cloudinary URL by removing transformation parameters that might cause 400 errors
-  // This fixes broken eager transformation URLs
-  const cleanCloudinaryUrl = (url) => {
-    if (!url || !url.includes('cloudinary.com')) {
-      return url;
-    }
-    
-    // If URL contains transformation parameters (like /br_auto,f_auto,q_auto:eco/)
-    // and it's a video URL, try to get the base URL
-    // Pattern: https://res.cloudinary.com/cloud_name/video/upload/transformations/v1234567/folder/file.ext
-    const cloudinaryVideoPattern = /(https:\/\/res\.cloudinary\.com\/[^\/]+\/video\/upload\/)([^\/]+\/)(v\d+\/.*)/;
-    const match = url.match(cloudinaryVideoPattern);
-    
-    if (match) {
-      // Reconstruct URL without transformation parameters
-      // Format: https://res.cloudinary.com/cloud_name/video/upload/v1234567/folder/file.ext
-      return `${match[1]}${match[3]}`;
-    }
-    
-    // If pattern doesn't match, return original URL
-    return url;
-  };
-
-  const handleVideoUpload = async (e) => {
-    const file = e.target.files[0];
+  // Process video file (used by file input, drag-drop, and paste)
+  const processVideoFile = useCallback(async (file) => {
     if (!file) return;
 
     // Check if file is a video
     if (!file.type.startsWith('video/')) {
       toast.error(t('slide_editors.video.upload_video_error'));
-      // Reset file input
-      if (fileInputRef.current) {
-        fileInputRef.current.value = '';
-      }
       return;
     }
 
     // Check file size (max 100MB)
     if (file.size > 100 * 1024 * 1024) {
       toast.error(t('slide_editors.video.video_size_error'));
-      // Reset file input
-      if (fileInputRef.current) {
-        fileInputRef.current.value = '';
-      }
       return;
     }
 
@@ -125,6 +73,8 @@ const VideoEditor = ({ slide, onUpdate }) => {
               videoPublicId: response.data.publicId
             });
             toast.success(t('slide_editors.video.upload_success'));
+            // Switch to file method after successful upload
+            setUploadMethod('file');
           }
         } catch (error) {
           console.error('Upload error:', error);
@@ -175,6 +125,116 @@ const VideoEditor = ({ slide, onUpdate }) => {
         fileInputRef.current.value = '';
       }
     }
+  }, [slide, onUpdate, t]);
+
+  // Handle paste event for clipboard videos
+  useEffect(() => {
+    const handlePaste = async (e) => {
+      // Only handle paste when the editor is focused/active
+      const items = e.clipboardData?.items;
+      if (!items) return;
+
+      for (let i = 0; i < items.length; i++) {
+        const item = items[i];
+        if (item.type.indexOf('video') !== -1) {
+          e.preventDefault();
+          const file = item.getAsFile();
+          if (file) {
+            await processVideoFile(file);
+          }
+          break;
+        }
+      }
+    };
+
+    // Add paste event listener to the document
+    document.addEventListener('paste', handlePaste);
+    return () => {
+      document.removeEventListener('paste', handlePaste);
+    };
+  }, [processVideoFile]);
+
+  const handleQuestionChange = (value) => {
+    setQuestion(value);
+    onUpdate({ ...slide, question: value });
+  };
+
+  const handleVideoUrlChange = (value) => {
+    setVideoUrl(value);
+    onUpdate({ ...slide, videoUrl: value });
+  };
+
+  // Extract video ID from YouTube URL for preview
+  const getYoutubeEmbedUrl = (url) => {
+    const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
+    const match = url.match(regExp);
+    const videoId = (match && match[2].length === 11) ? match[2] : null;
+    return videoId ? `https://www.youtube.com/embed/${videoId}` : null;
+  };
+
+  // Check if URL is a valid video URL
+  const isValidVideoUrl = (url) => {
+    return url.includes('youtube.com') || url.includes('youtu.be') || url.includes('vimeo.com');
+  };
+
+  // Clean Cloudinary URL by removing transformation parameters that might cause 400 errors
+  // This fixes broken eager transformation URLs
+  const cleanCloudinaryUrl = (url) => {
+    if (!url || !url.includes('cloudinary.com')) {
+      return url;
+    }
+    
+    // If URL contains transformation parameters (like /br_auto,f_auto,q_auto:eco/)
+    // and it's a video URL, try to get the base URL
+    // Pattern: https://res.cloudinary.com/cloud_name/video/upload/transformations/v1234567/folder/file.ext
+    const cloudinaryVideoPattern = /(https:\/\/res\.cloudinary\.com\/[^\/]+\/video\/upload\/)([^\/]+\/)(v\d+\/.*)/;
+    const match = url.match(cloudinaryVideoPattern);
+    
+    if (match) {
+      // Reconstruct URL without transformation parameters
+      // Format: https://res.cloudinary.com/cloud_name/video/upload/v1234567/folder/file.ext
+      return `${match[1]}${match[3]}`;
+    }
+    
+    // If pattern doesn't match, return original URL
+    return url;
+  };
+
+  const handleVideoUpload = async (e) => {
+    const file = e.target.files[0];
+    await processVideoFile(file);
+  };
+
+  // Drag and drop handlers
+  const handleDragOver = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!isUploading) {
+      setIsDragging(true);
+    }
+  };
+
+  const handleDragLeave = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    // Only set dragging to false if we're leaving the drop zone
+    if (!e.currentTarget.contains(e.relatedTarget)) {
+      setIsDragging(false);
+    }
+  };
+
+  const handleDrop = async (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+
+    if (isUploading) return;
+
+    const files = e.dataTransfer.files;
+    if (files && files.length > 0) {
+      const file = files[0];
+      await processVideoFile(file);
+    }
   };
 
   const handleRemoveVideo = () => {
@@ -188,7 +248,13 @@ const VideoEditor = ({ slide, onUpdate }) => {
   };
 
   return (
-    <div className="h-full overflow-y-auto scrollbar-thin bg-[#1F1F1F] text-[#E0E0E0]">
+    <div 
+      className="h-full overflow-y-auto scrollbar-thin bg-[#1F1F1F] text-[#E0E0E0]"
+      onDragOver={handleDragOver}
+      onDragLeave={handleDragLeave}
+      onDrop={handleDrop}
+      ref={dropZoneRef}
+    >
       <SlideTypeHeader type="video" />
 
       <div className="p-4 border-b border-[#2A2A2A]">
@@ -319,9 +385,26 @@ const VideoEditor = ({ slide, onUpdate }) => {
 
             {/* File Upload Method */}
             {uploadMethod === 'file' && (
-              <div className="border-2 border-dashed border-[#2A2A2A] rounded-lg p-6 text-center bg-[#232323]">
-                <Video className="h-10 w-10 text-[#9E9E9E] mx-auto mb-3" />
-                <p className="text-sm text-[#9E9E9E] mb-3">{t('slide_editors.video.upload_prompt')}</p>
+              <div 
+                className={`border-2 border-dashed rounded-lg p-6 text-center bg-[#232323] transition-all ${
+                  isDragging 
+                    ? 'border-[#4CAF50] bg-[#2A3A2A] scale-[1.02]' 
+                    : 'border-[#2A2A2A] hover:border-[#4CAF50]/50'
+                }`}
+                onDragOver={handleDragOver}
+                onDragLeave={handleDragLeave}
+                onDrop={handleDrop}
+              >
+                <Video className={`h-10 w-10 mx-auto mb-3 transition-colors ${
+                  isDragging ? 'text-[#4CAF50]' : 'text-[#9E9E9E]'
+                }`} />
+                <p className={`text-sm mb-3 transition-colors ${
+                  isDragging ? 'text-[#4CAF50] font-medium' : 'text-[#9E9E9E]'
+                }`}>
+                  {isDragging 
+                    ? t('slide_editors.video.drop_video_here') || 'Drop video here'
+                    : t('slide_editors.video.upload_prompt')}
+                </p>
                 <label className="inline-flex items-center px-4 py-2 bg-[#4CAF50] text-white rounded-lg hover:bg-[#43A047] transition-colors cursor-pointer">
                   <Upload className="h-4 w-4 mr-2" />
                   {isUploading ? t('slide_editors.video.uploading') : t('slide_editors.video.choose_file')}
@@ -334,7 +417,9 @@ const VideoEditor = ({ slide, onUpdate }) => {
                     disabled={isUploading}
                   />
                 </label>
-                <p className="text-xs text-[#7E7E7E] mt-2">{t('slide_editors.video.max_size')}</p>
+                <p className="text-xs text-[#7E7E7E] mt-2">
+                  {t('slide_editors.video.max_size')} • {t('slide_editors.video.drag_drop_hint') || 'Drag & drop or paste video'}
+                </p>
               </div>
             )}
           </div>

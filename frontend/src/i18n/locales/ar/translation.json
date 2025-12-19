@@ -193,6 +193,8 @@
       "upload_failed": "فشل رفع الفيديو",
       "video_load_error": "فشل تحميل الفيديو",
       "video_not_supported": "المتصفح الخاص بك لا يدعم علامة الفيديو",
+      "drop_video_here": "أسقط الفيديو هنا",
+      "drag_drop_hint": "اسحب وأفلت أو الصق الفيديو",
       "video_content": "محتوى الفيديو",
       "video_url": "رابط الفيديو",
       "participant_responses": "ردود المشاركين",
@@ -368,7 +370,9 @@
       "add_image": "إضافة صورة",
       "validating": "جارٍ التحقق...",
       "url_hint": "أدخل رابط مباشر لصورة (jpg, png, gif, webp، إلخ)",
-      "image_load_error": "فشل تحميل الصورة"
+      "image_load_error": "فشل تحميل الصورة",
+      "drop_image_here": "أسقط الصورة هنا",
+      "drag_drop_hint": "اسحب وأفلت أو الصق الصورة"
     },
     "text": {
       "title_label": "العنوان",

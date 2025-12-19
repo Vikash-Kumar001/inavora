@@ -178,6 +178,8 @@
       "upload_failed": "Failed to upload video",
       "video_load_error": "Failed to load video",
       "video_not_supported": "Your browser does not support the video tag",
+      "drop_video_here": "Drop video here",
+      "drag_drop_hint": "Drag & drop or paste video",
       "video_content": "Video Content",
       "video_url": "Video URL",
       "participant_responses": "Participant Responses",
@@ -358,7 +360,9 @@
       "add_image": "Add Image",
       "validating": "Validating...",
       "url_hint": "Enter a direct link to an image (jpg, png, gif, webp, etc.)",
-      "image_load_error": "Failed to load image"
+      "image_load_error": "Failed to load image",
+      "drop_image_here": "Drop image here",
+      "drag_drop_hint": "Drag & drop or paste image"
     },
     "text": {
       "title_label": "Title",

@@ -172,6 +172,8 @@
       "upload_failed": "Falha ao enviar o vídeo",
       "video_load_error": "Falha ao carregar o vídeo",
       "video_not_supported": "Seu navegador não suporta a tag de vídeo",
+      "drop_video_here": "Solte o vídeo aqui",
+      "drag_drop_hint": "Arraste e solte ou cole o vídeo",
       "video_content": "Conteúdo do Vídeo",
       "video_url": "URL do Vídeo",
       "participant_responses": "Respostas dos Participantes",
@@ -336,7 +338,9 @@
       "add_image": "Adicionar Imagem",
       "validating": "Validando...",
       "url_hint": "Digite um link direto para uma imagem (jpg, png, gif, webp, etc.)",
-      "image_load_error": "Falha ao carregar a imagem"
+      "image_load_error": "Falha ao carregar a imagem",
+      "drop_image_here": "Solte a imagem aqui",
+      "drag_drop_hint": "Arraste e solte ou cole a imagem"
     },
     "text": {
       "title_label": "Título",

@@ -172,6 +172,8 @@
       "upload_failed": "视频上传失败",
       "video_load_error": "加载视频失败",
       "video_not_supported": "您的浏览器不支持视频标签",
+      "drop_video_here": "将视频拖放到此处",
+      "drag_drop_hint": "拖放或粘贴视频",
       "video_content": "视频内容",
       "video_url": "视频网址",
       "participant_responses": "参与者回复",
@@ -347,7 +349,9 @@
       "add_image": "添加图片",
       "validating": "验证中...",
       "url_hint": "输入图片的直接链接（jpg、png、gif、webp等）",
-      "image_load_error": "加载图片失败"
+      "image_load_error": "加载图片失败",
+      "drop_image_here": "将图片拖放到此处",
+      "drag_drop_hint": "拖放或粘贴图片"
     },
     "text": {
       "title_label": "标题",

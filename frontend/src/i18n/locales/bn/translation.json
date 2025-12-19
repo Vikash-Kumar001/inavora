@@ -172,6 +172,8 @@
       "upload_failed": "ভিডিও আপলোড করতে ব্যর্থ",
       "video_load_error": "ভিডিও লোড করতে ব্যর্থ",
       "video_not_supported": "আপনার ব্রাউজার ভিডিও ট্যাগ সমর্থন করে না",
+      "drop_video_here": "এখানে ভিডিও ছেড়ে দিন",
+      "drag_drop_hint": "ভিডিও টেনে আনুন বা পেস্ট করুন",
       "video_content": "ভিডিও কন্টেন্ট",
       "video_url": "ভিডিও URL",
       "participant_responses": "অংশগ্রহণকারী প্রতিক্রিয়া",
@@ -347,7 +349,9 @@
       "add_image": "ছবি যোগ করুন",
       "validating": "যাচাই করা হচ্ছে...",
       "url_hint": "একটি ছবির সরাসরি লিঙ্ক লিখুন (jpg, png, gif, webp, ইত্যাদি)",
-      "image_load_error": "ছবি লোড করতে ব্যর্থ"
+      "image_load_error": "ছবি লোড করতে ব্যর্থ",
+      "drop_image_here": "এখানে ছবি ছেড়ে দিন",
+      "drag_drop_hint": "ছবি টেনে আনুন বা পেস্ট করুন"
     },
     "text": {
       "title_label": "শিরোনাম",

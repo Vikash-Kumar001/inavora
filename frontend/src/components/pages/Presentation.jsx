@@ -1193,30 +1193,6 @@ export default function Presentation() {
 
           {/* Right Section */}
           <div className="flex items-center gap-1.5 sm:gap-2 flex-shrink-0">
-            {/* New Slide Button - Sticky in header */}
-            {activeTab === 'create' && (
-              <button
-                onClick={() => setShowNewSlideDropdown(!showNewSlideDropdown)}
-                className={`hidden sm:flex items-center gap-2 px-3 sm:px-4 py-2 rounded-lg transition-all active:scale-95 text-sm font-medium touch-manipulation ${
-                  showNewSlideDropdown
-                    ? 'bg-[#388E3C] text-white shadow-[0_4px_14px_rgba(56,142,60,0.35)]'
-                    : 'bg-[#2E7D32] text-white hover:bg-[#388E3C] shadow-[0_4px_14px_rgba(56,142,60,0.25)]'
-                }`}
-                title={showNewSlideDropdown ? t('presentation.new_slide_cancel') : t('presentation.new_slide')}
-              >
-                {showNewSlideDropdown ? (
-                  <>
-                    <X className="h-4 w-4" />
-                    <span className="hidden md:inline">{t('presentation.new_slide_cancel')}</span>
-                  </>
-                ) : (
-                  <>
-                    <Plus className="h-4 w-4" />
-                    <span className="hidden md:inline">{t('presentation.new_slide')}</span>
-                  </>
-                )}
-              </button>
-            )}
             <button
               onClick={saveToBackend}
               className="p-2.5 sm:p-2.5 rounded-lg transition-all active:scale-95 bg-[#2A2A2A] hover:bg-[#333333] touch-manipulation"
@@ -1249,20 +1225,6 @@ export default function Presentation() {
             </button>
           </div>
         </div>
-
-        {/* New Slide Dropdown - Positioned below header when shown from header button */}
-        {showNewSlideDropdown && activeTab === 'create' && (
-          <div className="absolute top-full right-4 sm:right-6 md:right-auto md:left-auto z-50 mt-2">
-            <NewSlideDropdown
-              onSelectType={(type) => {
-                handleAddSlide(type);
-                setShowNewSlideDropdown(false);
-              }}
-              onClose={() => setShowNewSlideDropdown(false)}
-              user={user}
-            />
-          </div>
-        )}
 
         {/* Mobile Tabs Row - Only on mobile/tablet */}
         <div className="md:hidden border-t border-[#2A2A2A] px-3 sm:px-4 bg-[#1F1F1F]">

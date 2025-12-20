@@ -215,7 +215,8 @@
       "responses_count": "{{count}} réponses",
       "total_votes": "{{count}} votes au total",
       "audience_responses": "Réponses de l'audience",
-      "responses_will_appear": "Les réponses apparaîtront ici en direct lorsque les participants les soumettront."
+      "responses_will_appear": "Les réponses apparaîtront ici en direct lorsque les participants les soumettront.",
+      "no_responses_yet": "Aucune réponse pour le moment"
     },
     "word_cloud": {
       "question_label": "Question",
@@ -235,7 +236,8 @@
       "word_submitted": "✓ Votre mot{{plural}} soumis ! Visualisation du nuage de mots en direct...",
       "live_word_cloud": "Nuage de Mots en Direct",
       "response_count": "{{count}} réponse{{plural}}",
-      "no_words_yet": "Aucun mot soumis pour le moment. En attente de réponses..."
+      "no_words_yet": "Aucun mot soumis pour le moment. En attente de réponses...",
+      "no_responses_yet": "Aucune réponse pour le moment"
     },
     "ranking": {
       "question_label": "Question",
@@ -561,7 +563,8 @@
       "total_guesses": "Total des devinettes :",
       "reset_responses": "Réinitialiser les réponses",
       "incorrect_guesses": "Devinettes incorrectes",
-      "correct_answer": "Réponse correcte"
+      "correct_answer": "Réponse correcte",
+      "no_guesses_yet": "Aucun guess pour le moment"
     },
     "hundred_points": {
       "question_label": "Question",
@@ -715,7 +718,9 @@
     "join_link": "Lien de participation",
     "join_link_description": "Partagez ce lien directement avec les participants",
     "welcome": "Bienvenue",
-    "live": "En direct"
+    "live": "En direct",
+    "leaderboard_footer": "Les scores sont calculés en fonction de l'exactitude et du temps de réponse. Continuez à participer pour améliorer votre classement !",
+    "loading_leaderboard": "Chargement du classement..."
   },
   "presentation_results": {
     "title": "Résultats de la Présentation",
@@ -748,10 +753,27 @@
     "question": "Question",
     "slide": "Diapositive",
     "responses": "réponses",
+    "clear_results": "Effacer les Résultats",
+    "clear_all_results": "Effacer Tous les Résultats",
+    "clear_current_slide": "Effacer le Résultat de la Diapositive",
+    "clear_all_results_title": "Effacer tous les résultats ?",
+    "clear_all_results_description": "Cela supprimera définitivement toutes les réponses, scores et données de session pour cette présentation. Vous pourrez présenter à nouveau et collecter de nouvelles données. Cette action ne peut pas être annulée.",
+    "clear_slide_results_title": "Effacer le résultat de la diapositive actuelle ?",
+    "clear_slide_results_description": "Cela supprimera définitivement toutes les réponses et données de session pour la diapositive actuelle. Vous pourrez présenter cette diapositive à nouveau et collecter de nouvelles données. Cette action ne peut pas être annulée.",
+    "clear_results_confirm": "Effacer les Résultats",
+    "clear_results_cancel": "Annuler",
+    "results_cleared_success": "Tous les résultats ont été effacés avec succès. Vous pouvez maintenant présenter à nouveau et collecter de nouvelles données.",
+    "slide_results_cleared_success": "Les résultats de la diapositive actuelle ont été effacés avec succès. Vous pouvez maintenant présenter cette diapositive à nouveau et collecter de nouvelles données.",
+    "clear_results_failed": "Échec de l'effacement des résultats. Veuillez réessayer.",
+    "no_current_slide": "Aucune diapositive actuelle trouvée.",
+    "invalid_slide": "Diapositive invalide.",
+    "clear_slide": "Effacer",
+    "clear_slide_results_tooltip": "Effacer les résultats de cette diapositive",
     "filters": {
       "all": "Toutes",
       "answered": "Répondues",
-      "unanswered": "Sans réponse"
+      "unanswered": "Sans réponse",
+      "no": "Non"
     },
     "slide_types": {
       "multiple_choice": "Choix Multiple",
@@ -769,6 +791,49 @@
       "pick_answer": "Choisir la Réponse",
       "type_answer": "Taper la Réponse",
       "slide": "Diapositive"
+    },
+    "common_labels": {
+      "votes": "votes",
+      "vote": "vote",
+      "points": "points",
+      "point": "point",
+      "avg_points": "moy. points",
+      "percentage": "%",
+      "correct_answer": "Bonne Réponse",
+      "correct_answers": "Bonnes Réponses",
+      "total_responses_label": "Total des Réponses",
+      "no_responses_yet": "Aucune réponse pour le moment",
+      "no_participants_yet": "Aucun participant pour le moment",
+      "no_questions_submitted_yet": "Aucune question soumise pour le moment",
+      "no_guesses_yet": "Aucun guess pour le moment",
+      "statistics": "Statistiques",
+      "results_distribution": "Distribution des Résultats",
+      "raw_data": "Données Brutes",
+      "option": "Option",
+      "newest": "Plus Récent",
+      "oldest": "Plus Ancien",
+      "items_overview": "Aperçu des Éléments",
+      "response": "réponse",
+      "views": "Vues",
+      "total_interactions": "Total des Interactions",
+      "low": "Faible",
+      "high": "Élevé",
+      "overall_score": "Score Global",
+      "participant_name": "Nom du Participant",
+      "submitted_at": "Soumis Le",
+      "upvotes": "Votes Positifs",
+      "anonymous": "Anonyme",
+      "popular": "Populaire",
+      "questions": "questions",
+      "question": "Question",
+      "image_not_found": "Image non trouvée",
+      "pin_target": "Cible d'épingle",
+      "items_overview": "Aperçu des Éléments",
+      "response_label": "réponse",
+      "increase_revenue": "Augmenter les Revenus",
+      "decrease_revenue": "Diminuer les Revenus",
+      "correct": "Correct",
+      "no_items_configured": "Aucun élément configuré"
     }
   },
   "dashboard": {

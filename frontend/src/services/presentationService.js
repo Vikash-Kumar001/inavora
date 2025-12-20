@@ -318,3 +318,25 @@ export const getSlideResponses = async (presentationId, slideId) => {
     throw error;
   }
 };
+
+// Clear all results for a presentation
+export const clearPresentationResults = async (presentationId) => {
+  try {
+    const response = await api.delete(`/presentations/${presentationId}/results`);
+    return response.data;
+  } catch (error) {
+    console.error('Clear presentation results error:', error);
+    throw error;
+  }
+};
+
+// Clear results for a specific slide
+export const clearSlideResults = async (presentationId, slideId) => {
+  try {
+    const response = await api.delete(`/presentations/${presentationId}/slides/${slideId}/results`);
+    return response.data;
+  } catch (error) {
+    console.error('Clear slide results error:', error);
+    throw error;
+  }
+};

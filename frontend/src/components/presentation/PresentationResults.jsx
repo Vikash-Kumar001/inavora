@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { LoaderCircle, Download } from 'lucide-react';
+import { LoaderCircle, Download, Trash2, ChevronDown } from 'lucide-react';
 import { io } from 'socket.io-client';
 import { getSocketUrl } from '../../utils/config';
 import * as presentationService from '../../services/presentationService';
@@ -9,6 +9,7 @@ import * as XLSX from 'xlsx';
 import { useAuth } from '../../context/AuthContext';
 import { useTranslation } from 'react-i18next';
 import { getEffectivePlan, getEffectiveStatus } from '../../utils/subscriptionUtils';
+import ConfirmDialog from '../common/ConfirmDialog';
 
 // Import new Result Components
 import MCQResult from '../interactions/Results/MCQResult';
@@ -41,6 +42,12 @@ const PresentationResults = ({ slides, presentationId }) => {
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState(null);
     const [isExporting, setIsExporting] = useState(false);
+    const [isClearing, setIsClearing] = useState(false);
+    const [showClearDialog, setShowClearDialog] = useState(false);
+    const [clearDialogType, setClearDialogType] = useState(null); // 'all' or 'slide'
+    const [slideToClear, setSlideToClear] = useState(null); // Store slideId when clearing a specific slide
+    const [showClearDropdown, setShowClearDropdown] = useState(false);
+    const [showIndividualClearButtons, setShowIndividualClearButtons] = useState(false); // Show clear buttons on each slide
     const resultsRef = useRef(null);
     const socketRef = useRef(null);
 
@@ -194,9 +201,21 @@ const PresentationResults = ({ slides, presentationId }) => {
             }
         };
 
+        // Handle slide results cleared (refresh all results)
+        const handleSlideResultsCleared = async (data) => {
+            // Refetch all results when a slide's results are cleared
+            try {
+                const resultsData = await presentationService.getPresentationResults(presentationId);
+                setResults(resultsData.results || resultsData);
+            } catch (err) {
+                console.error('Failed to refresh results after clearing:', err);
+            }
+        };
+
         // Listen for events
         socket.on('response-updated', handleResponseUpdated);
         socket.on('slide-changed', handleSlideChanged);
+        socket.on('slide-results-cleared', handleSlideResultsCleared);
         socket.on('connect', () => {
             console.log('Connected to presentation results socket');
         });
@@ -211,6 +230,7 @@ const PresentationResults = ({ slides, presentationId }) => {
         return () => {
             socket.off('response-updated', handleResponseUpdated);
             socket.off('slide-changed', handleSlideChanged);
+            socket.off('slide-results-cleared', handleSlideResultsCleared);
             socket.off('connect');
             socket.off('disconnect');
             socket.off('error');
@@ -626,6 +646,95 @@ const PresentationResults = ({ slides, presentationId }) => {
         }
     };
 
+    const handleClearResults = async () => {
+        if (!presentationId) return;
+        
+        setIsClearing(true);
+        try {
+            if (clearDialogType === 'all') {
+                // Clear all results
+                await presentationService.clearPresentationResults(presentationId);
+                toast.success(t('presentation_results.results_cleared_success'));
+                
+                // Clear local results state
+                setResults({});
+            } else if (clearDialogType === 'slide') {
+                // Clear specific slide results
+                let slideId = slideToClear;
+                
+                // If no slideToClear was set, fall back to current slide from presentation
+                if (!slideId) {
+                    const currentSlideIndex = presentation?.currentSlideIndex ?? 0;
+                    const currentSlide = slides[currentSlideIndex];
+                    
+                    if (!currentSlide) {
+                        toast.error(t('presentation_results.no_current_slide'));
+                        setIsClearing(false);
+                        setShowClearDialog(false);
+                        setSlideToClear(null);
+                        return;
+                    }
+                    
+                    slideId = currentSlide.id || currentSlide._id;
+                    if (!slideId) {
+                        toast.error(t('presentation_results.invalid_slide'));
+                        setIsClearing(false);
+                        setShowClearDialog(false);
+                        setSlideToClear(null);
+                        return;
+                    }
+                }
+                
+                await presentationService.clearSlideResults(presentationId, slideId);
+                toast.success(t('presentation_results.slide_results_cleared_success'));
+                
+                // Update local results state for this slide
+                setResults(prevResults => {
+                    if (!prevResults) return prevResults;
+                    const updatedResults = { ...prevResults };
+                    const slideIdStr = slideId.toString();
+                    delete updatedResults[slideIdStr];
+                    return updatedResults;
+                });
+            }
+            
+            // Refetch results to show updated state
+            try {
+                const resultsData = await presentationService.getPresentationResults(presentationId);
+                setResults(resultsData.results || resultsData);
+            } catch (err) {
+                console.error('Failed to refresh results after clearing:', err);
+            }
+        } catch (error) {
+            console.error('Clear results error:', error);
+            toast.error(t('presentation_results.clear_results_failed'));
+        } finally {
+            setIsClearing(false);
+            setShowClearDialog(false);
+            setClearDialogType(null);
+            setSlideToClear(null);
+            setShowIndividualClearButtons(false); // Hide buttons after successful clear
+        }
+    };
+
+    const handleClearAllClick = () => {
+        setClearDialogType('all');
+        setShowClearDialog(true);
+        setShowClearDropdown(false);
+    };
+
+    const handleClearSlideClick = () => {
+        // Enable showing individual clear buttons on each slide
+        setShowIndividualClearButtons(true);
+        setShowClearDropdown(false);
+    };
+
+    const handleClearSpecificSlide = (slideId) => {
+        setClearDialogType('slide');
+        setSlideToClear(slideId);
+        setShowClearDialog(true);
+    };
+
     if (isLoading) {
         return (
             <div className="flex-1 bg-[#1A1A1A] p-4 sm:p-6 md:p-8 overflow-y-auto">
@@ -722,16 +831,17 @@ const PresentationResults = ({ slides, presentationId }) => {
     };
 
     return (
-        <div className="flex-1 bg-[#1A1A1A] p-4 sm:p-6 md:p-8 overflow-y-auto">
-            <div className="max-w-5xl mx-auto space-y-4 sm:space-y-6 md:space-y-8 pb-12 sm:pb-16 md:pb-20">
-                <div className="mb-4 sm:mb-6 md:mb-8">
+        <div className="flex-1 bg-[#1A1A1A] overflow-y-auto">
+            <div className="max-w-5xl mx-auto">
+                {/* Sticky Header */}
+                <div className="sticky top-0 z-30 bg-[#1A1A1A] border-b border-[#2A2A2A] p-4 sm:p-6 md:p-8 mb-4 sm:mb-6 md:mb-8">
                     <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                         <div>
                             <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-[#E0E0E0] mb-1 sm:mb-2">{t('presentation_results.title')}</h2>
                             <p className="text-sm sm:text-base text-[#B0B0B0]">{t('presentation_results.subtitle')}</p>
                         </div>
-                        {(canExportFullPDF || canExportProPDF) && (
-                            <div className="flex gap-2">
+                        <div className="flex gap-2">
+                            {(canExportFullPDF || canExportProPDF) && (
                                 <div className="relative group">
                                     <button
                                         disabled={isExporting}
@@ -780,22 +890,105 @@ const PresentationResults = ({ slides, presentationId }) => {
                                         )}
                                     </div>
                                 </div>
+                            )}
+                            <div className="relative">
+                                <button
+                                    onClick={() => setShowClearDropdown(!showClearDropdown)}
+                                    disabled={isClearing || isExporting}
+                                    className="flex items-center gap-2 px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-all font-medium disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap shadow-lg hover:shadow-xl"
+                                >
+                                    <Trash2 className="w-4 h-4" />
+                                    {t('presentation_results.clear_results')}
+                                    <ChevronDown className="w-4 h-4" />
+                                </button>
+                                {showClearDropdown && (
+                                    <>
+                                        <div 
+                                            className="fixed inset-0 z-10" 
+                                            onClick={() => setShowClearDropdown(false)}
+                                        />
+                                        <div className="absolute right-0 top-full mt-1 w-56 bg-[#1e293b] border border-white/10 rounded-lg shadow-xl z-20">
+                                            <button
+                                                onClick={handleClearAllClick}
+                                                disabled={isClearing || isExporting}
+                                                className="w-full text-left px-4 py-2 hover:bg-white/5 text-sm text-white disabled:opacity-50 flex items-center gap-2"
+                                            >
+                                                <Trash2 className="w-4 h-4" />
+                                                {t('presentation_results.clear_all_results')}
+                                            </button>
+                                            <div className="h-px bg-white/10"></div>
+                                            <button
+                                                onClick={handleClearSlideClick}
+                                                disabled={isClearing || isExporting}
+                                                className="w-full text-left px-4 py-2 hover:bg-white/5 text-sm text-white disabled:opacity-50 flex items-center gap-2"
+                                            >
+                                                <Trash2 className="w-4 h-4" />
+                                                {t('presentation_results.clear_current_slide')}
+                                            </button>
+                                        </div>
+                                    </>
+                                )}
                             </div>
-                        )}
+                        </div>
                     </div>
                 </div>
 
-                <div ref={resultsRef}>
-                    {slides.map((slide, index) => (
-                        <div key={slide.id || slide._id || index} className="w-full mb-6 sm:mb-8 pdf-slide">
-                            <h3 className="text-xl font-semibold text-[#E0E0E0] mb-4 pdf-slide-title">
-                                {t('presentation_results.slide_number', { number: index + 1 })}: {typeof slide.question === 'string' ? slide.question : (slide.question?.text || slide.type.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase()))}
-                            </h3>
-                            {renderSlideResult(slide)}
-                        </div>
-                    ))}
+                {/* Results Content */}
+                <div className="px-4 sm:px-6 md:px-8 pb-12 sm:pb-16 md:pb-20 space-y-4 sm:space-y-6 md:space-y-8">
+                    <div ref={resultsRef}>
+                    {slides.map((slide, index) => {
+                        const slideId = slide.id || slide._id;
+                        const slideTitle = typeof slide.question === 'string' 
+                            ? slide.question 
+                            : (slide.question?.text || slide.type.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase()));
+                        
+                        return (
+                            <div key={slideId || index} className="w-full mb-6 sm:mb-8 pdf-slide">
+                                <div className="flex items-center justify-between gap-4 mb-4 flex-wrap">
+                                    <h3 className="text-xl font-semibold text-[#E0E0E0] pdf-slide-title">
+                                        {t('presentation_results.slide_number', { number: index + 1 })}: {slideTitle}
+                                    </h3>
+                                    {slideId && showIndividualClearButtons && slide.type !== 'leaderboard' && (
+                                        <button
+                                            onClick={() => handleClearSpecificSlide(slideId)}
+                                            disabled={isClearing}
+                                            className="flex items-center gap-1.5 px-3 py-1.5 text-sm bg-red-600/20 hover:bg-red-600/30 text-red-400 rounded-lg transition-all font-medium disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap border border-red-600/30 hover:border-red-600/50"
+                                            title={t('presentation_results.clear_slide_results_tooltip')}
+                                        >
+                                            <Trash2 className="w-3.5 h-3.5" />
+                                            {t('presentation_results.clear_slide')}
+                                        </button>
+                                    )}
+                                </div>
+                                {renderSlideResult(slide)}
+                            </div>
+                        );
+                    })}
+                    </div>
                 </div>
             </div>
+
+            <ConfirmDialog
+                isOpen={showClearDialog}
+                title={clearDialogType === 'all' 
+                    ? t('presentation_results.clear_all_results_title')
+                    : t('presentation_results.clear_slide_results_title')}
+                description={clearDialogType === 'all'
+                    ? t('presentation_results.clear_all_results_description')
+                    : (slideToClear 
+                        ? t('presentation_results.clear_slide_results_description')
+                        : t('presentation_results.clear_slide_results_description'))}
+                confirmLabel={t('presentation_results.clear_results_confirm')}
+                cancelLabel={t('presentation_results.clear_results_cancel')}
+                onConfirm={handleClearResults}
+                onCancel={() => {
+                    setShowClearDialog(false);
+                    setClearDialogType(null);
+                    setSlideToClear(null);
+                    setShowIndividualClearButtons(false); // Hide buttons after cancel
+                }}
+                isLoading={isClearing}
+            />
         </div>
     );
 };

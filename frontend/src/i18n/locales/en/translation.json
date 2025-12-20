@@ -223,7 +223,8 @@
       "responses_count": "{{count}} responses",
       "total_votes": "{{count}} total votes",
       "audience_responses": "Audience responses",
-      "responses_will_appear": "Responses will appear here live as participants submit them."
+      "responses_will_appear": "Responses will appear here live as participants submit them.",
+      "no_responses_yet": "No responses yet"
     },
     "word_cloud": {
       "question_label": "Question",
@@ -244,6 +245,7 @@
       "live_word_cloud": "Live Word Cloud",
       "response_count": "{{count}} response{{plural}}",
       "no_words_yet": "No words submitted yet. Waiting for responses...",
+      "no_responses_yet": "No responses yet",
       "default_title": "What word would you use to describe today's topic?"
     },
     "ranking": {
@@ -580,7 +582,8 @@
       "total_guesses": "Total Guesses:",
       "reset_responses": "Reset Responses",
       "incorrect_guesses": "Incorrect Guesses",
-      "correct_answer": "Correct Answer"
+      "correct_answer": "Correct Answer",
+      "no_guesses_yet": "No guesses yet"
     },
     "hundred_points": {
       "question_label": "Question",
@@ -740,7 +743,9 @@
     "end_presentation": "End Presentation",
     "kick_participant_title": "Kick Participant?",
     "kick_participant_description": "Are you sure you want to kick {{participant}} from the presentation?",
-    "kick": "Kick"
+    "kick": "Kick",
+    "leaderboard_footer": "Scores are calculated based on correctness and response time. Keep participating to improve your ranking!",
+    "loading_leaderboard": "Loading leaderboard..."
   },
   "presentation_results": {
     "title": "Presentation Results",
@@ -773,10 +778,27 @@
     "question": "Question",
     "slide": "Slide",
     "responses": "responses",
+    "clear_results": "Clear Results",
+    "clear_all_results": "Clear All Results",
+    "clear_current_slide": "Clear Slide Result",
+    "clear_all_results_title": "Clear All Results?",
+    "clear_all_results_description": "This will permanently delete all responses, scores, and session data for this presentation. You can present again and collect new data. This action cannot be undone.",
+    "clear_slide_results_title": "Clear Current Slide Result?",
+    "clear_slide_results_description": "This will permanently delete all responses and session data for the current slide. You can present this slide again and collect new data. This action cannot be undone.",
+    "clear_results_confirm": "Clear Results",
+    "clear_results_cancel": "Cancel",
+    "results_cleared_success": "All results cleared successfully. You can now present again and collect new data.",
+    "slide_results_cleared_success": "Current slide results cleared successfully. You can now present this slide again and collect new data.",
+    "clear_results_failed": "Failed to clear results. Please try again.",
+    "no_current_slide": "No current slide found.",
+    "invalid_slide": "Invalid slide.",
+    "clear_slide": "Clear",
+    "clear_slide_results_tooltip": "Clear results for this slide",
     "filters": {
       "all": "All",
       "answered": "Answered",
-      "unanswered": "Unanswered"
+      "unanswered": "Unanswered",
+      "no": "No"
     },
     "slide_types": {
       "multiple_choice": "Multiple Choice",
@@ -794,6 +816,49 @@
       "pick_answer": "Pick Answer",
       "type_answer": "Type Answer",
       "slide": "Slide"
+    },
+    "common_labels": {
+      "votes": "votes",
+      "vote": "vote",
+      "points": "points",
+      "point": "point",
+      "avg_points": "avg points",
+      "percentage": "%",
+      "correct_answer": "Correct Answer",
+      "correct_answers": "Correct Answers",
+      "total_responses_label": "Total Responses",
+      "no_responses_yet": "No responses yet",
+      "no_participants_yet": "No participants yet",
+      "no_questions_submitted_yet": "No questions submitted yet",
+      "no_guesses_yet": "No guesses yet",
+      "statistics": "Statistics",
+      "results_distribution": "Results Distribution",
+      "raw_data": "Raw Data",
+      "option": "Option",
+      "newest": "Newest",
+      "oldest": "Oldest",
+      "items_overview": "Items Overview",
+      "response": "response",
+      "views": "Views",
+      "total_interactions": "Total Interactions",
+      "low": "Low",
+      "high": "High",
+      "overall_score": "Overall Score",
+      "participant_name": "Participant Name",
+      "submitted_at": "Submitted At",
+      "upvotes": "Upvotes",
+      "anonymous": "Anonymous",
+      "popular": "Popular",
+      "questions": "questions",
+      "question": "Question",
+      "image_not_found": "Image not found",
+      "pin_target": "Pin target",
+      "items_overview": "Items Overview",
+      "response_label": "response",
+      "increase_revenue": "Increase Revenue",
+      "decrease_revenue": "Decrease Revenue",
+      "correct": "Correct",
+      "no_items_configured": "No items configured"
     }
   },
   "dashboard": {

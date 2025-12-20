@@ -182,7 +182,8 @@
       "responses_count": "{{count}} respuestas",
       "total_votes": "{{count}} votos totales",
       "audience_responses": "Respuestas de la audiencia",
-      "responses_will_appear": "Las respuestas aparecerán aquí en vivo cuando los participantes las envíen."
+      "responses_will_appear": "Las respuestas aparecerán aquí en vivo cuando los participantes las envíen.",
+      "no_responses_yet": "Aún no hay respuestas"
     },
     "word_cloud": {
       "question_label": "Pregunta",
@@ -203,6 +204,7 @@
       "live_word_cloud": "Nube de Palabras en Vivo",
       "response_count": "{{count}} respuesta{{plural}}",
       "no_words_yet": "Aún no se han enviado palabras. Esperando respuestas...",
+      "no_responses_yet": "Aún no hay respuestas",
       "default_title": "¿Qué palabra usarías para describir el tema de hoy?"
     },
     "ranking": {
@@ -532,7 +534,8 @@
       "total_guesses": "Total de Adivinanzas:",
       "reset_responses": "Restablecer Respuestas",
       "incorrect_guesses": "Adivinanzas Incorrectas",
-      "correct_answer": "Respuesta Correcta"
+      "correct_answer": "Respuesta Correcta",
+      "no_guesses_yet": "Aún no hay suposiciones"
     },
     "hundred_points": {
       "question_label": "Pregunta",
@@ -692,7 +695,9 @@
     "end_presentation": "Finalizar Presentación",
     "kick_participant_title": "¿Expulsar Participante?",
     "kick_participant_description": "¿Está seguro de que quiere expulsar a {{participant}} de la presentación?",
-    "kick": "Expulsar"
+    "kick": "Expulsar",
+    "leaderboard_footer": "Los puntajes se calculan en función de la precisión y el tiempo de respuesta. ¡Sigue participando para mejorar tu clasificación!",
+    "loading_leaderboard": "Cargando clasificación..."
   },
   "presentation_results": {
     "title": "Resultados de la Presentación",
@@ -725,10 +730,27 @@
     "question": "Pregunta",
     "slide": "Diapositiva",
     "responses": "respuestas",
+    "clear_results": "Borrar Resultados",
+    "clear_all_results": "Borrar Todos los Resultados",
+    "clear_current_slide": "Borrar Resultado de la Diapositiva",
+    "clear_all_results_title": "¿Borrar todos los resultados?",
+    "clear_all_results_description": "Esto eliminará permanentemente todas las respuestas, puntuaciones y datos de sesión para esta presentación. Puede presentar nuevamente y recopilar nuevos datos. Esta acción no se puede deshacer.",
+    "clear_slide_results_title": "¿Borrar el resultado de la diapositiva actual?",
+    "clear_slide_results_description": "Esto eliminará permanentemente todas las respuestas y datos de sesión para la diapositiva actual. Puede presentar esta diapositiva nuevamente y recopilar nuevos datos. Esta acción no se puede deshacer.",
+    "clear_results_confirm": "Borrar Resultados",
+    "clear_results_cancel": "Cancelar",
+    "results_cleared_success": "Todos los resultados se borraron exitosamente. Ahora puede presentar nuevamente y recopilar nuevos datos.",
+    "slide_results_cleared_success": "Los resultados de la diapositiva actual se borraron exitosamente. Ahora puede presentar esta diapositiva nuevamente y recopilar nuevos datos.",
+    "clear_results_failed": "Error al borrar los resultados. Por favor, inténtelo de nuevo.",
+    "no_current_slide": "No se encontró la diapositiva actual.",
+    "invalid_slide": "Diapositiva inválida.",
+    "clear_slide": "Borrar",
+    "clear_slide_results_tooltip": "Borrar resultados de esta diapositiva",
     "filters": {
       "all": "Todas",
       "answered": "Respondidas",
-      "unanswered": "Sin responder"
+      "unanswered": "Sin responder",
+      "no": "No"
     },
     "slide_types": {
       "multiple_choice": "Opción Múltiple",
@@ -746,6 +768,49 @@
       "pick_answer": "Elegir Respuesta",
       "type_answer": "Escribir Respuesta",
       "slide": "Diapositiva"
+    },
+    "common_labels": {
+      "votes": "votos",
+      "vote": "voto",
+      "points": "puntos",
+      "point": "punto",
+      "avg_points": "prom. puntos",
+      "percentage": "%",
+      "correct_answer": "Respuesta Correcta",
+      "correct_answers": "Respuestas Correctas",
+      "total_responses_label": "Total de Respuestas",
+      "no_responses_yet": "Aún no hay respuestas",
+      "no_participants_yet": "Aún no hay participantes",
+      "no_questions_submitted_yet": "Aún no se han enviado preguntas",
+      "no_guesses_yet": "Aún no hay suposiciones",
+      "statistics": "Estadísticas",
+      "results_distribution": "Distribución de Resultados",
+      "raw_data": "Datos sin Procesar",
+      "option": "Opción",
+      "newest": "Más Reciente",
+      "oldest": "Más Antiguo",
+      "items_overview": "Resumen de Elementos",
+      "response": "respuesta",
+      "views": "Visualizaciones",
+      "total_interactions": "Total de Interacciones",
+      "low": "Bajo",
+      "high": "Alto",
+      "overall_score": "Puntuación General",
+      "participant_name": "Nombre del Participante",
+      "submitted_at": "Enviado El",
+      "upvotes": "Votos Positivos",
+      "anonymous": "Anónimo",
+      "popular": "Popular",
+      "questions": "preguntas",
+      "question": "Pregunta",
+      "image_not_found": "Imagen no encontrada",
+      "pin_target": "Objetivo de pin",
+      "items_overview": "Resumen de Elementos",
+      "response_label": "respuesta",
+      "increase_revenue": "Aumentar Ingresos",
+      "decrease_revenue": "Disminuir Ingresos",
+      "correct": "Correcto",
+      "no_items_configured": "No hay elementos configurados"
     }
   },
   "dashboard": {

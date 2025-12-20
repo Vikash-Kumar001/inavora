@@ -219,11 +219,11 @@ const GridResult = ({ slide, data }) => {
 
                 {/* Right: Items List */}
                 <div className="w-full lg:flex-1 space-y-4">
-                    <h3 className="text-sm font-bold text-slate-400 uppercase tracking-wider mb-2">Items Overview</h3>
+                    <h3 className="text-sm font-bold text-slate-400 uppercase tracking-wider mb-2">{t('presentation_results.common_labels.items_overview')}</h3>
                     <div className="space-y-3">
                         {itemAverages.length === 0 ? (
                             <div className="text-center text-sm text-slate-500 py-8 bg-slate-800/30 rounded-lg border border-white/5">
-                                No items configured
+                                {t('presentation_results.common_labels.no_items_configured')}
                             </div>
                         ) : (
                             itemAverages.map((item, index) => (

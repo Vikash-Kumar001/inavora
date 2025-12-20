@@ -361,6 +361,53 @@ async function clearPresentationScores(presentationId) {
   }
 }
 
+/**
+ * Clear scores for a specific slide and recalculate total scores
+ * @param {string} presentationId
+ * @param {string} slideId - The slide ID to clear scores for
+ * @returns {Promise<Object>} - Update result with count of participants affected
+ */
+async function clearSlideScores(presentationId, slideId) {
+  try {
+    // Find all participant scores for this presentation
+    const participants = await ParticipantScore.find({ presentationId });
+
+    let affectedCount = 0;
+
+    // For each participant, remove the score for this slide and recalculate total
+    for (const participant of participants) {
+      const quizScoreIndex = participant.quizScores.findIndex(
+        q => q.slideId.toString() === slideId.toString()
+      );
+
+      if (quizScoreIndex !== -1) {
+        // Remove the score for this slide
+        const removedScore = participant.quizScores[quizScoreIndex].score;
+        participant.quizScores.splice(quizScoreIndex, 1);
+        
+        // Recalculate total score
+        participant.totalScore = Math.max(0, participant.totalScore - removedScore);
+        
+        // Update lastUpdated timestamp
+        participant.lastUpdated = new Date();
+        
+        await participant.save();
+        affectedCount++;
+      }
+    }
+
+    Logger.info(`Cleared scores for slide ${slideId}, affected ${affectedCount} participants`);
+    
+    return {
+      success: true,
+      affectedCount
+    };
+  } catch (error) {
+    Logger.error('Error clearing slide scores', error);
+    throw error;
+  }
+}
+
 module.exports = {
   calculateQuestionScore,
   updateParticipantScore,
@@ -370,5 +417,6 @@ module.exports = {
   getCumulativeLeaderboards,
   getParticipantScore,
   clearPresentationScores,
+  clearSlideScores,
   SCORING_CONFIG
 };

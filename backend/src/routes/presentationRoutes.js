@@ -135,6 +135,20 @@ router.delete('/:id', presentationController.deletePresentation);
 router.get('/:id/results', presentationController.getPresentationResultById);
 
 /**
+ * @route   DELETE /api/presentations/:id/results
+ * @desc    Clear all results for a presentation (responses, scores, sessions)
+ * @access  Private
+ */
+router.delete('/:id/results', presentationController.clearPresentationResults);
+
+/**
+ * @route   DELETE /api/presentations/:presentationId/slides/:slideId/results
+ * @desc    Clear results for a specific slide
+ * @access  Private
+ */
+router.delete('/:presentationId/slides/:slideId/results', presentationController.clearSlideResults);
+
+/**
  * @route   GET /api/presentations/:id/export
  * @desc    Export presentation results (CSV/Excel)
  * @access  Private

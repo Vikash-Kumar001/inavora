@@ -216,7 +216,8 @@
       "responses_count": "{{count}}个回复",
       "total_votes": "共{{count}}票",
       "audience_responses": "观众回复",
-      "responses_will_appear": "当参与者提交回复时，回复将在此处实时显示。"
+      "responses_will_appear": "当参与者提交回复时，回复将在此处实时显示。",
+      "no_responses_yet": "暂无回复"
     },
     "word_cloud": {
       "question_label": "问题",
@@ -236,7 +237,8 @@
       "word_submitted": "✓ 您的词{{plural}}已提交！正在查看实时词云...",
       "live_word_cloud": "实时词云",
       "response_count": "{{count}}个回复{{plural}}",
-      "no_words_yet": "尚未提交任何词。等待回复中..."
+      "no_words_yet": "尚未提交任何词。等待回复中...",
+      "no_responses_yet": "暂无回复"
     },
     "ranking": {
       "question_label": "问题",
@@ -562,7 +564,8 @@
       "total_guesses": "总猜测数：",
       "reset_responses": "重置回复",
       "incorrect_guesses": "错误猜测",
-      "correct_answer": "正确答案"
+      "correct_answer": "正确答案",
+      "no_guesses_yet": "暂无猜测"
     },
     "hundred_points": {
       "question_label": "问题",
@@ -722,7 +725,9 @@
     "end_presentation": "结束演示",
     "kick_participant_title": "踢出参与者？",
     "kick_participant_description": "您确定要将{{participant}}踢出演示吗？",
-    "kick": "踢出"
+    "kick": "踢出",
+    "leaderboard_footer": "分数根据正确性和响应时间计算。继续参与以提升您的排名！",
+    "loading_leaderboard": "正在加载排行榜..."
   },
   "presentation_results": {
     "title": "演示文稿结果",
@@ -755,10 +760,27 @@
     "question": "问题",
     "slide": "幻灯片",
     "responses": "回复",
+    "clear_results": "清除结果",
+    "clear_all_results": "清除所有结果",
+    "clear_current_slide": "清除幻灯片结果",
+    "clear_all_results_title": "清除所有结果？",
+    "clear_all_results_description": "这将永久删除此演示文稿的所有回复、分数和会话数据。您可以再次演示并收集新数据。此操作无法撤销。",
+    "clear_slide_results_title": "清除当前幻灯片结果？",
+    "clear_slide_results_description": "这将永久删除当前幻灯片的所有回复和会话数据。您可以再次演示此幻灯片并收集新数据。此操作无法撤销。",
+    "clear_results_confirm": "清除结果",
+    "clear_results_cancel": "取消",
+    "results_cleared_success": "所有结果已成功清除。您现在可以再次演示并收集新数据。",
+    "slide_results_cleared_success": "当前幻灯片结果已成功清除。您现在可以再次演示此幻灯片并收集新数据。",
+    "clear_results_failed": "清除结果失败。请重试。",
+    "no_current_slide": "未找到当前幻灯片。",
+    "invalid_slide": "无效的幻灯片。",
+    "clear_slide": "清除",
+    "clear_slide_results_tooltip": "清除此幻灯片的结果",
     "filters": {
       "all": "全部",
       "answered": "已回答",
-      "unanswered": "未回答"
+      "unanswered": "未回答",
+      "no": "无"
     },
     "slide_types": {
       "multiple_choice": "多项选择",
@@ -776,6 +798,49 @@
       "pick_answer": "选择答案",
       "type_answer": "输入答案",
       "slide": "幻灯片"
+    },
+    "common_labels": {
+      "votes": "票",
+      "vote": "票",
+      "points": "分",
+      "point": "分",
+      "avg_points": "平均分",
+      "percentage": "%",
+      "correct_answer": "正确答案",
+      "correct_answers": "正确答案",
+      "total_responses_label": "总回复数",
+      "no_responses_yet": "暂无回复",
+      "no_participants_yet": "暂无参与者",
+      "no_questions_submitted_yet": "暂无提交的问题",
+      "no_guesses_yet": "暂无猜测",
+      "statistics": "统计",
+      "results_distribution": "结果分布",
+      "raw_data": "原始数据",
+      "option": "选项",
+      "newest": "最新",
+      "oldest": "最旧",
+      "items_overview": "项目概览",
+      "response": "回复",
+      "views": "查看次数",
+      "total_interactions": "总互动次数",
+      "low": "低",
+      "high": "高",
+      "overall_score": "总分",
+      "participant_name": "参与者姓名",
+      "submitted_at": "提交时间",
+      "upvotes": "点赞数",
+      "anonymous": "匿名",
+      "popular": "热门",
+      "questions": "问题",
+      "question": "问题",
+      "image_not_found": "未找到图片",
+      "pin_target": "图钉目标",
+      "items_overview": "项目概览",
+      "response_label": "回复",
+      "increase_revenue": "增加收入",
+      "decrease_revenue": "减少收入",
+      "correct": "正确",
+      "no_items_configured": "未配置项目"
     }
   },
   "dashboard": {

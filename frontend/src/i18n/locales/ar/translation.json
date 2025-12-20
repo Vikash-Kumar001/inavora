@@ -163,7 +163,9 @@
     "end_presentation": "إنهاء العرض التقديمي",
     "kick_participant_title": "طرد المشارك؟",
     "kick_participant_description": "هل أنت متأكد من طرد {{participant}} من العرض التقديمي؟",
-    "kick": "طرد"
+    "kick": "طرد",
+    "leaderboard_footer": "يتم حساب النقاط بناءً على الدقة ووقت الاستجابة. استمر في المشاركة لتحسين ترتيبك!",
+    "loading_leaderboard": "جاري تحميل لوحة المتصدرين..."
   },
   "slide_editors": {
     "video": {
@@ -237,7 +239,8 @@
       "responses_count": "{{count}} رد",
       "total_votes": "{{count}} إجمالي الأصوات",
       "audience_responses": "ردود الجمهور",
-      "responses_will_appear": "ستظهر الردود هنا مباشرة عندما يرسلها المشاركون."
+      "responses_will_appear": "ستظهر الردود هنا مباشرة عندما يرسلها المشاركون.",
+      "no_responses_yet": "لا توجد ردود بعد"
     },
     "word_cloud": {
       "question_label": "السؤال",
@@ -257,7 +260,8 @@
       "word_submitted": "✓ تم إرسال كلمتك{{plural}}! عرض سحابة الكلمات المباشرة...",
       "live_word_cloud": "سحابة الكلمات المباشرة",
       "response_count": "{{count}} استجابة{{plural}}",
-      "no_words_yet": "لم يتم إرسال أي كلمات بعد. في انتظار الردود..."
+      "no_words_yet": "لم يتم إرسال أي كلمات بعد. في انتظار الردود...",
+      "no_responses_yet": "لا توجد ردود بعد"
     },
     "ranking": {
       "question_label": "السؤال",
@@ -583,7 +587,8 @@
       "total_guesses": "إجمالي التخمينات:",
       "reset_responses": "إعادة تعيين الردود",
       "incorrect_guesses": "التخمينات الخاطئة",
-      "correct_answer": "الإجابة الصحيحة"
+      "correct_answer": "الإجابة الصحيحة",
+      "no_guesses_yet": "لا توجد تخمينات بعد"
     },
     "hundred_points": {
       "question_label": "السؤال",
@@ -720,10 +725,27 @@
     "question": "سؤال",
     "slide": "شريحة",
     "responses": "ردود",
+    "clear_results": "مسح النتائج",
+    "clear_all_results": "مسح جميع النتائج",
+    "clear_current_slide": "مسح نتيجة الشريحة",
+    "clear_all_results_title": "مسح جميع النتائج؟",
+    "clear_all_results_description": "سيؤدي هذا إلى حذف جميع الردود والنتائج وبيانات الجلسة لهذا العرض التقديمي بشكل دائم. يمكنك تقديم العرض مرة أخرى وجمع بيانات جديدة. لا يمكن التراجع عن هذا الإجراء.",
+    "clear_slide_results_title": "مسح نتيجة الشريحة الحالية؟",
+    "clear_slide_results_description": "سيؤدي هذا إلى حذف جميع الردود وبيانات الجلسة للشريحة الحالية بشكل دائم. يمكنك تقديم هذه الشريحة مرة أخرى وجمع بيانات جديدة. لا يمكن التراجع عن هذا الإجراء.",
+    "clear_results_confirm": "مسح النتائج",
+    "clear_results_cancel": "إلغاء",
+    "results_cleared_success": "تم مسح جميع النتائج بنجاح. يمكنك الآن تقديم العرض مرة أخرى وجمع بيانات جديدة.",
+    "slide_results_cleared_success": "تم مسح نتائج الشريحة الحالية بنجاح. يمكنك الآن تقديم هذه الشريحة مرة أخرى وجمع بيانات جديدة.",
+    "clear_results_failed": "فشل مسح النتائج. يرجى المحاولة مرة أخرى.",
+    "no_current_slide": "لم يتم العثور على شريحة حالية.",
+    "invalid_slide": "شريحة غير صالحة.",
+    "clear_slide": "مسح",
+    "clear_slide_results_tooltip": "مسح نتائج هذه الشريحة",
     "filters": {
       "all": "الكل",
       "answered": "تم الرد",
-      "unanswered": "لم يتم الرد"
+      "unanswered": "لم يتم الرد",
+      "no": "لا"
     },
     "slide_types": {
       "multiple_choice": "اختيار متعدد",
@@ -741,6 +763,49 @@
       "pick_answer": "اختر الإجابة",
       "type_answer": "اكتب الإجابة",
       "slide": "شريحة"
+    },
+    "common_labels": {
+      "votes": "أصوات",
+      "vote": "صوت",
+      "points": "نقاط",
+      "point": "نقطة",
+      "avg_points": "متوسط النقاط",
+      "percentage": "%",
+      "correct_answer": "الإجابة الصحيحة",
+      "correct_answers": "الإجابات الصحيحة",
+      "total_responses_label": "إجمالي الردود",
+      "no_responses_yet": "لا توجد ردود بعد",
+      "no_participants_yet": "لا يوجد مشاركون بعد",
+      "no_questions_submitted_yet": "لم يتم إرسال أسئلة بعد",
+      "no_guesses_yet": "لا توجد تخمينات بعد",
+      "statistics": "إحصائيات",
+      "results_distribution": "توزيع النتائج",
+      "raw_data": "البيانات الخام",
+      "option": "خيار",
+      "newest": "الأحدث",
+      "oldest": "الأقدم",
+      "items_overview": "نظرة عامة على العناصر",
+      "response": "رد",
+      "views": "المشاهدات",
+      "total_interactions": "إجمالي التفاعلات",
+      "low": "منخفض",
+      "high": "عالي",
+      "overall_score": "النتيجة الإجمالية",
+      "participant_name": "اسم المشارك",
+      "submitted_at": "تم الإرسال في",
+      "upvotes": "تصويتات إيجابية",
+      "anonymous": "مجهول",
+      "popular": "شائع",
+      "questions": "أسئلة",
+      "question": "سؤال",
+      "image_not_found": "الصورة غير موجودة",
+      "pin_target": "هدف الدبوس",
+      "items_overview": "نظرة عامة على العناصر",
+      "response_label": "رد",
+      "increase_revenue": "زيادة الإيرادات",
+      "decrease_revenue": "تقليل الإيرادات",
+      "correct": "صحيح",
+      "no_items_configured": "لم يتم تكوين عناصر"
     }
   },
   "dashboard": {

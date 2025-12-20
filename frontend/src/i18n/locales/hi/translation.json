@@ -181,7 +181,8 @@
       "responses_count": "{{count}} प्रतिक्रियाएं",
       "total_votes": "कुल {{count}} वोट",
       "audience_responses": "दर्शकों की प्रतिक्रियाएं",
-      "responses_will_appear": "प्रतिभागियों द्वारा जमा करने पर प्रतिक्रियाएं यहां लाइव दिखाई देंगी।"
+      "responses_will_appear": "प्रतिभागियों द्वारा जमा करने पर प्रतिक्रियाएं यहां लाइव दिखाई देंगी।",
+      "no_responses_yet": "अभी तक कोई प्रतिक्रिया नहीं"
     },
     "word_cloud": {
       "question_label": "प्रश्न",
@@ -202,6 +203,7 @@
       "live_word_cloud": "लाइव शब्द बादल",
       "response_count": "{{count}} प्रतिक्रिया{{plural}}",
       "no_words_yet": "अभी तक कोई शब्द सबमिट नहीं किया गया। प्रतिक्रियाओं की प्रतीक्षा कर रहे हैं...",
+      "no_responses_yet": "अभी तक कोई प्रतिक्रिया नहीं",
       "default_title": "आज के विषय का वर्णन करने के लिए आप कौन सा शब्द उपयोग करेंगे?"
     },
     "ranking": {
@@ -528,7 +530,8 @@
       "total_guesses": "कुल अनुमान:",
       "reset_responses": "प्रतिक्रियाएं रीसेट करें",
       "incorrect_guesses": "गलत अनुमान",
-      "correct_answer": "सही उत्तर"
+      "correct_answer": "सही उत्तर",
+      "no_guesses_yet": "अभी तक कोई अनुमान नहीं"
     },
     "hundred_points": {
       "question_label": "प्रश्न",
@@ -688,7 +691,9 @@
     "end_presentation": "प्रस्तुति समाप्त करें",
     "kick_participant_title": "प्रतिभागी को निकालें?",
     "kick_participant_description": "क्या आप वाकई {{participant}} को प्रस्तुति से निकालना चाहते हैं?",
-    "kick": "निकालें"
+    "kick": "निकालें",
+    "leaderboard_footer": "स्कोर सटीकता और प्रतिक्रिया समय के आधार पर गणना की जाती है। अपनी रैंकिंग सुधारने के लिए भाग लेते रहें!",
+    "loading_leaderboard": "लीडरबोर्ड लोड हो रहा है..."
   },
   "presentation_results": {
     "title": "प्रस्तुति परिणाम",
@@ -721,10 +726,27 @@
     "question": "प्रश्न",
     "slide": "स्लाइड",
     "responses": "प्रतिक्रियाएं",
+    "clear_results": "परिणाम साफ करें",
+    "clear_all_results": "सभी परिणाम साफ करें",
+    "clear_current_slide": "स्लाइड परिणाम साफ करें",
+    "clear_all_results_title": "सभी परिणाम साफ करें?",
+    "clear_all_results_description": "यह इस प्रस्तुति के लिए सभी प्रतिक्रियाओं, स्कोर और सत्र डेटा को स्थायी रूप से हटा देगा। आप फिर से प्रस्तुत कर सकते हैं और नया डेटा एकत्र कर सकते हैं। इस क्रिया को पूर्ववत नहीं किया जा सकता।",
+    "clear_slide_results_title": "वर्तमान स्लाइड परिणाम साफ करें?",
+    "clear_slide_results_description": "यह वर्तमान स्लाइड के लिए सभी प्रतिक्रियाओं और सत्र डेटा को स्थायी रूप से हटा देगा। आप इस स्लाइड को फिर से प्रस्तुत कर सकते हैं और नया डेटा एकत्र कर सकते हैं। इस क्रिया को पूर्ववत नहीं किया जा सकता।",
+    "clear_results_confirm": "परिणाम साफ करें",
+    "clear_results_cancel": "रद्द करें",
+    "results_cleared_success": "सभी परिणाम सफलतापूर्वक साफ कर दिए गए। अब आप फिर से प्रस्तुत कर सकते हैं और नया डेटा एकत्र कर सकते हैं।",
+    "slide_results_cleared_success": "वर्तमान स्लाइड परिणाम सफलतापूर्वक साफ कर दिए गए। अब आप इस स्लाइड को फिर से प्रस्तुत कर सकते हैं और नया डेटा एकत्र कर सकते हैं।",
+    "clear_results_failed": "परिणाम साफ करने में विफल। कृपया पुनः प्रयास करें।",
+    "no_current_slide": "कोई वर्तमान स्लाइड नहीं मिली।",
+    "invalid_slide": "अमान्य स्लाइड।",
+    "clear_slide": "साफ करें",
+    "clear_slide_results_tooltip": "इस स्लाइड के परिणाम साफ करें",
     "filters": {
       "all": "सभी",
       "answered": "उत्तर दिया",
-      "unanswered": "अनुत्तरित"
+      "unanswered": "अनुत्तरित",
+      "no": "नहीं"
     },
     "slide_types": {
       "multiple_choice": "बहुविकल्पी",
@@ -742,6 +764,49 @@
       "pick_answer": "उत्तर चुनें",
       "type_answer": "उत्तर टाइप करें",
       "slide": "स्लाइड"
+    },
+    "common_labels": {
+      "votes": "वोट",
+      "vote": "वोट",
+      "points": "अंक",
+      "point": "अंक",
+      "avg_points": "औसत अंक",
+      "percentage": "%",
+      "correct_answer": "सही उत्तर",
+      "correct_answers": "सही उत्तर",
+      "total_responses_label": "कुल प्रतिक्रियाएं",
+      "no_responses_yet": "अभी तक कोई प्रतिक्रिया नहीं",
+      "no_participants_yet": "अभी तक कोई प्रतिभागी नहीं",
+      "no_questions_submitted_yet": "अभी तक कोई प्रश्न जमा नहीं किया गया",
+      "no_guesses_yet": "अभी तक कोई अनुमान नहीं",
+      "statistics": "आंकड़े",
+      "results_distribution": "परिणाम वितरण",
+      "raw_data": "कच्चा डेटा",
+      "option": "विकल्प",
+      "newest": "नवीनतम",
+      "oldest": "सबसे पुराना",
+      "items_overview": "आइटम अवलोकन",
+      "response": "प्रतिक्रिया",
+      "views": "व्यूज़",
+      "total_interactions": "कुल इंटरैक्शन",
+      "low": "कम",
+      "high": "उच्च",
+      "overall_score": "समग्र स्कोर",
+      "participant_name": "प्रतिभागी का नाम",
+      "submitted_at": "जमा किया गया",
+      "upvotes": "अपवोट",
+      "anonymous": "अज्ञात",
+      "popular": "लोकप्रिय",
+      "questions": "प्रश्न",
+      "question": "प्रश्न",
+      "image_not_found": "छवि नहीं मिली",
+      "pin_target": "पिन लक्ष्य",
+      "items_overview": "आइटम अवलोकन",
+      "response_label": "प्रतिक्रिया",
+      "increase_revenue": "राजस्व बढ़ाएं",
+      "decrease_revenue": "राजस्व कम करें",
+      "correct": "सही",
+      "no_items_configured": "कोई आइटम कॉन्फ़िगर नहीं किया गया"
     }
   },
   "dashboard": {

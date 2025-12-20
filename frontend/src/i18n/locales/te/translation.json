@@ -134,7 +134,9 @@
     "access_code_description": "పాల్గొనేవారు ఈ కోడ్‌ను ఉపయోగించి మీ ప్రదర్శనలో చేరవచ్చు",
     "or": "లేదా",
     "join_link": "లింక్‌లో చేరండి",
-    "join_link_description": "ఈ లింక్‌ను నేరుగా పాల్గొనేవారితో పంచుకోండి"
+    "join_link_description": "ఈ లింక్‌ను నేరుగా పాల్గొనేవారితో పంచుకోండి",
+    "leaderboard_footer": "మెచ్చుకోలు ఖచ్చితత్వం మరియు ప్రతిస్పందన సమయం ఆధారంగా లెక్కించబడతాయి. మీ ర్యాంకింగ్‌ను మెరుగుపరచడానికి పాల్గొనడం కొనసాగించండి!",
+    "loading_leaderboard": "లీడర్‌బోర్డ్ లోడ్ అవుతోంది..."
   },
   "slide_types": {
     "multiple_choice": "ఒకదాన్ని ఎంచుకోండి",
@@ -189,10 +191,27 @@
     "question": "ప్రశ్న",
     "slide": "స్లైడ్",
     "responses": "స్పందనలు",
+    "clear_results": "ఫలితాలను క్లియర్ చేయండి",
+    "clear_all_results": "అన్ని ఫలితాలను క్లియర్ చేయండి",
+    "clear_current_slide": "స్లైడ్ ఫలితాన్ని క్లియర్ చేయండి",
+    "clear_all_results_title": "అన్ని ఫలితాలను క్లియర్ చేయాలా?",
+    "clear_all_results_description": "ఇది ఈ ప్రదర్శనకు సంబంధించిన అన్ని స్పందనలు, స్కోర్లు మరియు సెషన్ డేటాను శాశ్వతంగా తొలగిస్తుంది. మీరు మళ్లీ ప్రదర్శించవచ్చు మరియు కొత్త డేటాను సేకరించవచ్చు. ఈ చర్యను రద్దు చేయలేరు.",
+    "clear_slide_results_title": "ప్రస్తుత స్లైడ్ ఫలితాన్ని క్లియర్ చేయాలా?",
+    "clear_slide_results_description": "ఇది ప్రస్తుత స్లైడ్ కోసం అన్ని స్పందనలు మరియు సెషన్ డేటాను శాశ్వతంగా తొలగిస్తుంది. మీరు ఈ స్లైడ్‌ను మళ్లీ ప్రదర్శించవచ్చు మరియు కొత్త డేటాను సేకరించవచ్చు. ఈ చర్యను రద్దు చేయలేరు.",
+    "clear_results_confirm": "ఫలితాలను క్లియర్ చేయండి",
+    "clear_results_cancel": "రద్దు చేయండి",
+    "results_cleared_success": "అన్ని ఫలితాలు విజయవంతంగా క్లియర్ చేయబడ్డాయి. ఇప్పుడు మీరు మళ్లీ ప్రదర్శించవచ్చు మరియు కొత్త డేటాను సేకరించవచ్చు.",
+    "slide_results_cleared_success": "ప్రస్తుత స్లైడ్ ఫలితాలు విజయవంతంగా క్లియర్ చేయబడ్డాయి. ఇప్పుడు మీరు ఈ స్లైడ్‌ను మళ్లీ ప్రదర్శించవచ్చు మరియు కొత్త డేటాను సేకరించవచ్చు.",
+    "clear_results_failed": "ఫలితాలను క్లియర్ చేయడంలో విఫలమైంది. దయచేసి మళ్లీ ప్రయత్నించండి.",
+    "no_current_slide": "ప్రస్తుత స్లైడ్ కనుగొనబడలేదు.",
+    "invalid_slide": "చెల్లని స్లైడ్.",
+    "clear_slide": "క్లియర్",
+    "clear_slide_results_tooltip": "ఈ స్లైడ్ ఫలితాలను క్లియర్ చేయండి",
     "filters": {
       "all": "అన్నీ",
       "answered": "సమాధానం ఇచ్చారు",
-      "unanswered": "సమాధానం ఇవ్వలేదు"
+      "unanswered": "సమాధానం ఇవ్వలేదు",
+      "no": "లేదు"
     },
     "slide_types": {
       "multiple_choice": "బహుళ ఎంపిక",
@@ -210,6 +229,49 @@
       "pick_answer": "సమాధానాన్ని ఎంచుకోండి",
       "type_answer": "సమాధానాన్ని టైప్ చేయండి",
       "slide": "స్లైడ్"
+    },
+    "common_labels": {
+      "votes": "వోట్లు",
+      "vote": "వోట్",
+      "points": "పాయింట్లు",
+      "point": "పాయింట్",
+      "avg_points": "సగటు పాయింట్లు",
+      "percentage": "%",
+      "correct_answer": "సరైన సమాధానం",
+      "correct_answers": "సరైన సమాధానాలు",
+      "total_responses_label": "మొత్తం స్పందనలు",
+      "no_responses_yet": "ఇంకా స్పందనలు లేవు",
+      "no_participants_yet": "ఇంకా పాల్గొనేవారు లేరు",
+      "no_questions_submitted_yet": "ఇంకా ప్రశ్నలు సమర్పించబడలేదు",
+      "no_guesses_yet": "ఇంకా అంచనాలు లేవు",
+      "statistics": "గణాంకాలు",
+      "results_distribution": "ఫలితాల పంపిణీ",
+      "raw_data": "ముడి డేటా",
+      "option": "ఎంపిక",
+      "newest": "కొత్తది",
+      "oldest": "పాతది",
+      "items_overview": "అంశాల అవలోకనం",
+      "response": "స్పందన",
+      "views": "వీక్షణలు",
+      "total_interactions": "మొత్తం పరస్పర చర్యలు",
+      "low": "తక్కువ",
+      "high": "అధిక",
+      "overall_score": "మొత్తం స్కోర్",
+      "participant_name": "పాల్గొనేవారి పేరు",
+      "submitted_at": "సమర్పించబడింది",
+      "upvotes": "అప్వోట్‌లు",
+      "anonymous": "అజ్ఞాత",
+      "popular": "జనాదరణ పొందిన",
+      "questions": "ప్రశ్నలు",
+      "question": "ప్రశ్న",
+      "image_not_found": "చిత్రం దొరకలేదు",
+      "pin_target": "పిన్ లక్ష్యం",
+      "items_overview": "అంశాల అవలోకనం",
+      "response_label": "స్పందన",
+      "increase_revenue": "రెవిన్యూ పెంచండి",
+      "decrease_revenue": "రెవిన్యూ తగ్గించండి",
+      "correct": "సరైనది",
+      "no_items_configured": "అంశాలు కాన్ఫిగర్ చేయబడలేదు"
     }
   },
   "dashboard": {
@@ -914,7 +976,8 @@
       "responses_count": "{{count}} ప్రతిస్పందనలు",
       "total_votes": "మొత్తం {{count}} వోట్లు",
       "audience_responses": "ప్రేక్షకుల ప్రతిస్పందనలు",
-      "responses_will_appear": "పాల్గొనేవారు సమర్పించినప్పుడు ప్రతిస్పందనలు ఇక్కడ ప్రత్యక్షంగా కనిపిస్తాయి."
+      "responses_will_appear": "పాల్గొనేవారు సమర్పించినప్పుడు ప్రతిస్పందనలు ఇక్కడ ప్రత్యక్షంగా కనిపిస్తాయి.",
+      "no_responses_yet": "ఇంకా స్పందనలు లేవు"
     },
     "pick_answer": {
       "question_label": "ప్రశ్న",
@@ -959,6 +1022,27 @@
       "correct_answer_label": "సరైన జవాబు",
       "points_message": "పాల్గొనేవారు ఎంత వేగంగా జవాబు ఇస్తారో దాని ఆధారంగా 500 మరియు 1000 మధ్య పాయింట్లు సంపాదిస్తారు."
     },
+    "guess_number": {
+      "question_label": "ప్రశ్న",
+      "question_placeholder": "నా ఇష్టమైన సంఖ్యను ఊహించండి...",
+      "range_label": "పరిధి",
+      "min_value_label": "కనీస విలువ",
+      "max_value_label": "గరిష్ట విలువ",
+      "correct_answer_label": "సరైన సమాధానం",
+      "correct_answer_range": "{{min}} మరియు {{max}} మధ్య ఉండాలి",
+      "instructions": "పాల్గొనేవారు సంఖ్యను ఊహించడానికి స్లైడర్ ఉపయోగిస్తారు. సరైన సమాధానం ఫలితాల చార్ట్‌లో ఆకుపచ్చ రంగులో హైలైట్ చేయబడుతుంది.",
+      "responses_label": "ఊహలు",
+      "guesses_plural": "ఊహలు",
+      "guess_singular": "ఊహ",
+      "correct": "సరైనది!",
+      "default_title": "సంఖ్యను ఊహించండి",
+      "correct_label": "సరైనది:",
+      "total_guesses": "మొత్తం ఊహలు:",
+      "reset_responses": "ప్రతిస్పందనలను రీసెట్ చేయండి",
+      "incorrect_guesses": "తప్పు ఊహలు",
+      "correct_answer": "సరైన సమాధానం",
+      "no_guesses_yet": "ఇంకా అంచనాలు లేవు"
+    },
     "word_cloud": {
       "question_label": "ప్రశ్న",
       "question_placeholder": "ఈ రోజు విషయాన్ని వివరించడానికి మీరు ఏ పదాన్ని ఉపయోగిస్తారు?",
@@ -977,7 +1061,8 @@
       "word_submitted": "✓ మీ పదం{{plural}} సమర్పించబడింది! ప్రత్యక్ష పద మేఘాన్ని చూస్తున్నారు...",
       "live_word_cloud": "ప్రత్యక్ష పద మేఘం",
       "response_count": "{{count}} ప్రతిస్పందన{{plural}}",
-      "no_words_yet": "ఇంకా పదాలు సమర్పించబడలేదు. ప్రతిస్పందనల కోసం వేచి ఉన్నారు..."
+      "no_words_yet": "ఇంకా పదాలు సమర్పించబడలేదు. ప్రతిస్పందనల కోసం వేచి ఉన్నారు...",
+      "no_responses_yet": "ఇంకా స్పందనలు లేవు"
     },
     "scales": {
       "question_label": "ప్రశ్న",

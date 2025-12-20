@@ -1,7 +1,9 @@
 import React from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts';
+import { useTranslation } from 'react-i18next';
 
 const PickAnswerResult = ({ slide, data }) => {
+  const { t } = useTranslation();
   const { responses = [] } = data;
   
   // Count votes for each option - normalize keys to strings
@@ -38,14 +40,14 @@ const PickAnswerResult = ({ slide, data }) => {
   return (
     <div className="space-y-6">
       <div className="bg-[#1F1F1F] rounded-xl border border-[#2A2A2A] p-6">
-        <h3 className="text-xl font-semibold text-[#E0E0E0] mb-4">Question</h3>
+        <h3 className="text-xl font-semibold text-[#E0E0E0] mb-4">{t('presentation_results.common_labels.question')}</h3>
         <p className="text-[#E0E0E0] text-lg">{typeof slide.question === 'string' ? slide.question : (slide.question?.text || '')}</p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Chart */}
         <div className="bg-[#1F1F1F] rounded-xl border border-[#2A2A2A] p-6">
-          <h3 className="text-xl font-semibold text-[#E0E0E0] mb-4">Results Distribution</h3>
+          <h3 className="text-xl font-semibold text-[#E0E0E0] mb-4">{t('presentation_results.common_labels.results_distribution')}</h3>
           <div className="h-80">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart
@@ -83,10 +85,10 @@ const PickAnswerResult = ({ slide, data }) => {
 
         {/* Stats */}
         <div className="bg-[#1F1F1F] rounded-xl border border-[#2A2A2A] p-6">
-          <h3 className="text-xl font-semibold text-[#E0E0E0] mb-4">Statistics</h3>
+          <h3 className="text-xl font-semibold text-[#E0E0E0] mb-4">{t('presentation_results.common_labels.statistics')}</h3>
           <div className="space-y-4">
             <div className="flex justify-between items-center py-2 border-b border-[#2A2A2A]">
-              <span className="text-[#9E9E9E]">Total Responses</span>
+              <span className="text-[#9E9E9E]">{t('presentation_results.common_labels.total_responses_label')}</span>
               <span className="text-[#E0E0E0] font-semibold">{totalVotes}</span>
             </div>
             
@@ -113,14 +115,14 @@ const PickAnswerResult = ({ slide, data }) => {
 
       {/* Raw Data */}
       <div className="bg-[#1F1F1F] rounded-xl border border-[#2A2A2A] p-6">
-        <h3 className="text-xl font-semibold text-[#E0E0E0] mb-4">Raw Data</h3>
+        <h3 className="text-xl font-semibold text-[#E0E0E0] mb-4">{t('presentation_results.common_labels.raw_data')}</h3>
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
               <tr className="border-b border-[#2A2A2A]">
-                <th className="text-left py-3 px-4 text-[#9E9E9E]">Option</th>
-                <th className="text-left py-3 px-4 text-[#9E9E9E]">Votes</th>
-                <th className="text-left py-3 px-4 text-[#9E9E9E]">Percentage</th>
+                <th className="text-left py-3 px-4 text-[#9E9E9E]">{t('presentation_results.common_labels.option')}</th>
+                <th className="text-left py-3 px-4 text-[#9E9E9E]">{t('presentation_results.common_labels.votes')}</th>
+                <th className="text-left py-3 px-4 text-[#9E9E9E]">{t('presentation_results.common_labels.percentage')}</th>
               </tr>
             </thead>
             <tbody>

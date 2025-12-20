@@ -216,7 +216,8 @@
       "responses_count": "{{count}} প্রতিক্রিয়া",
       "total_votes": "মোট {{count}} ভোট",
       "audience_responses": "শ্রোতাদের প্রতিক্রিয়া",
-      "responses_will_appear": "অংশগ্রহণকারীরা জমা দেওয়ার সাথে সাথে প্রতিক্রিয়াগুলি এখানে সরাসরি প্রদর্শিত হবে।"
+      "responses_will_appear": "অংশগ্রহণকারীরা জমা দেওয়ার সাথে সাথে প্রতিক্রিয়াগুলি এখানে সরাসরি প্রদর্শিত হবে।",
+      "no_responses_yet": "এখনও কোন প্রতিক্রিয়া নেই"
     },
     "word_cloud": {
       "question_label": "প্রশ্ন",
@@ -236,7 +237,8 @@
       "word_submitted": "✓ আপনার শব্দ{{plural}} জমা দেওয়া হয়েছে! সরাসরি ওয়ার্ড ক্লাউড দেখছেন...",
       "live_word_cloud": "সরাসরি ওয়ার্ড ক্লাউড",
       "response_count": "{{count}} প্রতিক্রিয়া{{plural}}",
-      "no_words_yet": "এখনও কোনো শব্দ জমা দেওয়া হয়নি। প্রতিক্রিয়ার জন্য অপেক্ষা করছেন..."
+      "no_words_yet": "এখনও কোনো শব্দ জমা দেওয়া হয়নি। প্রতিক্রিয়ার জন্য অপেক্ষা করছেন...",
+      "no_responses_yet": "এখনও কোন প্রতিক্রিয়া নেই"
     },
     "ranking": {
       "question_label": "প্রশ্ন",
@@ -554,7 +556,8 @@
       "total_guesses": "মোট অনুমান:",
       "reset_responses": "প্রতিক্রিয়া রিসেট করুন",
       "incorrect_guesses": "ভুল অনুমান",
-      "correct_answer": "সঠিক উত্তর"
+      "correct_answer": "সঠিক উত্তর",
+      "no_guesses_yet": "এখনও কোন অনুমান নেই"
     },
     "hundred_points": {
       "question_label": "প্রশ্ন",
@@ -706,7 +709,9 @@
     "access_code_description": "অংশগ্রহণকারীরা এই কোডটি ব্যবহার করে আপনার উপস্থাপনায় যোগ দিতে পারবেন",
     "or": "অথবা",
     "join_link": "যোগদানের লিঙ্ক",
-    "join_link_description": "এই লিঙ্কটি সরাসরি অংশগ্রহণকারীদের সাথে শেয়ার করুন"
+    "join_link_description": "এই লিঙ্কটি সরাসরি অংশগ্রহণকারীদের সাথে শেয়ার করুন",
+    "leaderboard_footer": "স্কোর নির্ভুলতা এবং প্রতিক্রিয়া সময়ের উপর ভিত্তি করে গণনা করা হয়। আপনার র্যাঙ্কিং উন্নত করতে অংশগ্রহণ চালিয়ে যান!",
+    "loading_leaderboard": "লিডারবোর্ড লোড হচ্ছে..."
   },
   "presentation_results": {
     "title": "উপস্থাপনা ফলাফল",
@@ -739,10 +744,27 @@
     "question": "প্রশ্ন",
     "slide": "স্লাইড",
     "responses": "প্রতিক্রিয়া",
+    "clear_results": "ফলাফল সাফ করুন",
+    "clear_all_results": "সব ফলাফল সাফ করুন",
+    "clear_current_slide": "স্লাইড ফলাফল সাফ করুন",
+    "clear_all_results_title": "সব ফলাফল সাফ করবেন?",
+    "clear_all_results_description": "এটি এই উপস্থাপনার জন্য সমস্ত প্রতিক্রিয়া, স্কোর এবং সেশন ডেটা স্থায়ীভাবে মুছে ফেলবে। আপনি আবার উপস্থাপনা করতে পারেন এবং নতুন ডেটা সংগ্রহ করতে পারেন। এই কাজটি পূর্বাবস্থায় ফেরানো যাবে না।",
+    "clear_slide_results_title": "বর্তমান স্লাইড ফলাফল সাফ করবেন?",
+    "clear_slide_results_description": "এটি বর্তমান স্লাইডের জন্য সমস্ত প্রতিক্রিয়া এবং সেশন ডেটা স্থায়ীভাবে মুছে ফেলবে। আপনি এই স্লাইডটি আবার উপস্থাপনা করতে পারেন এবং নতুন ডেটা সংগ্রহ করতে পারেন। এই কাজটি পূর্বাবস্থায় ফেরানো যাবে না।",
+    "clear_results_confirm": "ফলাফল সাফ করুন",
+    "clear_results_cancel": "বাতিল করুন",
+    "results_cleared_success": "সমস্ত ফলাফল সফলভাবে সাফ করা হয়েছে। এখন আপনি আবার উপস্থাপনা করতে পারেন এবং নতুন ডেটা সংগ্রহ করতে পারেন।",
+    "slide_results_cleared_success": "বর্তমান স্লাইড ফলাফল সফলভাবে সাফ করা হয়েছে। এখন আপনি এই স্লাইডটি আবার উপস্থাপনা করতে পারেন এবং নতুন ডেটা সংগ্রহ করতে পারেন।",
+    "clear_results_failed": "ফলাফল সাফ করতে ব্যর্থ। অনুগ্রহ করে আবার চেষ্টা করুন।",
+    "no_current_slide": "কোন বর্তমান স্লাইড পাওয়া যায়নি।",
+    "invalid_slide": "অবৈধ স্লাইড।",
+    "clear_slide": "সাফ করুন",
+    "clear_slide_results_tooltip": "এই স্লাইডের ফলাফল সাফ করুন",
     "filters": {
       "all": "সব",
       "answered": "উত্তর দেওয়া হয়েছে",
-      "unanswered": "উত্তর দেওয়া হয়নি"
+      "unanswered": "উত্তর দেওয়া হয়নি",
+      "no": "না"
     },
     "slide_types": {
       "multiple_choice": "বহু নির্বাচন",
@@ -760,6 +782,49 @@
       "pick_answer": "উত্তর বেছে নিন",
       "type_answer": "উত্তর টাইপ করুন",
       "slide": "স্লাইড"
+    },
+    "common_labels": {
+      "votes": "ভোট",
+      "vote": "ভোট",
+      "points": "পয়েন্ট",
+      "point": "পয়েন্ট",
+      "avg_points": "গড় পয়েন্ট",
+      "percentage": "%",
+      "correct_answer": "সঠিক উত্তর",
+      "correct_answers": "সঠিক উত্তর",
+      "total_responses_label": "মোট প্রতিক্রিয়া",
+      "no_responses_yet": "এখনও কোন প্রতিক্রিয়া নেই",
+      "no_participants_yet": "এখনও কোন অংশগ্রহণকারী নেই",
+      "no_questions_submitted_yet": "এখনও কোন প্রশ্ন জমা দেওয়া হয়নি",
+      "no_guesses_yet": "এখনও কোন অনুমান নেই",
+      "statistics": "পরিসংখ্যান",
+      "results_distribution": "ফলাফল বণ্টন",
+      "raw_data": "কাঁচা ডেটা",
+      "option": "বিকল্প",
+      "newest": "নতুনতম",
+      "oldest": "পুরাতনতম",
+      "items_overview": "আইটেম ওভারভিউ",
+      "response": "প্রতিক্রিয়া",
+      "views": "ভিউ",
+      "total_interactions": "মোট মিথস্ক্রিয়া",
+      "low": "নিম্ন",
+      "high": "উচ্চ",
+      "overall_score": "সামগ্রিক স্কোর",
+      "participant_name": "অংশগ্রহণকারীর নাম",
+      "submitted_at": "জমা দেওয়া হয়েছে",
+      "upvotes": "আপভোট",
+      "anonymous": "অজ্ঞাত",
+      "popular": "জনপ্রিয়",
+      "questions": "প্রশ্ন",
+      "question": "প্রশ্ন",
+      "image_not_found": "ছবি পাওয়া যায়নি",
+      "pin_target": "পিন টার্গেট",
+      "items_overview": "আইটেম ওভারভিউ",
+      "response_label": "প্রতিক্রিয়া",
+      "increase_revenue": "রাজস্ব বৃদ্ধি",
+      "decrease_revenue": "রাজস্ব হ্রাস",
+      "correct": "সঠিক",
+      "no_items_configured": "কোনও আইটেম কনফিগার করা হয়নি"
     }
   },
   "dashboard": {

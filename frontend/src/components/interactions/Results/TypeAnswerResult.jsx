@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
 import { ThumbsUp, Clock, User } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 const TypeAnswerResult = ({ slide, data }) => {
+  const { t } = useTranslation();
   const { responses = [] } = data;
   const [sortBy, setSortBy] = useState('newest'); // newest, oldest, popular
 
@@ -32,14 +34,14 @@ const TypeAnswerResult = ({ slide, data }) => {
   return (
     <div className="space-y-6">
       <div className="bg-[#1F1F1F] rounded-xl border border-[#2A2A2A] p-6">
-        <h3 className="text-xl font-semibold text-[#E0E0E0] mb-4">Question</h3>
+        <h3 className="text-xl font-semibold text-[#E0E0E0] mb-4">{t('presentation_results.common_labels.question')}</h3>
         <p className="text-[#E0E0E0] text-lg">{slide.question}</p>
       </div>
 
       {/* Sorting controls */}
       <div className="flex justify-between items-center">
         <h3 className="text-xl font-semibold text-[#E0E0E0]">
-          Responses ({responses.length})
+          {t('presentation_results.common_labels.response')}s ({responses.length})
         </h3>
         <div className="flex gap-2">
           <button
@@ -50,7 +52,7 @@ const TypeAnswerResult = ({ slide, data }) => {
                 : 'bg-[#2A2A2A] text-[#9E9E9E] hover:bg-[#333333]'
             }`}
           >
-            Newest
+            {t('presentation_results.common_labels.newest')}
           </button>
           <button
             onClick={() => setSortBy('oldest')}
@@ -60,7 +62,7 @@ const TypeAnswerResult = ({ slide, data }) => {
                 : 'bg-[#2A2A2A] text-[#9E9E9E] hover:bg-[#333333]'
             }`}
           >
-            Oldest
+            {t('presentation_results.common_labels.oldest')}
           </button>
           {slide.openEndedSettings?.isVotingEnabled && (
             <button
@@ -71,7 +73,7 @@ const TypeAnswerResult = ({ slide, data }) => {
                   : 'bg-[#2A2A2A] text-[#9E9E9E] hover:bg-[#333333]'
               }`}
             >
-              Popular
+              {t('presentation_results.common_labels.popular')}
             </button>
           )}
         </div>
@@ -81,7 +83,7 @@ const TypeAnswerResult = ({ slide, data }) => {
       <div className="space-y-4">
         {sortedResponses.length === 0 ? (
           <div className="bg-[#1F1F1F] rounded-xl border border-[#2A2A2A] p-8 text-center">
-            <p className="text-[#9E9E9E]">No responses yet</p>
+            <p className="text-[#9E9E9E]">{t('presentation_results.common_labels.no_responses_yet')}</p>
           </div>
         ) : (
           sortedResponses.map((response) => (
@@ -93,7 +95,7 @@ const TypeAnswerResult = ({ slide, data }) => {
                 <div className="flex items-center gap-2">
                   <User className="h-4 w-4 text-[#4CAF50]" />
                   <span className="font-medium text-[#E0E0E0]">
-                    {response.participantName || 'Anonymous'}
+                    {response.participantName || t('presentation_results.common_labels.anonymous')}
                   </span>
                 </div>
                 <div className="flex items-center gap-3">

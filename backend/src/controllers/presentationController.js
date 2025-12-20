@@ -5,6 +5,9 @@ const User = require('../models/User');
 const XLSX = require('xlsx');
 const leaderboardService = require('../services/leaderboardService');
 const quizScoringService = require('../services/quizScoringService');
+const qnaSession = require('../services/qnaSession');
+const quizSessionService = require('../services/quizSessionService');
+const guessNumberSession = require('../services/guessNumberSession');
 const { createSlide, updateSlide, deleteSlide } = require('./slideController.js');
 const { AppError, asyncHandler } = require('../middleware/errorHandler');
 const Logger = require('../utils/logger');
@@ -1386,6 +1389,240 @@ const getSlideResponses = asyncHandler(async (req, res, next) => {
   });
 });
 
+/**
+ * Clear all results for a presentation (responses, scores, sessions)
+ * @route DELETE /api/presentations/:id/results
+ * @access Private
+ * @param {string} req.params.id - Presentation ID
+ * @returns {Object} Success message
+ */
+const clearPresentationResults = asyncHandler(async (req, res, next) => {
+  const { id } = req.params;
+  const userId = req.userId;
+  const isInstitutionAdmin = req.institutionAdmin;
+  const institutionId = req.institution?.id || req.institution?._id;
+
+  // First check if presentation exists at all
+  const presentationExists = await Presentation.findById(id).lean();
+  
+  if (!presentationExists) {
+    throw new AppError('Presentation not found', 404, 'RESOURCE_NOT_FOUND');
+  }
+
+  // Check if it belongs to the user
+  let presentation = await Presentation.findOne({ _id: id, userId }).lean();
+
+  // If not found and user is an institution admin, check if presentation belongs to any institution user
+  if (!presentation && isInstitutionAdmin && institutionId) {
+    const mongoose = require('mongoose');
+    const institutionObjectId = mongoose.Types.ObjectId.isValid(institutionId) ? new mongoose.Types.ObjectId(institutionId) : institutionId;
+    
+    const institutionUsers = await User.find({ 
+      institutionId: institutionObjectId,
+      isInstitutionUser: true 
+    }).select('_id institutionId').lean();
+    
+    const adminEmail = req.institution?.adminEmail;
+    let adminUser = null;
+    if (adminEmail) {
+      adminUser = await User.findOne({ 
+        email: adminEmail.toLowerCase(),
+        institutionId: institutionObjectId
+      }).select('_id institutionId').lean();
+      
+      if (adminUser && adminUser.institutionId && adminUser.institutionId.toString() === institutionId.toString()) {
+        const adminInList = institutionUsers.find(u => u._id.toString() === adminUser._id.toString());
+        if (!adminInList) {
+          institutionUsers.push(adminUser);
+        }
+      }
+    }
+    
+    const institutionUserIds = institutionUsers
+      .filter(user => user.institutionId && user.institutionId.toString() === institutionId.toString())
+      .map(u => u._id.toString());
+    
+    const presentationCreator = await User.findById(presentationExists.userId).select('institutionId').lean();
+    
+    const presentationUserIdStr = presentationExists.userId.toString();
+    const belongsToInstitutionUser = institutionUserIds.includes(presentationUserIdStr);
+    const creatorBelongsToInstitution = presentationCreator && 
+      presentationCreator.institutionId && 
+      presentationCreator.institutionId.toString() === institutionId.toString();
+    
+    if (belongsToInstitutionUser || creatorBelongsToInstitution) {
+      presentation = presentationExists;
+    }
+  }
+
+  if (!presentation) {
+    throw new AppError('Presentation not found or access denied', 404, 'RESOURCE_NOT_FOUND');
+  }
+
+  // Get all slides for this presentation
+  const slides = await Slide.find({ presentationId: id });
+  const slideIds = slides.map(slide => slide._id.toString());
+
+  // Delete all responses for this presentation
+  await Response.deleteMany({ presentationId: id });
+
+  // Clear quiz participant scores
+  await quizScoringService.clearPresentationScores(id);
+
+  // Clear all session data for all slides in this presentation
+  qnaSession.clearAllSessionsForPresentation(id, slideIds);
+  quizSessionService.clearAllSessions(slideIds);
+  guessNumberSession.clearAllSessionsForPresentation(id, slideIds);
+
+  res.status(200).json({
+    success: true,
+    message: 'All presentation results cleared successfully'
+  });
+});
+
+/**
+ * Clear results for a specific slide
+ * @route DELETE /api/presentations/:presentationId/slides/:slideId/results
+ * @access Private
+ * @param {string} req.params.presentationId - Presentation ID
+ * @param {string} req.params.slideId - Slide ID
+ * @returns {Object} Success message
+ */
+const clearSlideResults = asyncHandler(async (req, res, next) => {
+  const { presentationId, slideId } = req.params;
+  const userId = req.userId;
+  const isInstitutionAdmin = req.institutionAdmin;
+  const institutionId = req.institution?.id || req.institution?._id;
+
+  // First check if presentation exists
+  const presentationExists = await Presentation.findById(presentationId).lean();
+  
+  if (!presentationExists) {
+    throw new AppError('Presentation not found', 404, 'RESOURCE_NOT_FOUND');
+  }
+
+  // Check if it belongs to the user
+  let presentation = await Presentation.findOne({ _id: presentationId, userId }).lean();
+
+  // If not found and user is an institution admin, check if presentation belongs to any institution user
+  if (!presentation && isInstitutionAdmin && institutionId) {
+    const mongoose = require('mongoose');
+    const institutionObjectId = mongoose.Types.ObjectId.isValid(institutionId) ? new mongoose.Types.ObjectId(institutionId) : institutionId;
+    
+    const institutionUsers = await User.find({ 
+      institutionId: institutionObjectId,
+      isInstitutionUser: true 
+    }).select('_id institutionId').lean();
+    
+    const adminEmail = req.institution?.adminEmail;
+    let adminUser = null;
+    if (adminEmail) {
+      adminUser = await User.findOne({ 
+        email: adminEmail.toLowerCase(),
+        institutionId: institutionObjectId
+      }).select('_id institutionId').lean();
+      
+      if (adminUser && adminUser.institutionId && adminUser.institutionId.toString() === institutionId.toString()) {
+        const adminInList = institutionUsers.find(u => u._id.toString() === adminUser._id.toString());
+        if (!adminInList) {
+          institutionUsers.push(adminUser);
+        }
+      }
+    }
+    
+    const institutionUserIds = institutionUsers
+      .filter(user => user.institutionId && user.institutionId.toString() === institutionId.toString())
+      .map(u => u._id.toString());
+    
+    const presentationCreator = await User.findById(presentationExists.userId).select('institutionId').lean();
+    
+    const presentationUserIdStr = presentationExists.userId.toString();
+    const belongsToInstitutionUser = institutionUserIds.includes(presentationUserIdStr);
+    const creatorBelongsToInstitution = presentationCreator && 
+      presentationCreator.institutionId && 
+      presentationCreator.institutionId.toString() === institutionId.toString();
+    
+    if (belongsToInstitutionUser || creatorBelongsToInstitution) {
+      presentation = presentationExists;
+    }
+  }
+
+  if (!presentation) {
+    throw new AppError('Presentation not found or access denied', 404, 'RESOURCE_NOT_FOUND');
+  }
+
+  // Check if slide exists and belongs to this presentation
+  const slide = await Slide.findOne({ _id: slideId, presentationId });
+  if (!slide) {
+    throw new AppError('Slide not found', 404, 'RESOURCE_NOT_FOUND');
+  }
+
+  // Delete all responses for this slide
+  await Response.deleteMany({ slideId: slide._id });
+
+  // Clear session data for this specific slide
+  qnaSession.clearSession(slide._id.toString());
+  quizSessionService.clearSession(slide._id.toString());
+  guessNumberSession.clearSession(slide._id.toString());
+
+  // Get socket.io instance to emit events
+  const io = req.app.get('io');
+
+  // If this is a quiz slide, clear participant scores for this slide
+  // This will also affect any leaderboard slides linked to this quiz
+  if (slide.type === 'quiz') {
+    await quizScoringService.clearSlideScores(presentationId, slide._id.toString());
+
+    if (io) {
+      // Find all leaderboard slides linked to this quiz slide
+      const linkedLeaderboardSlides = await Slide.find({
+        presentationId,
+        type: 'leaderboard',
+        'leaderboardSettings.linkedQuizSlideId': slide._id
+      });
+
+      // Emit events to update linked leaderboard slides
+      for (const leaderboardSlide of linkedLeaderboardSlides) {
+        // Get updated leaderboard data
+        try {
+          const leaderboardData = await buildLeaderboardSummary({
+            presentationId,
+            limit: leaderboardSlide.leaderboardSettings?.displayCount || 10
+          });
+
+          const linkedId = slide._id.toString();
+          const specificBoard = leaderboardData.perQuizLeaderboards.find(
+            b => b.quizSlideId === linkedId
+          );
+
+          // Emit updated leaderboard data to clients (using leaderboard-data format that frontend expects)
+          io.to(`presentation-${presentationId}`).emit('leaderboard-data', {
+            presentationId,
+            slideId: leaderboardSlide._id.toString(),
+            leaderboard: specificBoard ? specificBoard.leaderboard : [],
+            quizSlideId: linkedId
+          });
+        } catch (err) {
+          Logger.error('Error building leaderboard after clearing quiz slide', err);
+        }
+      }
+    }
+  }
+
+  // Emit slide-results-cleared event for all clients (for all slide types)
+  if (io) {
+    io.to(`presentation-${presentationId}`).emit('slide-results-cleared', {
+      slideId: slide._id.toString(),
+      slideType: slide.type
+    });
+  }
+
+  res.status(200).json({
+    success: true,
+    message: 'Slide results cleared successfully'
+  });
+});
+
 module.exports = {
   createPresentation,
   getUserPresentations,
@@ -1401,5 +1638,7 @@ module.exports = {
   getLeaderboard,
   generateLeaderboards,
   toggleQnaStatus,
-  getSlideResponses
+  getSlideResponses,
+  clearPresentationResults,
+  clearSlideResults
 };

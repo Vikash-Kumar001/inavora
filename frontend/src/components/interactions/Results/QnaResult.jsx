@@ -2,8 +2,10 @@ import { useState, useEffect } from 'react';
 // eslint-disable-next-line
 import { motion } from 'framer-motion';
 import ResultCard from './ResultCard';
+import { useTranslation } from 'react-i18next';
 
 const QnaResult = ({ slide, data }) => {
+    const { t } = useTranslation();
     const [localQuestions, setLocalQuestions] = useState([]);
     const [filter, setFilter] = useState('all');
 
@@ -29,7 +31,9 @@ const QnaResult = ({ slide, data }) => {
             <div className="grid lg:grid-cols-4 md:grid-cols-3 grid-cols-2 gap-3">
                 {filteredQuestions.length === 0 ? (
                     <div className="text-center py-12 text-slate-500 italic">
-                        {filter === 'all' ? 'No questions submitted yet' : `No ${filter} questions`}
+                        {filter === 'all' 
+                            ? t('presentation_results.common_labels.no_questions_submitted_yet') 
+                            : `${t('presentation_results.filters.no')} ${t(`presentation_results.filters.${filter}`)} ${t('presentation_results.common_labels.questions')}`}
                     </div>
                 ) : (
                     filteredQuestions.map((q, index) => (
@@ -48,7 +52,7 @@ const QnaResult = ({ slide, data }) => {
                                     {q.text}
                                 </p>
                                 <div className="flex items-center justify-between text-xs text-slate-500">
-                                    <span className="font-medium text-slate-400">{q.participantName || 'Anonymous'}</span>
+                                    <span className="font-medium text-slate-400">{q.participantName || t('presentation_results.common_labels.anonymous')}</span>
                                     <div className="flex items-center gap-4">
                                         {q.submittedAt && (
                                             <span>{new Date(q.submittedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>

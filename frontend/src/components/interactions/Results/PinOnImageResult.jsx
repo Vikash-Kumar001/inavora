@@ -1,7 +1,9 @@
 import { motion } from 'framer-motion';
 import ResultCard from './ResultCard';
+import { useTranslation } from 'react-i18next';
 
 const PinOnImageResult = ({ slide, data }) => {
+    const { t } = useTranslation();
     const results = data?.pinResults || [];
     const totalResponses = results.length;
     const imageUrl = slide.pinOnImageSettings?.imageUrl;
@@ -14,7 +16,7 @@ const PinOnImageResult = ({ slide, data }) => {
                     <div className="relative rounded-xl overflow-hidden border-2 border-slate-600 bg-slate-800">
                         <img
                             src={imageUrl}
-                            alt="Pin target"
+                            alt={t('presentation_results.common_labels.pin_target')}
                             className="max-w-full h-auto max-h-[500px] object-contain"
                         />
 
@@ -51,7 +53,7 @@ const PinOnImageResult = ({ slide, data }) => {
                         ))}
                     </div>
                 ) : (
-                    <div className="text-slate-500 italic py-12">Image not found</div>
+                    <div className="text-slate-500 italic py-12">{t('presentation_results.common_labels.image_not_found')}</div>
                 )}
             </div>
         </ResultCard>

@@ -215,7 +215,8 @@
       "responses_count": "{{count}} respostas",
       "total_votes": "{{count}} votos no total",
       "audience_responses": "Respostas da audiência",
-      "responses_will_appear": "As respostas aparecerão aqui ao vivo quando os participantes as enviarem."
+      "responses_will_appear": "As respostas aparecerão aqui ao vivo quando os participantes as enviarem.",
+      "no_responses_yet": "Ainda não há respostas"
     },
     "word_cloud": {
       "question_label": "Pergunta",
@@ -235,7 +236,8 @@
       "word_submitted": "✓ Sua palavra{{plural}} enviada! Visualizando nuvem de palavras ao vivo...",
       "live_word_cloud": "Nuvem de Palavras ao Vivo",
       "response_count": "{{count}} resposta{{plural}}",
-      "no_words_yet": "Nenhuma palavra enviada ainda. Aguardando respostas..."
+      "no_words_yet": "Nenhuma palavra enviada ainda. Aguardando respostas...",
+      "no_responses_yet": "Ainda não há respostas"
     },
     "ranking": {
       "question_label": "Pergunta",
@@ -551,7 +553,8 @@
       "total_guesses": "Total de Adivinhações:",
       "reset_responses": "Redefinir Respostas",
       "incorrect_guesses": "Adivinhações Incorretas",
-      "correct_answer": "Resposta Correta"
+      "correct_answer": "Resposta Correta",
+      "no_guesses_yet": "Ainda não há palpites"
     },
     "hundred_points": {
       "question_label": "Pergunta",
@@ -711,7 +714,9 @@
     "end_presentation": "Encerrar Apresentação",
     "kick_participant_title": "Expulsar Participante?",
     "kick_participant_description": "Tem certeza de que deseja expulsar {{participant}} da apresentação?",
-    "kick": "Expulsar"
+    "kick": "Expulsar",
+    "leaderboard_footer": "As pontuações são calculadas com base na precisão e no tempo de resposta. Continue participando para melhorar sua classificação!",
+    "loading_leaderboard": "Carregando classificação..."
   },
   "presentation_results": {
     "title": "Resultados da Apresentação",
@@ -744,10 +749,27 @@
     "question": "Pergunta",
     "slide": "Slide",
     "responses": "respostas",
+    "clear_results": "Limpar Resultados",
+    "clear_all_results": "Limpar Todos os Resultados",
+    "clear_current_slide": "Limpar Resultado do Slide",
+    "clear_all_results_title": "Limpar todos os resultados?",
+    "clear_all_results_description": "Isso excluirá permanentemente todas as respostas, pontuações e dados de sessão para esta apresentação. Você pode apresentar novamente e coletar novos dados. Esta ação não pode ser desfeita.",
+    "clear_slide_results_title": "Limpar o resultado do slide atual?",
+    "clear_slide_results_description": "Isso excluirá permanentemente todas as respostas e dados de sessão para o slide atual. Você pode apresentar este slide novamente e coletar novos dados. Esta ação não pode ser desfeita.",
+    "clear_results_confirm": "Limpar Resultados",
+    "clear_results_cancel": "Cancelar",
+    "results_cleared_success": "Todos os resultados foram limpos com sucesso. Agora você pode apresentar novamente e coletar novos dados.",
+    "slide_results_cleared_success": "Os resultados do slide atual foram limpos com sucesso. Agora você pode apresentar este slide novamente e coletar novos dados.",
+    "clear_results_failed": "Falha ao limpar resultados. Por favor, tente novamente.",
+    "no_current_slide": "Nenhum slide atual encontrado.",
+    "invalid_slide": "Slide inválido.",
+    "clear_slide": "Limpar",
+    "clear_slide_results_tooltip": "Limpar resultados deste slide",
     "filters": {
       "all": "Todas",
       "answered": "Respondidas",
-      "unanswered": "Sem resposta"
+      "unanswered": "Sem resposta",
+      "no": "Não"
     },
     "slide_types": {
       "multiple_choice": "Múltipla Escolha",
@@ -765,6 +787,49 @@
       "pick_answer": "Escolher Resposta",
       "type_answer": "Digitar Resposta",
       "slide": "Slide"
+    },
+    "common_labels": {
+      "votes": "votos",
+      "vote": "voto",
+      "points": "pontos",
+      "point": "ponto",
+      "avg_points": "média pontos",
+      "percentage": "%",
+      "correct_answer": "Resposta Correta",
+      "correct_answers": "Respostas Corretas",
+      "total_responses_label": "Total de Respostas",
+      "no_responses_yet": "Ainda não há respostas",
+      "no_participants_yet": "Ainda não há participantes",
+      "no_questions_submitted_yet": "Ainda não foram enviadas perguntas",
+      "no_guesses_yet": "Ainda não há palpites",
+      "statistics": "Estatísticas",
+      "results_distribution": "Distribuição de Resultados",
+      "raw_data": "Dados Brutos",
+      "option": "Opção",
+      "newest": "Mais Recente",
+      "oldest": "Mais Antigo",
+      "items_overview": "Visão Geral dos Itens",
+      "response": "resposta",
+      "views": "Visualizações",
+      "total_interactions": "Total de Interações",
+      "low": "Baixo",
+      "high": "Alto",
+      "overall_score": "Pontuação Geral",
+      "participant_name": "Nome do Participante",
+      "submitted_at": "Enviado Em",
+      "upvotes": "Votos Positivos",
+      "anonymous": "Anônimo",
+      "popular": "Popular",
+      "questions": "perguntas",
+      "question": "Pergunta",
+      "image_not_found": "Imagem não encontrada",
+      "pin_target": "Alvo do pin",
+      "items_overview": "Visão Geral dos Itens",
+      "response_label": "resposta",
+      "increase_revenue": "Aumentar Receita",
+      "decrease_revenue": "Diminuir Receita",
+      "correct": "Correto",
+      "no_items_configured": "Nenhum item configurado"
     }
   },
   "dashboard": {

@@ -4,25 +4,11 @@ import { useTranslation } from 'react-i18next';
 
 const PickAnswerResult = ({ slide, data }) => {
   const { t } = useTranslation();
-  const { responses = [] } = data;
-  
-  // Count votes for each option - normalize keys to strings
-  const voteCounts = {};
-  if (slide.options) {
-    slide.options.forEach(option => {
-      const key = typeof option === 'string' ? option : (option?.text || String(option));
-      voteCounts[key] = 0;
-    });
-  }
+  // Backend returns voteCounts directly, not responses array
+  const voteCounts = data?.voteCounts || {};
+  const totalResponses = data?.totalResponses || 0;
 
-  responses.forEach(response => {
-    const answerKey = typeof response.answer === 'string' ? response.answer : (response.answer?.text || String(response.answer));
-    if (voteCounts.hasOwnProperty(answerKey)) {
-      voteCounts[answerKey]++;
-    }
-  });
-
-  // Prepare data for chart
+  // Prepare data for chart - use voteCounts from backend
   const chartData = slide.options?.map((option, index) => {
     const optionText = typeof option === 'string' ? option : (option?.text || `Option ${index + 1}`);
     const key = typeof option === 'string' ? option : (option?.text || String(option));
@@ -32,7 +18,7 @@ const PickAnswerResult = ({ slide, data }) => {
     };
   }) || [];
 
-  const totalVotes = Object.values(voteCounts).reduce((sum, count) => sum + count, 0);
+  const totalVotes = totalResponses || Object.values(voteCounts).reduce((sum, count) => sum + count, 0);
 
   // Colors for the bars
   const COLORS = ['#4CAF50', '#2196F3', '#FF9800', '#9C27B0', '#F44336', '#00BCD4', '#8BC34A'];

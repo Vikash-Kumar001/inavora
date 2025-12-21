@@ -647,7 +647,10 @@ const getPresentationResultById = asyncHandler(async (req, res, next) => {
           break;
       }
 
-      results[slide._id] = slideResult;
+      // Store results with slide._id as string key to match frontend slide.id format
+      // Frontend receives slides with id: slide._id (which is serialized as string)
+      const slideIdKey = slide._id.toString();
+      results[slideIdKey] = slideResult;
     }
 
     res.status(200).json({

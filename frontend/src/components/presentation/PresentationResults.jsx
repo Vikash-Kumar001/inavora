@@ -100,6 +100,13 @@ const PresentationResults = ({ slides, presentationId }) => {
                 
                 const results = resultsData.results || resultsData;
                 
+                // Debug: Log results structure to help diagnose issues
+                console.log('Fetched results:', {
+                    hasResults: !!results,
+                    resultKeys: results ? Object.keys(results) : [],
+                    resultsDataStructure: resultsData
+                });
+                
                 // Check if there are quiz slides but no final leaderboard in results
                 // If so, fetch the final leaderboard data
                 const hasQuizSlides = presentationData.slides?.some(slide => slide.type === 'quiz');
@@ -622,7 +629,10 @@ const PresentationResults = ({ slides, presentationId }) => {
 
 
     const getSlideResults = (slide) => {
-        if (!results) return {};
+        if (!results) {
+            console.warn('getSlideResults: No results available');
+            return {};
+        }
         
         // Handle virtual final leaderboard
         if (slide.id === 'virtual-final-leaderboard' || slide._id === 'virtual-final-leaderboard') {
@@ -632,7 +642,53 @@ const PresentationResults = ({ slides, presentationId }) => {
             return results[finalLeaderboardKey] || results['virtual-final-leaderboard'] || {};
         }
         
-        return results[slide.id] || results[slide._id] || {};
+        // Normalize slide ID to string for matching
+        // Backend stores results with slide._id.toString() as the key
+        const slideId = slide.id || slide._id;
+        if (!slideId) {
+            console.warn('getSlideResults: Slide has no ID', slide);
+            return {};
+        }
+        
+        // Convert to string and try multiple formats
+        const slideIdStr = slideId.toString();
+        
+        // Try exact match first
+        if (results[slideIdStr]) {
+            return results[slideIdStr];
+        }
+        
+        // Try matching against all keys in results (handle ObjectId vs string mismatches)
+        const resultKeys = Object.keys(results);
+        const matchingKey = resultKeys.find(key => {
+            // Normalize both keys to strings for comparison
+            const normalizedKey = key.toString();
+            const normalizedSlideId = slideIdStr.toString();
+            return normalizedKey === normalizedSlideId;
+        });
+        
+        if (matchingKey) {
+            return results[matchingKey];
+        }
+        
+        // If still not found, try with slide._id if it's different from slide.id
+        if (slide._id && slide._id !== slide.id) {
+            const slideIdStr2 = slide._id.toString();
+            if (results[slideIdStr2]) {
+                return results[slideIdStr2];
+            }
+        }
+        
+        // Debug: Log when results are not found
+        console.warn('getSlideResults: No results found for slide', {
+            slideId: slideIdStr,
+            slideType: slide.type,
+            availableResultKeys: resultKeys.slice(0, 5), // Show first 5 keys
+            slideIdType: typeof slideId,
+            slideIdValue: slideId
+        });
+        
+        return {};
     };
 
     // Reorder slides so leaderboards appear right after their linked quiz slides

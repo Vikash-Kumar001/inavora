@@ -927,13 +927,22 @@ const setupSocketHandlers = (io, socket) => {
         correctAnswer
       });
 
-      // Create response in DB first
+      // Check if guess is correct
+      const guessNum = Number(guess);
+      const isCorrect = correctAnswer !== null && !isNaN(guessNum) && Number(correctAnswer) === guessNum;
+      // Guess number slides don't contribute to leaderboard, but track correctness for consistency
+      // Ensure incorrect guesses get 0 points (correct guesses also get 0 since guess number doesn't use scoring)
+      const score = 0;
+
+      // Create response in DB first - track isCorrect and score like quiz slides
       const response = new Response({
         presentationId,
         slideId: slide._id,
         participantId,
         answer: guess,
-        submissionCount: 1
+        submissionCount: 1,
+        isCorrect: isCorrect,
+        score: score // Always 0 for guess number (doesn't contribute to leaderboard)
       });
       await response.save();
 

@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import {
   DndContext,
   PointerSensor,
+  TouchSensor,
   useSensor,
   useSensors,
   closestCorners,
@@ -33,11 +34,11 @@ const RankedItem = ({ id, label, disabled }) => {
     <div
       ref={setNodeRef}
       style={style}
-      className={`flex items-center gap-4 rounded-xl border border-[#2A2A2A] bg-[#1F1F1F] px-4 py-3 shadow-sm transition ${disabled ? '' : 'cursor-grab active:cursor-grabbing'}`}
+      className={`flex items-center gap-4 rounded-xl border border-[#2A2A2A] bg-[#1F1F1F] px-4 py-3 shadow-sm transition select-none touch-none ${disabled ? '' : 'cursor-grab active:cursor-grabbing'}`}
       {...attributes}
       {...listeners}
     >
-      <p className="flex-1 text-base font-medium text-[#E0E0E0]">{label}</p>
+      <p className="flex-1 text-base font-medium text-[#E0E0E0] select-none">{label}</p>
     </div>
   );
 };
@@ -51,7 +52,7 @@ const DroppableList = ({ id, items, itemMap, title, placeholder, disabled }) => 
       <div className="text-sm font-semibold text-[#B0B0B0] uppercase tracking-wide">{title}</div>
       <div
         ref={setNodeRef}
-        className={`min-h-[160px] rounded-2xl border-2 border-dashed ${items.length ? 'border-transparent bg-transparent' : 'border-[#2A2A2A] bg-[#1F1F1F]'} ${isOver ? 'bg-[#1D2A20] border-[#2E7D32]/30' : ''} p-4 transition-colors`}
+        className={`min-h-[160px] rounded-2xl border-2 border-dashed touch-none ${items.length ? 'border-transparent bg-transparent' : 'border-[#2A2A2A] bg-[#1F1F1F]'} ${isOver ? 'bg-[#1D2A20] border-[#2E7D32]/30' : ''} p-4 transition-colors`}
       >
         <SortableContext items={items} strategy={verticalListSortingStrategy}>
           <div className="space-y-3">
@@ -85,7 +86,23 @@ const RankingParticipantInput = ({
 
   const [ranked, setRanked] = useState([]);
   const [available, setAvailable] = useState(() => items.map((item) => item.id));
-  const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 8 } }));
+  
+  // Configure sensors for both desktop (pointer) and mobile (touch)
+  // PointerSensor for mouse/trackpad with distance constraint to prevent accidental drags
+  // TouchSensor for mobile devices - reduced delay for better responsiveness
+  const sensors = useSensors(
+    useSensor(PointerSensor, { 
+      activationConstraint: { 
+        distance: 8 // Require 8px movement before activating drag (prevents accidental drags on click)
+      } 
+    }),
+    useSensor(TouchSensor, {
+      activationConstraint: {
+        delay: 100, // 100ms delay before drag activates (allows scrolling but more responsive)
+        tolerance: 8 // 8px tolerance for touch movement
+      }
+    })
+  );
 
   useEffect(() => {
     const allIds = items.map((item) => item.id);

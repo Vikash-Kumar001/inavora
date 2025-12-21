@@ -4,7 +4,8 @@ import { useTranslation } from 'react-i18next';
 
 const TypeAnswerResult = ({ slide, data }) => {
   const { t } = useTranslation();
-  const { responses = [] } = data;
+  // Backend returns responses array directly
+  const responses = data?.responses || [];
   const [sortBy, setSortBy] = useState('newest'); // newest, oldest, popular
 
   // Sort responses based on selected criteria

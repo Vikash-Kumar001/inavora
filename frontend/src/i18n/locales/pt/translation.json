@@ -794,7 +794,7 @@
     "no_current_slide": "Nenhum slide atual encontrado.",
     "invalid_slide": "Slide inválido.",
     "clear_slide": "Limpar",
-    "clear_slide_results_tooltip": "Limpar resultados deste slide"
+    "clear_slide_results_tooltip": "Limpar resultados deste slide",
     "filters": {
       "all": "Todas",
       "answered": "Respondidas",

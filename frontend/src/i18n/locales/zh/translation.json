@@ -805,7 +805,7 @@
     "no_current_slide": "未找到当前幻灯片。",
     "invalid_slide": "无效的幻灯片。",
     "clear_slide": "清除",
-    "clear_slide_results_tooltip": "清除此幻灯片的结果"
+    "clear_slide_results_tooltip": "清除此幻灯片的结果",
     "filters": {
       "all": "全部",
       "answered": "已回答",

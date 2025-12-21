@@ -771,7 +771,7 @@
     "no_current_slide": "कोई वर्तमान स्लाइड नहीं मिली।",
     "invalid_slide": "अमान्य स्लाइड।",
     "clear_slide": "साफ करें",
-    "clear_slide_results_tooltip": "इस स्लाइड के परिणाम साफ करें"
+    "clear_slide_results_tooltip": "इस स्लाइड के परिणाम साफ करें",
     "filters": {
       "all": "सभी",
       "answered": "उत्तर दिया",

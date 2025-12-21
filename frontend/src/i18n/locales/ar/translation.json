@@ -770,7 +770,7 @@
     "no_current_slide": "لم يتم العثور على شريحة حالية.",
     "invalid_slide": "شريحة غير صالحة.",
     "clear_slide": "مسح",
-    "clear_slide_results_tooltip": "مسح نتائج هذه الشريحة"
+    "clear_slide_results_tooltip": "مسح نتائج هذه الشريحة",
     "filters": {
       "all": "الكل",
       "answered": "تم الرد",

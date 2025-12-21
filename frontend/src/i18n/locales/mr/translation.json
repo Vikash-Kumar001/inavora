@@ -802,7 +802,7 @@
     "no_current_slide": "कोणतीही वर्तमान स्लाइड सापडली नाही.",
     "invalid_slide": "अवैध स्लाइड.",
     "clear_slide": "साफ करा",
-    "clear_slide_results_tooltip": "या स्लाइडचे परिणाम साफ करा"
+    "clear_slide_results_tooltip": "या स्लाइडचे परिणाम साफ करा",
     "filters": {
       "all": "सर्व",
       "answered": "उत्तर दिले",

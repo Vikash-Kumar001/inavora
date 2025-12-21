@@ -775,7 +775,7 @@
     "no_current_slide": "No se encontró la diapositiva actual.",
     "invalid_slide": "Diapositiva inválida.",
     "clear_slide": "Borrar",
-    "clear_slide_results_tooltip": "Borrar resultados de esta diapositiva"
+    "clear_slide_results_tooltip": "Borrar resultados de esta diapositiva",
     "filters": {
       "all": "Todas",
       "answered": "Respondidas",

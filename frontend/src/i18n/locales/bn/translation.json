@@ -792,7 +792,7 @@
     "no_current_slide": "কোন বর্তমান স্লাইড পাওয়া যায়নি।",
     "invalid_slide": "অবৈধ স্লাইড।",
     "clear_slide": "সাফ করুন",
-    "clear_slide_results_tooltip": "এই স্লাইডের ফলাফল সাফ করুন"
+    "clear_slide_results_tooltip": "এই স্লাইডের ফলাফল সাফ করুন",
     "filters": {
       "all": "সব",
       "answered": "উত্তর দেওয়া হয়েছে",

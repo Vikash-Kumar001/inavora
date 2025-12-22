@@ -72,8 +72,8 @@ const PdfEditor = ({ slide, onUpdate }) => {
       return;
     }
 
-    // Validate file size (max 100MB)
-    if (file.size > 100 * 1024 * 1024) {
+    // Validate file size (max 10MB)
+    if (file.size > 10 * 1024 * 1024) {
       toast.error(t('slide_editors.pdf.file_too_large'));
       return;
     }

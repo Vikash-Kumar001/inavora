@@ -86,7 +86,7 @@ const ScalesParticipantInput = ({
     const sliderId = `scale-slider-${slide?.id || 'default'}-${index}`;
 
     return (
-      <div key={`slider-${index}`} className="space-y-3">
+      <div key={`slider-${index}`} className="space-y-3 overflow-hidden">
         <div className="space-y-1">
           <p className="text-sm sm:text-base font-medium text-[#E0E0E0]">
             {isMultiStatement 
@@ -120,20 +120,10 @@ const ScalesParticipantInput = ({
           aria-valuenow={value}
         />
 
+        {/* Scale numbers - show only min and max values */}
         <div className="flex justify-between text-xs text-[#6C6C6C]">
-          {Array.from({ length: maxValue - minValue + 1 }, (_, offset) => minValue + offset).map((tick) => (
-            <button
-              key={`tick-${index}-${tick}`}
-              type="button"
-              onClick={() => handleSliderChange(index, tick)}
-              aria-label={t('slide_editors.scales.select_value_aria', { value: tick })}
-              className={`rounded px-1 text-[11px] transition ${
-                tick === value ? 'text-[#4CAF50] font-semibold' : 'text-[#6C6C6C] hover:text-[#B0B0B0]'
-              }`}
-            >
-              {tick}
-            </button>
-          ))}
+          <span>{slide?.minLabel || minValue}</span>
+          <span>{slide?.maxLabel || maxValue}</span>
         </div>
       </div>
     );
@@ -221,7 +211,7 @@ const ScalesParticipantInput = ({
         </div>
       )}
 
-      <div className="space-y-6 rounded-2xl sm:rounded-3xl border border-[#2A2A2A] bg-[#1F1F1F] p-6 sm:p-8 shadow-xl">
+      <div className="space-y-6 rounded-2xl sm:rounded-3xl border border-[#2A2A2A] bg-[#1F1F1F] p-4 sm:p-6 md:p-8 shadow-xl overflow-hidden">
         {isMultiStatement
           ? statements.map((statement, index) => renderSlider(values[index], index, statement))
           : renderSlider(values[0], 0, slide?.question)}

@@ -356,9 +356,9 @@ const uploadPdf = asyncHandler(async (req, res, next) => {
   const sizeInBytes = (pdf.length * 3) / 4;
   const sizeInMB = sizeInBytes / (1024 * 1024);
   
-  // Allow up to 100MB for PDF files
-  if (sizeInMB > 100) {
-    throw new AppError(`PDF file too large (${sizeInMB.toFixed(1)}MB). Maximum size is 100MB.`, 400, 'VALIDATION_ERROR');
+  // Allow up to 10MB for PDF files
+  if (sizeInMB > 10) {
+    throw new AppError(`PDF file too large (${sizeInMB.toFixed(1)}MB). Maximum size is 10MB.`, 400, 'VALIDATION_ERROR');
   }
 
   Logger.info(`Attempting to upload PDF for user ${userId}, size: ${sizeInMB.toFixed(2)}MB`);

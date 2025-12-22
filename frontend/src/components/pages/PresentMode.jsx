@@ -421,7 +421,7 @@ const PresentMode = () => {
         setPresentation(data.presentation);
         const loadedSlides = data.slides || [];
         
-        // Ensure PDF fields are preserved when loading slides
+        // Ensure PDF and PowerPoint fields are preserved when loading slides
         const mappedSlides = loadedSlides.map(slide => {
           // Preserve all PDF-related fields
           if (slide.type === 'pdf') {
@@ -435,6 +435,14 @@ const PresentMode = () => {
               pdfUrl: slide.pdfUrl || '',
               pdfPublicId: slide.pdfPublicId || null,
               pdfPages: pdfPages
+            };
+          }
+          // Preserve all PowerPoint-related fields
+          if (slide.type === 'powerpoint') {
+            return {
+              ...slide,
+              powerpointUrl: slide.powerpointUrl || '',
+              powerpointPublicId: slide.powerpointPublicId || null
             };
           }
           return slide;

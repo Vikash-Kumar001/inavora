@@ -1,18 +1,13 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Upload, Link as LinkIcon, X } from 'lucide-react';
+import { X } from 'lucide-react';
 import SlideTypeHeader from '../common/SlideTypeHeader';
 import { useTranslation } from 'react-i18next';
-import toast from 'react-hot-toast';
-import { uploadPowerPoint as uploadPowerPointService } from '../../../services/presentationService';
 
 const PowerPointEditor = ({ slide, onUpdate }) => {
   const { t } = useTranslation();
   const [question, setQuestion] = useState(slide?.question || '');
   const [powerpointUrl, setPowerpointUrl] = useState(slide?.powerpointUrl || '');
   const [powerpointPublicId, setPowerpointPublicId] = useState(slide?.powerpointPublicId || '');
-  const [isUploading, setIsUploading] = useState(false);
-  const [uploadMethod, setUploadMethod] = useState('url'); // 'url' or 'file'
-  const fileInputRef = useRef(null);
   const isMounted = useRef(false);
 
   useEffect(() => {
@@ -20,13 +15,6 @@ const PowerPointEditor = ({ slide, onUpdate }) => {
       setQuestion(slide.question || '');
       setPowerpointUrl(slide.powerpointUrl || '');
       setPowerpointPublicId(slide.powerpointPublicId || '');
-      
-      // If PowerPoint exists but no publicId, it's likely a URL-based PowerPoint
-      if (slide.powerpointUrl && !slide.powerpointPublicId) {
-        setUploadMethod('url');
-      } else if (slide.powerpointPublicId) {
-        setUploadMethod('file');
-      }
     }
   }, [slide]);
 
@@ -38,194 +26,20 @@ const PowerPointEditor = ({ slide, onUpdate }) => {
     }
     
     // Update parent component when state changes
+    // Don't trim question during typing to preserve spaces between words
+    // Only trim URLs to remove accidental whitespace
     onUpdate({
-      question: question.trim(),
+      question: question,
       powerpointUrl: powerpointUrl.trim(),
       powerpointPublicId: powerpointPublicId
     });
   }, [question, powerpointUrl, powerpointPublicId, onUpdate]);
 
-  // Validate if file is a genuine MS PowerPoint file by checking file structure/signature
-  // Accepts files with any extension as long as they have valid PowerPoint structure
-  const validateMSPowerPointFile = async (file) => {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      
-      reader.onload = (e) => {
-        try {
-          const arrayBuffer = e.target.result;
-          const uint8Array = new Uint8Array(arrayBuffer);
-          
-          // Check for .pptx format (Office Open XML) - ZIP archive with PowerPoint structure
-          // .pptx files are ZIP archives - check for ZIP signature (PK\x03\x04 or PK\x05\x06 for empty ZIP)
-          // Standard ZIP signature: PK\x03\x04 (50 4B 03 04)
-          const isZipFile = uint8Array[0] === 0x50 && uint8Array[1] === 0x4B && 
-                           (uint8Array[2] === 0x03 || uint8Array[2] === 0x05 || uint8Array[2] === 0x07) && 
-                           (uint8Array[3] === 0x04 || uint8Array[3] === 0x06 || uint8Array[3] === 0x08);
-          
-          if (isZipFile) {
-            // It's a ZIP file, now check if it contains PowerPoint-specific content
-            // Office Open XML files have [Content_Types].xml and ppt/ folder in the ZIP structure
-            // Read more bytes (up to 50KB) to find PowerPoint markers in the ZIP file headers
-            const textDecoder = new TextDecoder('utf-8', { fatal: false });
-            const bytesToRead = Math.min(50000, uint8Array.length);
-            const fileContent = textDecoder.decode(uint8Array.slice(0, bytesToRead));
-            
-            // Check for PowerPoint-specific markers in the ZIP structure
-            // These markers appear in the ZIP local file headers (which are uncompressed)
-            const hasPowerPointMarkers = 
-              fileContent.includes('[Content_Types].xml') || 
-              fileContent.includes('ppt/') || 
-              fileContent.includes('ppt/presentation.xml') ||
-              fileContent.includes('ppt/slides/') ||
-              fileContent.includes('application/vnd.openxmlformats-officedocument.presentationml');
-            
-            if (hasPowerPointMarkers) {
-              resolve(true);
-              return;
-            }
-          }
-          
-          // Check for .ppt format (OLE2 compound document)
-          // .ppt files are OLE2 compound documents
-          // Check for OLE2 signature: D0 CF 11 E0 A1 B1 1A E1
-          const isOLE2File = uint8Array[0] === 0xD0 && uint8Array[1] === 0xCF && 
-                            uint8Array[2] === 0x11 && uint8Array[3] === 0xE0 && 
-                            uint8Array[4] === 0xA1 && uint8Array[5] === 0xB1 && 
-                            uint8Array[6] === 0x1A && uint8Array[7] === 0xE1;
-          
-          if (isOLE2File) {
-            // It's an OLE2 file, likely a genuine .ppt file
-            // Additional validation could check for PowerPoint-specific streams, but OLE2 signature is sufficient
-            resolve(true);
-            return;
-          }
-          
-          // File doesn't match either PowerPoint format
-          reject(new Error('NOT_MS_POWERPOINT'));
-        } catch (error) {
-          reject(error);
-        }
-      };
-      
-      reader.onerror = () => reject(new Error('FILE_READ_ERROR'));
-      // Read first 50KB for validation (enough to check signatures and ZIP structure)
-      const blob = file.slice(0, Math.min(50000, file.size));
-      reader.readAsArrayBuffer(blob);
-    });
-  };
-
-  const handlePowerPointUpload = async (e) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    // Validate file type - accept any extension as long as file structure is valid PowerPoint
-    // We validate by file signature/structure, not extension, to support files with any extension
-    const validTypes = [
-      'application/vnd.ms-powerpoint', // .ppt files
-      'application/vnd.openxmlformats-officedocument.presentationml.presentation', // .pptx files
-      'application/mspowerpoint', // Alternative MIME type for .ppt
-      'application/powerpoint', // Alternative MIME type
-      'application/x-mspowerpoint', // Alternative MIME type for .ppt
-      'application/octet-stream', // Some browsers report this for .ppt/.pptx
-      'application/zip' // .pptx files are ZIP archives
-    ];
-    
-    // Log if MIME type doesn't match expected types (but don't reject - we validate by structure)
-    if (file.type && !file.type.includes('octet-stream') && !validTypes.includes(file.type) && 
-        !file.type.includes('powerpoint') && !file.type.includes('presentation') && 
-        !file.type.includes('zip')) {
-      console.warn('Unexpected MIME type for file:', file.type, 'File:', file.name, '- Will validate by file structure');
-    }
-
-    // Validate file size (max 10MB - Cloudinary's raw file upload limit)
-    if (file.size > 10 * 1024 * 1024) {
-      toast.error(t('slide_editors.powerpoint.file_too_large'));
-      if (fileInputRef.current) {
-        fileInputRef.current.value = '';
-      }
-      return;
-    }
-
-    // Validate if it's a genuine MS PowerPoint file by checking file structure/signature
-    // This accepts files with any extension as long as they have valid PowerPoint structure
-    try {
-      await validateMSPowerPointFile(file);
-    } catch (error) {
-      if (error.message === 'NOT_MS_POWERPOINT') {
-        toast.error(t('slide_editors.powerpoint.not_ms_powerpoint'));
-        if (fileInputRef.current) {
-          fileInputRef.current.value = '';
-        }
-        return;
-      } else {
-        // Other validation errors - continue with upload (fallback)
-        console.warn('PowerPoint validation warning:', error);
-      }
-    }
-
-    try {
-      setIsUploading(true);
-
-      // Convert to base64
-      const reader = new FileReader();
-      reader.onload = async (event) => {
-        try {
-          const base64PowerPoint = event.target.result;
-          
-          const uploadPromise = uploadPowerPointService(base64PowerPoint)
-            .then((res) => {
-              if (!res?.success) {
-                throw new Error(res?.error || 'Upload failed');
-              }
-              return res;
-            });
-
-          toast.promise(uploadPromise, {
-            loading: t('slide_editors.powerpoint.uploading'),
-            success: (result) => result?.message || t('slide_editors.powerpoint.upload_success'),
-            error: (err) => err?.response?.data?.error || err?.message || t('slide_editors.powerpoint.upload_error')
-          });
-
-          const result = await uploadPromise;
-
-          setPowerpointUrl(result.data.powerpointUrl);
-          setPowerpointPublicId(result.data.publicId);
-          onUpdate({
-            question: question.trim(),
-            powerpointUrl: result.data.powerpointUrl,
-            powerpointPublicId: result.data.publicId
-          });
-        } catch (error) {
-          console.error('Upload error:', error);
-          toast.error(error?.response?.data?.error || error?.message || t('slide_editors.powerpoint.upload_error'));
-        } finally {
-          setIsUploading(false);
-          if (fileInputRef.current) {
-            fileInputRef.current.value = '';
-          }
-        }
-      };
-      reader.onerror = () => {
-        toast.error(t('slide_editors.powerpoint.failed_read_file'));
-        setIsUploading(false);
-      };
-      reader.readAsDataURL(file);
-    } catch (error) {
-      console.error('PowerPoint upload error:', error);
-      toast.error(t('slide_editors.powerpoint.upload_error'));
-      setIsUploading(false);
-    }
-  };
-
   const handleRemovePowerPoint = () => {
     setPowerpointUrl('');
     setPowerpointPublicId('');
-    if (fileInputRef.current) {
-      fileInputRef.current.value = '';
-    }
     onUpdate({
-      question: question.trim(),
+      question: question,
       powerpointUrl: '',
       powerpointPublicId: ''
     });
@@ -242,6 +56,12 @@ const PowerPointEditor = ({ slide, onUpdate }) => {
         <textarea
           value={question}
           onChange={(e) => setQuestion(e.target.value)}
+          onKeyDown={(e) => {
+            // Explicitly allow space key - prevent any parent handlers from interfering
+            if (e.key === ' ') {
+              e.stopPropagation();
+            }
+          }}
           placeholder={t('slide_editors.powerpoint.question_placeholder')}
           className="w-full px-3 py-2 bg-[#2A2A2A] border border-[#3B3B3B] rounded-md text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent resize-none"
           rows="3"
@@ -253,46 +73,37 @@ const PowerPointEditor = ({ slide, onUpdate }) => {
           {t('slide_editors.powerpoint.url_label')}
         </label>
         
-        {/* Upload Method Toggle */}
-        <div className="flex gap-2 mb-3">
-          <button
-            type="button"
-            onClick={() => {
-              setUploadMethod('url');
-              if (powerpointPublicId) {
-                setPowerpointUrl('');
-                setPowerpointPublicId('');
-              }
-            }}
-            className={`flex-1 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-              uploadMethod === 'url'
-                ? 'bg-[#388E3C] text-white'
-                : 'bg-[#2A2A2A] text-[#E0E0E0] hover:bg-[#333333]'
-            }`}
-          >
-            <LinkIcon className="w-4 h-4 inline-block mr-2" />
-            {t('slide_editors.powerpoint.url_method')}
-          </button>
-          <button
-            type="button"
-            onClick={() => {
-              setUploadMethod('file');
-              if (!powerpointPublicId && powerpointUrl && !powerpointUrl.startsWith('http')) {
-                setPowerpointUrl('');
-              }
-            }}
-            className={`flex-1 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-              uploadMethod === 'file'
-                ? 'bg-[#388E3C] text-white'
-                : 'bg-[#2A2A2A] text-[#E0E0E0] hover:bg-[#333333]'
-            }`}
-          >
-            <Upload className="w-4 h-4 inline-block mr-2" />
-            {t('slide_editors.powerpoint.upload_method')}
-          </button>
-        </div>
-
-        {uploadMethod === 'url' ? (
+        {powerpointUrl && powerpointPublicId ? (
+          // Show existing uploaded file (if any) with option to remove
+          <div className="relative rounded-lg overflow-hidden border border-[#2A2A2A] bg-[#232323] p-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-orange-500 rounded-lg flex items-center justify-center">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                  </svg>
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-[#E0E0E0]">
+                    {t('slide_editors.powerpoint.file_uploaded')}
+                  </p>
+                  <p className="text-xs text-[#9E9E9E]">
+                    {t('slide_editors.powerpoint.uploaded_successfully')}
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={handleRemovePowerPoint}
+                className="p-1.5 bg-[#EF5350] hover:bg-[#E53935] text-white rounded-full transition-colors"
+                title={t('slide_editors.powerpoint.remove_file_title')}
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+        ) : (
+          // URL input field
           <>
             <input
               type="url"
@@ -305,70 +116,6 @@ const PowerPointEditor = ({ slide, onUpdate }) => {
               {t('slide_editors.powerpoint.url_description')}
             </p>
           </>
-        ) : (
-          <div className="space-y-3">
-            {!powerpointUrl ? (
-              <div className="border-2 border-dashed border-[#2A2A2A] rounded-lg p-8 text-center hover:border-[#4CAF50]/60 transition-colors bg-[#232323]">
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  accept=".ppt,.pptx,application/vnd.ms-powerpoint,application/vnd.openxmlformats-officedocument.presentationml.presentation"
-                  onChange={handlePowerPointUpload}
-                  className="hidden"
-                  disabled={isUploading}
-                />
-                <button
-                  type="button"
-                  onClick={() => fileInputRef.current?.click()}
-                  disabled={isUploading}
-                  className="inline-flex items-center gap-2 px-4 py-2 bg-[#388E3C] hover:bg-[#2E7D32] disabled:bg-[#555555] text-white rounded-lg transition-colors text-sm font-medium"
-                >
-                  {isUploading ? (
-                    <>
-                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                      {t('slide_editors.powerpoint.uploading')}
-                    </>
-                  ) : (
-                    <>
-                      <Upload className="w-4 h-4" />
-                      {t('slide_editors.powerpoint.upload_file_button')}
-                    </>
-                  )}
-                </button>
-                <p className="text-xs text-[#9E9E9E] mt-2">
-                  {t('slide_editors.powerpoint.file_requirements')}
-                </p>
-              </div>
-            ) : (
-              <div className="relative rounded-lg overflow-hidden border border-[#2A2A2A] bg-[#232323] p-4">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-orange-500 rounded-lg flex items-center justify-center">
-                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                      </svg>
-                    </div>
-                    <div>
-                      <p className="text-sm font-medium text-[#E0E0E0]">
-                        {t('slide_editors.powerpoint.file_uploaded')}
-                      </p>
-                      <p className="text-xs text-[#9E9E9E]">
-                        {powerpointPublicId ? t('slide_editors.powerpoint.uploaded_successfully') : powerpointUrl}
-                      </p>
-                    </div>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={handleRemovePowerPoint}
-                    className="p-1.5 bg-[#EF5350] hover:bg-[#E53935] text-white rounded-full transition-colors"
-                    title={t('slide_editors.powerpoint.remove_file_title')}
-                  >
-                    <X className="w-4 h-4" />
-                  </button>
-                </div>
-              </div>
-            )}
-          </div>
         )}
       </div>
 

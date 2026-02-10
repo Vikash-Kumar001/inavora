@@ -11,6 +11,10 @@ load_dotenv()
 # Create app ONCE
 app = Flask(__name__)
 
+# Production configuration
+app.config['JSON_SORT_KEYS'] = False
+app.config['JSONIFY_PRETTYPRINT_REGULAR'] = False
+
 # Enable CORS AFTER app creation
 CORS(app, resources={r"/*": {"origins": "*"}})
 
@@ -67,9 +71,15 @@ INAVORA SYSTEM INSTRUCTIONS (AUTHORITATIVE):
         )
 
 
-# @app.route('/')
-# def index():
-#     return render_template('index.html')
+@app.route('/')
+def index():
+    return render_template('index.html')
+
+
+@app.route('/health')
+def health():
+    """Health check endpoint for deployment platforms"""
+    return jsonify({"status": "healthy", "service": "inavora-chatbot"}), 200
 
 
 @app.route('/chat', methods=['POST'])
@@ -121,4 +131,9 @@ def chat():
 
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    # Production deployment settings
+    # Always bind to 0.0.0.0 for deployment platforms like Render
+    port = int(os.environ.get('PORT', 5000))
+    debug_mode = os.environ.get('FLASK_DEBUG', 'False').lower() == 'true'
+    print(f"Starting Flask app on 0.0.0.0:{port} (debug={debug_mode})")
+    app.run(host='0.0.0.0', port=port, debug=debug_mode)

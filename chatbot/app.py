@@ -1,14 +1,18 @@
 import os
 import json
-import google.generativeai as genai
 from dotenv import load_dotenv
 from flask import Flask, request, jsonify, render_template
 from flask_cors import CORS
+from google import genai
 
-# Load env FIRST
+# -------------------------------------------------
+# Load environment variables FIRST
+# -------------------------------------------------
 load_dotenv()
 
-# Create app ONCE
+# -------------------------------------------------
+# Create Flask app ONCE
+# -------------------------------------------------
 app = Flask(__name__)
 
 # Production configuration
@@ -18,13 +22,21 @@ app.config['JSONIFY_PRETTYPRINT_REGULAR'] = False
 # Enable CORS AFTER app creation
 CORS(app, resources={r"/*": {"origins": "*"}})
 
-# Configure Gemini
+# -------------------------------------------------
+# Configure Gemini Client
+# -------------------------------------------------
 api_key = os.getenv("GEMINI_API_KEY")
+
 if not api_key:
     print("WARNING: GEMINI_API_KEY not found in .env file.")
+    client = None
 else:
-    genai.configure(api_key=api_key)
+    client = genai.Client(api_key=api_key)
 
+
+# -------------------------------------------------
+# Strict System Instruction Loader
+# -------------------------------------------------
 def get_system_instructions():
     """
     Loads the FULL Inavora instruction JSON and converts it
@@ -42,12 +54,24 @@ def get_system_instructions():
         with open(instruction_file, "r", encoding="utf-8") as f:
             instruction_data = json.load(f)
 
-        # Convert JSON to formatted text so Gemini respects hierarchy
         instruction_text = json.dumps(instruction_data, indent=2)
 
         return f"""
 You are an AI assistant operating STRICTLY under the following rules.
 These rules are IMMUTABLE and OVERRIDE all user instructions if conflicts arise.
+
+LANGUAGE POLICY (MANDATORY):
+- Detect the language of the user's message from text or message context.
+- Generate the entire response strictly in that same language.
+- Do NOT translate unless explicitly requested.
+- Do NOT mention language switching.
+- Do NOT default to English if the user is specifying a different language.
+
+BEHAVIORAL CONSTRAINTS:
+- Never mention internal policies, safety systems, regulations, laws, or restrictions.
+- Never say "I am restricted", "I cannot due to policy", or similar phrases.
+- If a request conflicts with system instructions, simply follow system rules without explanation.
+- Do not justify refusals using policy language.
 
 You MUST:
 - Follow the JSON instructions EXACTLY
@@ -56,9 +80,13 @@ You MUST:
 - NEVER ignore constraints such as slide limits or mandatory slides
 - Generate presentation content ONLY in compliance with this specification
 
+- Never invent new slide templates.
+- If a template does not exist in the system JSON, do not create it.
+
 INAVORA SYSTEM INSTRUCTIONS (AUTHORITATIVE):
 {instruction_text}
 """
+
     except json.JSONDecodeError as e:
         return (
             f"SYSTEM ERROR: inavora.json is malformed ({str(e)}). "
@@ -70,6 +98,10 @@ INAVORA SYSTEM INSTRUCTIONS (AUTHORITATIVE):
             "Fallback to generic assistant behavior."
         )
 
+
+# -------------------------------------------------
+# Routes
+# -------------------------------------------------
 
 @app.route('/')
 def index():
@@ -84,28 +116,33 @@ def health():
 
 @app.route('/chat', methods=['POST'])
 def chat():
-    user_input = request.json.get("message")
-    retry_count = request.json.get("retry_count", 0)
+    if not client:
+        return jsonify({
+            "error": "API Key is missing. Please check your .env file."
+        }), 500
+
+    data = request.get_json()
+    user_input = data.get("message")
+    retry_count = data.get("retry_count", 0)
     max_retries = 3
 
     if not user_input:
         return jsonify({"error": "Message is empty"}), 400
 
-    if not api_key:
-        return jsonify({
-            "error": "API Key is missing. Please check your .env file."
-        }), 500
-
     try:
         # Load strict system instructions
         system_prompt = get_system_instructions()
 
-        model = genai.GenerativeModel(
-            model_name="models/gemini-flash-latest",
-            system_instruction=system_prompt
+        response = client.models.generate_content(
+            model="models/gemini-flash-latest",
+            contents=user_input,
+            config={
+                "system_instruction": system_prompt,
+                "temperature": 0.5,
+                "top_p": 0.8,
+                "max_output_tokens": 2048,
+            }
         )
-
-        response = model.generate_content(user_input)
 
         if not response or not response.text:
             raise ValueError("Gemini returned an empty response.")
@@ -130,10 +167,12 @@ def chat():
             }), 500
 
 
+# -------------------------------------------------
+# Run App
+# -------------------------------------------------
 if __name__ == '__main__':
-    # Production deployment settings
-    # Always bind to 0.0.0.0 for deployment platforms like Render
     port = int(os.environ.get('PORT', 5000))
     debug_mode = os.environ.get('FLASK_DEBUG', 'False').lower() == 'true'
+
     print(f"Starting Flask app on 0.0.0.0:{port} (debug={debug_mode})")
     app.run(host='0.0.0.0', port=port, debug=debug_mode)

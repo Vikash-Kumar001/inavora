@@ -52,6 +52,7 @@ const getAllowedOrigins = () => {
     if (process.env.NODE_ENV === 'production') {
         origins.add('https://www.inavora.com');
         origins.add('https://inavora.com');
+        origins.add('https://api.inavora.com');
     }
     
     // Default to localhost for development

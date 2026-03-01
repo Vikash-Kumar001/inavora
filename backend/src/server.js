@@ -117,8 +117,6 @@ app.use(cors({
     optionsSuccessStatus: 200
 }));
 
-// Explicit preflight support
-app.use(cors(corsOptions));
 
 /* =====================================================
    BODY PARSERS

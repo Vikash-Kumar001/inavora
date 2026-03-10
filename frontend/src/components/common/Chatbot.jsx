@@ -1,8 +1,9 @@
 import { useState, useRef, useEffect, Fragment } from 'react';
 import { MessageCircle, X, Send, RotateCcw, Copy, Check, Clock, Wifi, WifiOff, Bot, Search, Download, FileText, FileJson, Trash2, ThumbsUp, ThumbsDown, Lightbulb, FileQuestion, HelpCircle, Edit2, Save } from 'lucide-react';
 import { sendChatMessage } from '../../services/chatbotService';
-import { getChatbotUrl } from '../../utils/config';
+import { getApiUrl } from '../../utils/config';
 import { useTranslation } from 'react-i18next';
+import { useAuth } from '../../context/AuthContext';
 import i18n from '../../i18n/i18n';
 import toast from 'react-hot-toast';
 import { formatRelativeTime } from '../../utils/timeUtils';
@@ -19,6 +20,7 @@ import {
 
 export default function Chatbot({ isOpen, onClose }) {
   const { t } = useTranslation();
+  const { user } = useAuth();
   
   // Language mapping for prompt enhancement
   const languageMap = {
@@ -34,27 +36,13 @@ export default function Chatbot({ isOpen, onClose }) {
     'mr': 'Marathi',
   };
 
-  // Get current language and enhance prompt if not English
-  const enhancePromptWithLanguage = (prompt) => {
-    const currentLanguage = i18n.language || 'en';
-    const languageCode = currentLanguage.split('-')[0]; // Handle 'en-US' -> 'en'
-    
-    // If language is not English, add language instruction
-    if (languageCode !== 'en' && languageMap[languageCode]) {
-      const languageName = languageMap[languageCode];
-      return `${prompt}\n\n[IMPORTANT: Please respond entirely in ${languageName} language. All your output, including slide content, titles, and explanations, must be in ${languageName}.]`;
-    }
-    
-    return prompt;
-  };
-
   const [messages, setMessages] = useState([]);
   const [inputValue, setInputValue] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [loadingStatus, setLoadingStatus] = useState(''); // Progressive: Connecting → Thinking → Still thinking
   const [lastUserPrompt, setLastUserPrompt] = useState('');
-  const [retryCount, setRetryCount] = useState(0);
   const [showRetry, setShowRetry] = useState(false);
-  const [connectionStatus, setConnectionStatus] = useState('online'); // online, offline, connecting
+  const [connectionStatus, setConnectionStatus] = useState('online'); // online, offline, connecting, limited
   const [copiedMessageId, setCopiedMessageId] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [showSearch, setShowSearch] = useState(false);
@@ -67,6 +55,7 @@ export default function Chatbot({ isOpen, onClose }) {
   const messagesEndRef = useRef(null);
   const inputRef = useRef(null);
   const searchInputRef = useRef(null);
+  const loadingTimersRef = useRef([]);
   const editInputRef = useRef(null);
 
   // Load conversation history when chatbot opens
@@ -84,7 +73,7 @@ export default function Chatbot({ isOpen, onClose }) {
         }]);
       }
     }
-  }, [isOpen, t]);
+  }, [isOpen, t, messages.length]);
 
   // Save conversation history whenever messages change (except welcome message)
   useEffect(() => {
@@ -134,30 +123,20 @@ export default function Chatbot({ isOpen, onClose }) {
     }
   }, [showExportMenu]);
 
-  // Check connection status
+  // Initialize connection status to online when chatbot opens
   useEffect(() => {
-    const checkConnection = async () => {
-      try {
-        setConnectionStatus('connecting');
-        const response = await fetch(`${getChatbotUrl()}/health`, {
-          method: 'GET',
-          mode: 'cors',
-        });
-        if (response.ok) {
-          setConnectionStatus('online');
-        } else {
-          setConnectionStatus('offline');
-        }
-      } catch (error) {
-        setConnectionStatus('offline');
-      }
-    };
-
     if (isOpen) {
-      checkConnection();
-      const interval = setInterval(checkConnection, 30000); // Check every 30 seconds
-      return () => clearInterval(interval);
+      // Start as online - will be updated based on actual message success/failure
+      setConnectionStatus('online');
+      
+      // Don't do periodic health checks - they're expensive and unreliable
+      // Connection status is tracked based on actual message attempts
     }
+    return () => {
+      // Clean up loading timers on close
+      loadingTimersRef.current.forEach(clearTimeout);
+      loadingTimersRef.current = [];
+    };
   }, [isOpen]);
 
   // Copy message to clipboard
@@ -167,7 +146,7 @@ export default function Chatbot({ isOpen, onClose }) {
       setCopiedMessageId(messageIndex);
       toast.success(t('chatbot.message_copied') || 'Message copied to clipboard');
       setTimeout(() => setCopiedMessageId(null), 2000);
-    } catch (error) {
+    } catch {
       toast.error(t('chatbot.copy_failed') || 'Failed to copy message');
     }
   };
@@ -176,106 +155,159 @@ export default function Chatbot({ isOpen, onClose }) {
     const text = inputValue.trim();
     if (!text || isLoading) return;
 
-    // Enhance prompt with language instruction if needed
-    const enhancedPrompt = enhancePromptWithLanguage(text);
-
-    // Save original prompt for potential retry (without language enhancement)
+    // Save original prompt for potential retry
     setLastUserPrompt(text);
     setInputValue('');
-    setRetryCount(0);
     setShowRetry(false);
 
-    // Add user message with status (show original text to user)
+    // Add user message
     const userMessage = {
       role: 'user',
       text,
       timestamp: new Date(),
       status: 'sending'
     };
-    setMessages(prev => [...prev, userMessage]);
+    
+    // Add bot placeholder
+    const botPlaceholder = {
+      role: 'bot',
+      text: '',
+      timestamp: new Date(),
+      status: 'delivering',
+      isStreaming: true
+    };
 
-    // Send enhanced prompt to chatbot
+    setMessages(prev => [...prev, userMessage, botPlaceholder]);
+
     setIsLoading(true);
-    const result = await sendChatMessage(enhancedPrompt, 0);
+    // Progressive status: Connecting → Thinking → Still thinking
+    setLoadingStatus('Connecting...');
+    loadingTimersRef.current.forEach(clearTimeout);
+    loadingTimersRef.current = [
+      setTimeout(() => setLoadingStatus('Thinking...'), 5000),
+      setTimeout(() => setLoadingStatus('Still thinking...'), 20000),
+    ];
+    const currentLanguage = i18n.language || 'en';
+    const languageCode = currentLanguage.split('-')[0];
+    const languageName = languageMap[languageCode] || 'English';
+    const userId = user?._id || 'guest-session';
+    
+    const result = await sendChatMessage(userId, text, languageName, (chunk) => {
+        setMessages(prev => {
+            const newMessages = [...prev];
+            const lastMsg = newMessages[newMessages.length - 1];
+            if (lastMsg && lastMsg.role === 'bot') {
+                lastMsg.text += chunk;
+            }
+            // Mark user message as 'sent' on first chunk (server is responding)
+            const userMsg = newMessages[newMessages.length - 2];
+            if (userMsg && userMsg.role === 'user' && userMsg.status === 'sending') {
+                userMsg.status = 'sent';
+            }
+            return newMessages;
+        });
+    });
 
     setIsLoading(false);
+    setLoadingStatus('');
+    loadingTimersRef.current.forEach(clearTimeout);
+    loadingTimersRef.current = [];
 
-    // Update user message status
-    setMessages(prev => prev.map((msg, idx) => 
-      idx === prev.length - 1 && msg.role === 'user' 
-        ? { ...msg, status: result.success ? 'sent' : 'failed' }
-        : msg
-    ));
+    // Update connection status based on message success
+    setConnectionStatus(result.success ? 'online' : 'offline');
+
+    // Update message statuses
+    setMessages(prev => {
+        const newMessages = [...prev];
+        const botMsg = newMessages[newMessages.length - 1];
+        const userMsg = newMessages[newMessages.length - 2];
+        
+        if (userMsg && userMsg.role === 'user') {
+            userMsg.status = result.success ? 'sent' : 'failed';
+        }
+        
+        if (botMsg && botMsg.role === 'bot') {
+            botMsg.isStreaming = false;
+            botMsg.status = result.success ? 'delivered' : 'failed';
+            if (!result.success) {
+                botMsg.text = `${t('chatbot.error_prefix')} ${result.isNetworkError ? t('chatbot.error_network') : (result.error || t('chatbot.error_failed'))}`;
+                botMsg.isError = true;
+            }
+        }
+        return newMessages;
+    });
 
     if (result.success) {
-      // Add bot response
-      setMessages(prev => [...prev, {
-        role: 'bot',
-        text: result.response,
-        timestamp: new Date(),
-        status: 'delivered'
-      }]);
       setShowRetry(true);
-    } else {
-      // Add error message
-      const errorPrefix = t('chatbot.error_prefix');
-      const errorMessage = result.isNetworkError 
-        ? t('chatbot.error_network')
-        : (result.error || t('chatbot.error_failed'));
-      setMessages(prev => [...prev, {
-        role: 'bot',
-        text: `${errorPrefix} ${errorMessage}`,
-        isError: true,
-        timestamp: new Date()
-      }]);
-      if (result.canRetry) {
-        setShowRetry(true);
-      }
+    } else if (result.canRetry) {
+      setShowRetry(true);
     }
   };
 
   const handleRetry = async () => {
     if (!lastUserPrompt || isLoading) return;
 
-    setRetryCount(prev => prev + 1);
     setShowRetry(false);
 
-    // Enhance prompt with language instruction if needed
-    const enhancedPrompt = enhancePromptWithLanguage(lastUserPrompt);
-
-    // Add retry message
-    setMessages(prev => [...prev, {
+    // Add retry bot message placeholder
+    const botPlaceholder = {
       role: 'bot',
-      text: t('chatbot.retry_attempt', { count: retryCount + 1, prompt: lastUserPrompt }),
-      timestamp: new Date()
-    }]);
+      text: '',
+      timestamp: new Date(),
+      status: 'delivering',
+      isStreaming: true,
+      isRetry: true
+    };
+    setMessages(prev => [...prev, botPlaceholder]);
 
     setIsLoading(true);
-    const result = await sendChatMessage(enhancedPrompt, retryCount + 1);
+    setLoadingStatus('Connecting...');
+    loadingTimersRef.current.forEach(clearTimeout);
+    loadingTimersRef.current = [
+      setTimeout(() => setLoadingStatus('Thinking...'), 5000),
+      setTimeout(() => setLoadingStatus('Still thinking...'), 20000),
+    ];
+    const currentLanguage = i18n.language || 'en';
+    const languageCode = currentLanguage.split('-')[0];
+    const languageName = languageMap[languageCode] || 'English';
+    const userId = user?._id || 'guest-session';
+
+    const result = await sendChatMessage(userId, lastUserPrompt, languageName, (chunk) => {
+        setMessages(prev => {
+            const newMessages = [...prev];
+            const lastMsg = newMessages[newMessages.length - 1];
+            if (lastMsg && lastMsg.role === 'bot') {
+                lastMsg.text += chunk;
+            }
+            return newMessages;
+        });
+    });
 
     setIsLoading(false);
+    setLoadingStatus('');
+    loadingTimersRef.current.forEach(clearTimeout);
+    loadingTimersRef.current = [];
 
-    if (result.success) {
-      setMessages(prev => [...prev, {
-        role: 'bot',
-        text: result.response,
-        timestamp: new Date()
-      }]);
+    // Update connection status based on retry success
+    setConnectionStatus(result.success ? 'online' : 'offline');
+
+    // Update bot message status
+    setMessages(prev => {
+        const newMessages = [...prev];
+        const botMsg = newMessages[newMessages.length - 1];
+        if (botMsg && botMsg.role === 'bot') {
+            botMsg.isStreaming = false;
+            botMsg.status = result.success ? 'delivered' : 'failed';
+            if (!result.success) {
+                botMsg.text = `${t('chatbot.error_prefix')} ${result.isNetworkError ? t('chatbot.error_network') : (result.error || t('chatbot.error_failed'))}`;
+                botMsg.isError = true;
+            }
+        }
+        return newMessages;
+    });
+
+    if (result.success || result.canRetry) {
       setShowRetry(true);
-    } else {
-      const errorPrefix = t('chatbot.error_prefix');
-      const errorMessage = result.isNetworkError 
-        ? t('chatbot.error_network')
-        : (result.error || t('chatbot.error_failed'));
-      setMessages(prev => [...prev, {
-        role: 'bot',
-        text: `${errorPrefix} ${errorMessage}`,
-        isError: true,
-        timestamp: new Date()
-      }]);
-      if (result.canRetry) {
-        setShowRetry(true);
-      }
     }
   };
 
@@ -300,7 +332,7 @@ export default function Chatbot({ isOpen, onClose }) {
       downloadFile(textContent, filename, 'text/plain');
       toast.success(t('chatbot.exported_txt') || 'Conversation exported as TXT');
       setShowExportMenu(false);
-    } catch (error) {
+    } catch {
       toast.error(t('chatbot.export_failed') || 'Failed to export conversation');
     }
   };
@@ -312,7 +344,7 @@ export default function Chatbot({ isOpen, onClose }) {
       downloadFile(jsonContent, filename, 'application/json');
       toast.success(t('chatbot.exported_json') || 'Conversation exported as JSON');
       setShowExportMenu(false);
-    } catch (error) {
+    } catch {
       toast.error(t('chatbot.export_failed') || 'Failed to export conversation');
     }
   };
@@ -361,61 +393,78 @@ export default function Chatbot({ isOpen, onClose }) {
     const text = actionText.trim();
     if (!text || isLoading) return;
 
-    // Enhance prompt with language instruction if needed
-    const enhancedPrompt = enhancePromptWithLanguage(text);
-
     // Save original prompt for potential retry
     setLastUserPrompt(text);
     setInputValue('');
-    setRetryCount(0);
     setShowRetry(false);
 
-    // Add user message with status (show original text to user)
+    // Add user message
     const userMessage = {
       role: 'user',
       text,
       timestamp: new Date(),
       status: 'sending'
     };
-    setMessages(prev => [...prev, userMessage]);
+    
+    // Add bot placeholder
+    const botPlaceholder = {
+      role: 'bot',
+      text: '',
+      timestamp: new Date(),
+      status: 'delivering',
+      isStreaming: true
+    };
+
+    setMessages(prev => [...prev, userMessage, botPlaceholder]);
 
     // Send enhanced prompt to chatbot
     setIsLoading(true);
-    const result = await sendChatMessage(enhancedPrompt, 0);
+    const currentLanguage = i18n.language || 'en';
+    const languageCode = currentLanguage.split('-')[0];
+    const languageName = languageMap[languageCode] || 'English';
+    const userId = user?._id || 'guest-session';
+    
+    const result = await sendChatMessage(userId, text, languageName, (chunk) => {
+        setMessages(prev => {
+            const newMessages = [...prev];
+            const lastMsg = newMessages[newMessages.length - 1];
+            if (lastMsg && lastMsg.role === 'bot') {
+                lastMsg.text += chunk;
+            }
+            // Mark user message as 'sent' on first chunk (server is responding)
+            const userMsg = newMessages[newMessages.length - 2];
+            if (userMsg && userMsg.role === 'user' && userMsg.status === 'sending') {
+                userMsg.status = 'sent';
+            }
+            return newMessages;
+        });
+    });
 
     setIsLoading(false);
 
-    // Update user message status
-    setMessages(prev => prev.map((msg, idx) => 
-      idx === prev.length - 1 && msg.role === 'user' 
-        ? { ...msg, status: result.success ? 'sent' : 'failed' }
-        : msg
-    ));
+    // Update message statuses
+    setMessages(prev => {
+        const newMessages = [...prev];
+        const botMsg = newMessages[newMessages.length - 1];
+        const userMsg = newMessages[newMessages.length - 2];
+        
+        if (userMsg && userMsg.role === 'user') {
+            userMsg.status = result.success ? 'sent' : 'failed';
+        }
+        
+        if (botMsg && botMsg.role === 'bot') {
+            botMsg.isStreaming = false;
+            botMsg.status = result.success ? 'delivered' : 'failed';
+            if (!result.success) {
+                botMsg.text = `${t('chatbot.error_prefix')} ${result.isNetworkError ? t('chatbot.error_network') : (result.error || t('chatbot.error_failed'))}`;
+                botMsg.isError = true;
+            }
+        }
+        return newMessages;
+    });
 
-    if (result.success) {
-      // Add bot response
-      setMessages(prev => [...prev, {
-        role: 'bot',
-        text: result.response,
-        timestamp: new Date(),
-        status: 'delivered'
-      }]);
+    if (result.success || result.canRetry) {
       setShowRetry(true);
-    } else {
-      // Add error message
-      const errorPrefix = t('chatbot.error_prefix');
-      const errorMessage = result.isNetworkError 
-        ? t('chatbot.error_network')
-        : (result.error || t('chatbot.error_failed'));
-      setMessages(prev => [...prev, {
-        role: 'bot',
-        text: `${errorPrefix} ${errorMessage}`,
-        isError: true,
-        timestamp: new Date()
-      }]);
-      if (result.canRetry) {
-        setShowRetry(true);
-      }
     }
   };
 
@@ -502,46 +551,60 @@ export default function Chatbot({ isOpen, onClose }) {
     handleCancelEdit();
     toast.success(t('chatbot.message_edited') || 'Message updated successfully');
 
+    // Add new bot response placeholder after the edited message
+    setMessages(prev => {
+      const newMessages = [...prev];
+      newMessages.splice(messageIndex + 1, 0, {
+        role: 'bot',
+        text: '',
+        timestamp: new Date(),
+        status: 'delivering',
+        isStreaming: true
+      });
+      return newMessages;
+    });
+
     // Resend the edited message to get a new bot response
-    const enhancedPrompt = enhancePromptWithLanguage(newText);
     setIsLoading(true);
-    const result = await sendChatMessage(enhancedPrompt, 0);
+    const currentLanguage = i18n.language || 'en';
+    const languageCode = currentLanguage.split('-')[0];
+    const languageName = languageMap[languageCode] || 'English';
+    const userId = user?._id || 'guest-session';
+    
+    const result = await sendChatMessage(userId, newText, languageName, (chunk) => {
+        setMessages(prev => {
+            const newMessages = [...prev];
+            const botMsgIndex = messageIndex + 1;
+            const lastMsg = newMessages[botMsgIndex];
+            if (lastMsg && lastMsg.role === 'bot') {
+                lastMsg.text += chunk;
+            }
+            return newMessages;
+        });
+    });
+
     setIsLoading(false);
     setIsSavingEdit(false);
 
-    if (result.success) {
-      // Add new bot response after the edited message
-      setMessages(prev => {
+    // Update bot message status
+    setMessages(prev => {
         const newMessages = [...prev];
-        newMessages.splice(messageIndex + 1, 0, {
-          role: 'bot',
-          text: result.response,
-          timestamp: new Date(),
-          status: 'delivered'
-        });
-        // Save conversation history after bot response
+        const botMsgIndex = messageIndex + 1;
+        const botMsg = newMessages[botMsgIndex];
+        
+        if (botMsg && botMsg.role === 'bot') {
+            botMsg.isStreaming = false;
+            botMsg.status = result.success ? 'delivered' : 'failed';
+            if (!result.success) {
+                botMsg.text = `${t('chatbot.error_prefix')} ${result.isNetworkError ? t('chatbot.error_network') : (result.error || t('chatbot.error_failed'))}`;
+                botMsg.isError = true;
+            }
+        }
+        
+        // Save conversation history after finalizing
         saveConversationHistory(newMessages);
         return newMessages;
-      });
-    } else {
-      // Add error message
-      const errorPrefix = t('chatbot.error_prefix');
-      const errorMessage = result.isNetworkError 
-        ? t('chatbot.error_network')
-        : (result.error || t('chatbot.error_failed'));
-      setMessages(prev => {
-        const newMessages = [...prev];
-        newMessages.splice(messageIndex + 1, 0, {
-          role: 'bot',
-          text: `${errorPrefix} ${errorMessage}`,
-          isError: true,
-          timestamp: new Date()
-        });
-        // Save conversation history after error message
-        saveConversationHistory(newMessages);
-        return newMessages;
-      });
-    }
+    });
   };
 
   // Handle Enter key in edit input
@@ -728,6 +791,12 @@ export default function Chatbot({ isOpen, onClose }) {
                     <span className="text-xs text-[#9ACFA7]">{t('chatbot.online') || 'Online'}</span>
                   </>
                 )}
+                {connectionStatus === 'limited' && (
+                  <div className="flex items-center gap-1.5" title="Server is online but AI service (Gemini) is disconnected. Please check your API configuration.">
+                    <Wifi className="h-3 w-3 text-[#FFA726]" />
+                    <span className="text-xs text-[#FFB74D]">{t('chatbot.limited') || 'AI Offline'}</span>
+                  </div>
+                )}
                 {connectionStatus === 'offline' && (
                   <>
                     <WifiOff className="h-3 w-3 text-[#D32F2F]" />
@@ -910,11 +979,26 @@ export default function Chatbot({ isOpen, onClose }) {
                 style={message.role === 'user' && editingMessageId !== index ? { wordBreak: 'normal', overflowWrap: 'normal', whiteSpace: 'normal', hyphens: 'none' } : {}}
               >
                 {message.role === 'bot' && !message.isError ? (
-                  <div className="text-sm break-words">
-                    {searchQuery ? (
-                      <div>{highlightText(message.text, searchQuery)}</div>
+                  <div className="text-sm break-words min-h-[1.25rem]">
+                    {message.isStreaming && !message.text ? (
+                      <div className="flex items-center gap-1 py-1">
+                        <div className="w-1.5 h-4 bg-[#4CAF50] animate-pulse"></div>
+                        <span className="text-xs text-[#8A8A8A] italic">{loadingStatus || 'Thinking...'}</span>
+                      </div>
+                    ) : searchQuery ? (
+                      <div className="inline">
+                        {highlightText(message.text, searchQuery)}
+                        {message.isStreaming && (
+                          <span className="inline-block w-1.5 h-4 bg-[#4CAF50] animate-pulse ml-1 align-middle"></span>
+                        )}
+                      </div>
                     ) : (
-                      <MarkdownRenderer content={message.text} />
+                      <div className="inline">
+                        <MarkdownRenderer content={message.text} />
+                        {message.isStreaming && (
+                          <span className="inline-block w-1.5 h-4 bg-[#4CAF50] animate-pulse ml-1 align-middle"></span>
+                        )}
+                      </div>
                     )}
                   </div>
                 ) : editingMessageId === index ? (
@@ -1090,24 +1174,7 @@ export default function Chatbot({ isOpen, onClose }) {
             );
           })
         )}
-        {isLoading && (
-          <div className="flex items-end gap-2 animate-fade-in">
-            {/* Bot Avatar for typing indicator */}
-            <div className="relative flex-shrink-0">
-              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#4CAF50] to-[#388E3C] flex items-center justify-center shadow-lg">
-                <Bot className="h-4 w-4 text-white" />
-              </div>
-              <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-[#4CAF50] rounded-full border-2 border-[#1A1A1A] animate-pulse"></div>
-            </div>
-            <div className="bg-[#2A2A2A] rounded-lg px-4 py-3">
-              <div className="flex gap-1.5 items-center">
-                <div className="w-2 h-2 bg-[#4CAF50] rounded-full animate-bounce" style={{ animationDelay: '0ms', animationDuration: '1.4s' }}></div>
-                <div className="w-2 h-2 bg-[#4CAF50] rounded-full animate-bounce" style={{ animationDelay: '0.2s', animationDuration: '1.4s' }}></div>
-                <div className="w-2 h-2 bg-[#4CAF50] rounded-full animate-bounce" style={{ animationDelay: '0.4s', animationDuration: '1.4s' }}></div>
-              </div>
-            </div>
-          </div>
-        )}
+
         <div ref={messagesEndRef} />
       </div>
 

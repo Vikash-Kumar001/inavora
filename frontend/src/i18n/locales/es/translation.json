@@ -2838,6 +2838,8 @@
     "error_prefix": "⚠️",
     "online": "En línea",
     "offline": "Desconectado",
+    "limited": "IA desconectada",
+    "typing": "Pensando...",
     "connecting": "Conectando...",
     "message_copied": "Mensaje copiado al portapapeles",
     "copy_failed": "Error al copiar mensaje",

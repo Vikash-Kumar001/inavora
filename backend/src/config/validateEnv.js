@@ -12,6 +12,9 @@ const requiredEnvVars = {
   FIREBASE_CLIENT_EMAIL: process.env.FIREBASE_CLIENT_EMAIL,
   FIREBASE_PRIVATE_KEY: process.env.FIREBASE_PRIVATE_KEY,
   FRONTEND_URL: process.env.FRONTEND_URL || 'http://localhost:5173',
+  GEMINI_API_KEY: process.env.GEMINI_API_KEY,
+  REDIS_HOST: process.env.REDIS_HOST || '127.0.0.1',
+  REDIS_PORT: process.env.REDIS_PORT || '6379',
 };
 
 const optionalEnvVars = {

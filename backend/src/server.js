@@ -1,18 +1,19 @@
 process.env.DOTENV_CONFIG_DEBUG = 'false';
 require('dotenv').config();
 
-const Logger = require('./utils/logger');
+const { error: _error, debug, startup, info } = require('./utils/logger');
 const { validateEnv } = require('./config/validateEnv');
 
 try {
     validateEnv();
 } catch (error) {
-    Logger.error('Environment validation failed', error);
+    _error('Environment validation failed', error);
     process.exit(1);
 }
 
 const express = require('express');
-const http = require('http');
+const { json, urlencoded } = express;
+const { createServer } = require('http');
 const cors = require('cors');
 const { Server } = require('socket.io');
 
@@ -37,12 +38,15 @@ const passwordResetRoutes = require('./routes/passwordResetRoutes');
 const testEmailRoutes = require('./routes/testEmailRoutes');
 const testimonialRoutes = require('./routes/testimonialRoutes');
 const contactRoutes = require('./routes/contactRoutes');
+const maintenanceRoutes = require('./routes/maintenanceRoutes');
+const chatbotRoutes = require('./routes/chatbotRoutes');
 
+const { checkMaintenanceMode } = require('./middleware/maintenanceMode');
 const setupSocketHandlers = require('./socket/socketHandlers');
 const { checkExpiredInstitutionSubscriptions } = require('./services/institutionPlanService');
 
 const app = express();
-const server = http.createServer(app);
+const server = createServer(app);
 
 const PORT = process.env.PORT || 4001;
 
@@ -122,12 +126,21 @@ app.use(cors({
    BODY PARSERS
 ===================================================== */
 
-app.use(express.json({ limit: '150mb' }));
-app.use(express.urlencoded({ extended: true, limit: '150mb' }));
+app.use(json({ limit: '150mb' }));
+app.use(urlencoded({ extended: true, limit: '150mb' }));
 
-/* =====================================================
-   REQUEST LOGGER
-===================================================== */
+// Security headers for production readiness
+app.use((req, res, next) => {
+    // Required for Firebase Auth popups
+    res.setHeader('Cross-Origin-Opener-Policy', 'same-origin-allow-popups');
+    // Prevents clickjacking
+    res.setHeader('X-Frame-Options', 'SAMEORIGIN');
+    // Prevents XSS attacks
+    res.setHeader('X-XSS-Protection', '1; mode=block');
+    // Prevents MIME type sniffing
+    res.setHeader('X-Content-Type-Options', 'nosniff');
+    next();
+});
 
 app.use((req, res, next) => {
     if (req.path.startsWith('/health')) return next();
@@ -144,7 +157,6 @@ app.set('io', io);
 
 app.use('/health', healthRoutes);
 
-const maintenanceRoutes = require('./routes/maintenanceRoutes');
 app.use('/api/maintenance', maintenanceRoutes);
 
 if (process.env.NODE_ENV !== 'production') {
@@ -161,13 +173,13 @@ app.get('/', (req, res) => {
 });
 
 app.use('/api/auth', authRoutes);
+app.use('/api/chatbot', chatbotRoutes);
 app.use('/api/password-reset', passwordResetRoutes);
 
 if (process.env.NODE_ENV !== 'production') {
     app.use('/api', testEmailRoutes);
 }
 
-const { checkMaintenanceMode } = require('./middleware/maintenanceMode');
 
 app.use('/api/payments', checkMaintenanceMode, paymentRoutes);
 app.use('/api/presentations', checkMaintenanceMode, presentationRoutes);
@@ -188,7 +200,7 @@ app.use(errorHandler);
 ===================================================== */
 
 io.on('connection', (socket) => {
-    Logger.debug(`Client connected: ${socket.id}`);
+    debug(`Client connected: ${socket.id}`);
     setupSocketHandlers(io, socket);
 });
 
@@ -202,18 +214,18 @@ const startServer = async () => {
         initializeFirebase();
 
         server.listen(PORT, () => {
-            Logger.startup('\n' + '='.repeat(50));
-            Logger.startup('Server initialized successfully');
-            Logger.info(`Server running on port ${PORT}`);
-            Logger.info(`Environment: ${process.env.NODE_ENV || 'development'}`);
-            Logger.startup('='.repeat(50) + '\n');
+            startup('\n' + '='.repeat(50));
+            startup('Server initialized successfully');
+            info(`Server running on port ${PORT}`);
+            info(`Environment: ${process.env.NODE_ENV || 'development'}`);
+            startup('='.repeat(50) + '\n');
 
             setInterval(async () => {
                 try {
                     const result = await checkExpiredInstitutionSubscriptions();
 
                     if (result.success && result.expiredInstitutions > 0) {
-                        Logger.info(
+                        info(
                             `Scheduled job: ${result.expiredInstitutions} institutions expired`
                         );
 
@@ -229,17 +241,17 @@ const startServer = async () => {
                         }
                     }
                 } catch (error) {
-                    Logger.error('Subscription check failed', error);
+                    _error('Subscription check failed', error);
                 }
             }, 60 * 60 * 1000);
 
             checkExpiredInstitutionSubscriptions().catch(error =>
-                Logger.error('Initial subscription check failed', error)
+                _error('Initial subscription check failed', error)
             );
         });
 
     } catch (error) {
-        Logger.error('Failed to start server', error);
+        _error('Failed to start server', error);
         process.exit(1);
     }
 };

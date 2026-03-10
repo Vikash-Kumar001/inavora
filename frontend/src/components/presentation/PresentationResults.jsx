@@ -56,6 +56,12 @@ const PresentationResults = ({ slides, presentationId }) => {
     const socketRef = useRef(null);
     const exportButtonRef = useRef(null);
     const clearButtonRef = useRef(null);
+    const slidesRef = useRef(slides); // Keep ref to current slides for socket handlers
+
+    // Update slidesRef whenever slides changes
+    useEffect(() => {
+        slidesRef.current = slides;
+    }, [slides]);
 
     // Check if user has access to export (CSV/Excel only)
     const canExport = (() => {
@@ -185,12 +191,8 @@ const PresentationResults = ({ slides, presentationId }) => {
                 const slideId = data.slideId.toString();
                 const updatedResults = { ...prevResults };
                 
-                // Get slide type from slides array or existing result
-                const slide = slides?.find(s => {
-                    const id = s.id || s._id;
-                    return id && id.toString() === slideId;
-                });
-                const slideType = slide?.type || updatedResults[slideId]?.type || 'unknown';
+                // Get slide type from current slide data if available
+                const slideType = data.type || updatedResults[slideId]?.type || 'unknown';
 
                 // Replace with complete data from backend (backend sends complete state, not diff)
                 updatedResults[slideId] = {
@@ -214,8 +216,8 @@ const PresentationResults = ({ slides, presentationId }) => {
                 const newResults = resultsData.results || resultsData;
                 
                 // Re-fetch final leaderboard if needed
-                const hasQuizSlides = slides?.some(slide => slide.type === 'quiz');
-                const hasFinalLeaderboardSlide = slides?.some(slide => 
+                const hasQuizSlides = slidesRef.current?.some(slide => slide.type === 'quiz');
+                const hasFinalLeaderboardSlide = slidesRef.current?.some(slide => 
                     slide.type === 'leaderboard' && !slide.leaderboardSettings?.linkedQuizSlideId
                 );
                 
@@ -251,8 +253,8 @@ const PresentationResults = ({ slides, presentationId }) => {
                 const newResults = resultsData.results || resultsData;
                 
                 // Re-fetch final leaderboard if needed
-                const hasQuizSlides = slides?.some(slide => slide.type === 'quiz');
-                const hasFinalLeaderboardSlide = slides?.some(slide => 
+                const hasQuizSlides = slidesRef.current?.some(slide => slide.type === 'quiz');
+                const hasFinalLeaderboardSlide = slidesRef.current?.some(slide => 
                     slide.type === 'leaderboard' && !slide.leaderboardSettings?.linkedQuizSlideId
                 );
                 
@@ -286,8 +288,8 @@ const PresentationResults = ({ slides, presentationId }) => {
             
             try {
                 // Refresh final leaderboard if it exists
-                const hasQuizSlides = slides?.some(slide => slide.type === 'quiz');
-                const hasFinalLeaderboardSlide = slides?.some(slide => 
+                const hasQuizSlides = slidesRef.current?.some(slide => slide.type === 'quiz');
+                const hasFinalLeaderboardSlide = slidesRef.current?.some(slide => 
                     slide.type === 'leaderboard' && !slide.leaderboardSettings?.linkedQuizSlideId
                 );
                 
@@ -306,7 +308,7 @@ const PresentationResults = ({ slides, presentationId }) => {
                 // Also update any leaderboard slides that might be showing
                 if (data.leaderboard) {
                     // Find all leaderboard slides and update their data
-                    slides?.forEach(slide => {
+                    slidesRef.current?.forEach(slide => {
                         if (slide.type === 'leaderboard') {
                             const slideId = (slide.id || slide._id)?.toString();
                             if (slideId) {
@@ -358,7 +360,7 @@ const PresentationResults = ({ slides, presentationId }) => {
             socket.off('error');
             socket.disconnect();
         };
-    }, [presentationId, slides]);
+    }, [presentationId]); // IMPORTANT: Only depend on presentationId, not slides - slides change frequently and should not trigger socket reconnection
 
     const handleExportData = async (format) => {
         if (!presentationId || !slides || slides.length === 0) {

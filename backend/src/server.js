@@ -172,8 +172,8 @@ app.get('/', (req, res) => {
     });
 });
 
-app.use('/api/auth', authRoutes);
 app.use('/api/chatbot', chatbotRoutes);
+app.use('/api/auth', authRoutes);
 app.use('/api/password-reset', passwordResetRoutes);
 
 if (process.env.NODE_ENV !== 'production') {

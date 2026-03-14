@@ -11,7 +11,7 @@ export const getApiUrl = () => {
 
   // If environment variable is set, use it
   if (import.meta.env.VITE_API_URL) {
-    return import.meta.env.VITE_API_URL;
+    return import.meta.env.VITE_API_URL.replace(/\/$/, '');
   }
 
   // In production, use the production API URL
@@ -37,7 +37,7 @@ export const getSocketUrl = () => {
 
   // If environment variable is set, use it
   if (import.meta.env.VITE_SOCKET_URL) {
-    return import.meta.env.VITE_SOCKET_URL;
+    return import.meta.env.VITE_SOCKET_URL.replace(/\/$/, '');
   }
 
   // In production, use the production API URL
